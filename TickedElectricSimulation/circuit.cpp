@@ -8,13 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "circuit.h"
+#include <stdio.h>
 
 Element::Element(const char* name, const char* node1name, const char* node2name) {
-	Element::name = (char*) malloc(strlen(name));
+	Element::name = (char*) malloc(strlen(name) + 1);
 	strcpy(Element::name, name);
-	Element::node1name = (char*) malloc(strlen(node1name));
+	Element::node1name = (char*) malloc(strlen(node1name) + 1);
 	strcpy(Element::node1name, node1name);
-	Element::node2name = (char*) malloc(strlen(node2name));
+	Element::node2name = (char*) malloc(strlen(node2name) + 1);
 	strcpy(Element::node2name, node2name);
 	Element::node1 = 0;
 	Element::node2 = 0;

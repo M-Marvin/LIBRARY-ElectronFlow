@@ -33,7 +33,7 @@ bool CircuitContainer::linkNodes() {
 	NODE* nodes = CircuitContainer::nodes.data();
 	for (Element* e : CircuitContainer::elements) {
 		if (!e->linkNodes(nodes, nodeCount)) {
-			printf("failed to link nodes of element '%s'!\n", e->name);
+			printf("[!] failed to link nodes of element '%s'!\n", e->name);
 			return false;
 		}
 	}
@@ -139,7 +139,7 @@ pair<vector<NODE_t*>, vector<Element*>> CircuitContainer::parseCircuit(char* net
 			break;
 		}
 		default: {
-			printf("unknown component type '%s'!\n", elementName);
+			printf("[!] unknown component type '%s'!\n", elementName);
 			break;
 		}
 		}
@@ -155,7 +155,7 @@ pair<vector<NODE_t*>, vector<Element*>> CircuitContainer::parseCircuit(char* net
 		printf("loaded elements: %d\n", elementsVec.size());
 		printf("loaded nodes: %d\n", nodesVec.size());
 	} else {
-		printf("error while parsing circuit, not all entries loaded!\n");
+		printf("[!] error while parsing circuit, not all entries loaded!\n");
 	}
 
 	return make_pair(nodesVec, elementsVec);

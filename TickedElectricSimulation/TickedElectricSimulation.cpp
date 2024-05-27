@@ -10,7 +10,7 @@ using namespace std;
 
 int main(int argc, char **argv) {
 
-	const char* test = "test circuit\n\n# Comment voltage divider\nV1 vcc gnd 230\nR1 vcc out 1k\nR2 out gnd 1k";
+	const char* test = "test circuit\n\n# Comment voltage divider\nV1 vcc gnd 230\nR1a vcc out1a 1k\nR1b out1a out1b 1k\nR1b out1b out 1k\nR2a out gnd2a 1k\nR2b gnd2a gnd2b 1k\nR2c gnd2b gnd 1k";
 	char* d = (char*) malloc(strlen(test));
 	strcpy(d, test);
 

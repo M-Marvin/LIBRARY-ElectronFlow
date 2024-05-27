@@ -10,6 +10,28 @@
 
 #include "circuit_container.h"
 
+class SubSolver {
+
+public:
+	SubSolver(NODE node1, NODE node2);
+	~SubSolver();
+
+	bool structorize(vector<Element*>* elements);
+
+private:
+	NODE node1;
+	NODE node2;
+	NODE seriesEndNode1;
+	NODE seriesEndNode2;
+	vector<Element*> seriesElements1;
+	vector<Element*> seriesElements2;
+	vector<SubSolver*> parallelSolvers;
+
+	Element* findOtherEnd(const vector<Element*>* allElements, NODE startNode, NODE endNode);
+	NODE findSeriesSequence(const vector<Element*>* allElements, NODE startNode, NODE endNode, vector<Element*>* outVec);
+
+};
+
 class SourceSolver {
 
 public:
@@ -18,17 +40,10 @@ public:
 	bool compileStructure();
 
 private:
-	const CircuitContainer* circuit;
-	const Element* source;
+	CircuitContainer* circuit;
+	Element* source;
+	SubSolver* rootSolver;
 
 };
-
-class ElementGroup {
-
-
-
-};
-
-
 
 #endif /* CIRCUIT_SOLVER_H_ */
