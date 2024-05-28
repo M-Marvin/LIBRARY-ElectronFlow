@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
+#include <fstream>
 #include "circuit_container.h"
 #include "circuit_solver.h"
 
@@ -10,18 +11,38 @@ using namespace std;
 
 int main(int argc, char **argv) {
 
-	const char* test = "test circuit\n\n# Comment voltage divider\nV1 vcc gnd 230\nR1a vcc out1a 1k\nR1b out1a out1b 1k\nR1b out1b out 1k\nR2a out gnd2a 1k\nR2b gnd2a gnd2b 1k\nR2c gnd2b gnd 1k";
-	char* d = (char*) malloc(strlen(test));
-	strcpy(d, test);
+	string path(argv[0]);
+	string file("\\..\\..\\..\\test\\test_1p.txt");
 
-	CircuitContainer c = CircuitContainer(d);
+	ifstream netListFile(path + file);
+
+	if (!netListFile.is_open()) {
+		printf("could not open test.txt %s\n", (path + file).c_str());
+		return -2;
+	}
+
+	netListFile.seekg(0, ios::end);
+	size_t length = netListFile.tellg();
+	netListFile.seekg(0, ios::beg);
+	char netList[length];
+	netListFile.read(netList, length);
+	netListFile.close();
+
+	printf("loaded net list:\n%s\n", netList);
+
+	CircuitContainer c = CircuitContainer(netList);
 
 	for (int i = 0; i < c.elements.size(); i++) {
 		printf("DEBUG element %s\n", c.elements[i]->name);
 	}
 
 	if (!c.linkNodes()) {
-		printf("DEBUG failed to link!");
+		printf("DEBUG failed to link!\n");
+		return -1;
+	}
+
+	if (c.elements.size() == 0) {
+		printf("DEBUG no elements\n");
 		return -1;
 	}
 

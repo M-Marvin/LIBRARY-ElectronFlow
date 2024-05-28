@@ -16,7 +16,7 @@ public:
 	SubSolver(NODE node1, NODE node2);
 	~SubSolver();
 
-	bool structorize(vector<Element*>* elements);
+	bool structorize(vector<Element*>* elements, Element* startElement = 0);
 
 private:
 	NODE node1;

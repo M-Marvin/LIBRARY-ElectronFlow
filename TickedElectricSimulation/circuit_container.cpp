@@ -41,6 +41,11 @@ bool CircuitContainer::linkNodes() {
 }
 
 double CircuitContainer::parseNumberValue(const char* valueStr) {
+	if (valueStr == 0) {
+		printf("invalid component, value == null!\n");
+		return 0.0;
+	}
+
 	const char* lastChar = valueStr + strlen(valueStr) - 1;
 
 	double multiplier;
@@ -59,6 +64,11 @@ double CircuitContainer::parseNumberValue(const char* valueStr) {
 }
 
 NODE_t* CircuitContainer::parseNode(const char* nodeName, vector<NODE_t*>* nodes) {
+	if (nodeName == 0) {
+		printf("invalid component, node == null!\n");
+		return 0;
+	}
+
 	if (strlen(nodeName) == 0) return {0};
 	for (int i = 0; i < nodes->size(); i++) {
 		if (strcmp((*nodes)[i]->name, nodeName) == 0)  {
@@ -115,7 +125,8 @@ pair<vector<NODE_t*>, vector<Element*>> CircuitContainer::parseCircuit(char* net
 				errorFlag = true; break;
 			}
 
-			double value = parseNumberValue(strtok_r(NULL, " ", &tokptrl));
+			char* valueStr = strtok_r(NULL, " ", &tokptrl);
+			double value = parseNumberValue(valueStr);
 
 			switch (*elementName) {
 			case 'R': {

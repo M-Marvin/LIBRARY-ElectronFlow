@@ -1,0 +1,3 @@
+resistor chain
+V1 vcc gnd 100
+R1 vcc gnd 1k
