@@ -129,6 +129,9 @@ bool SubSolver::structorize(vector<Element*>* elements, Element* startElement) {
 	// If start element provided, initialize first sequence with it
 	NODE startNode = node1;
 	if (startElement != 0) {
+
+
+
 		SubSolver::seriesElements1.push_back(startElement);
 		startNode = startElement->node1 == node1 ? startElement->node2 : startElement->node1;
 	}

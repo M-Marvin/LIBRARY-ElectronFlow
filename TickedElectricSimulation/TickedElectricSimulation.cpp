@@ -12,7 +12,7 @@ using namespace std;
 int main(int argc, char **argv) {
 
 	string path(argv[0]);
-	string file("\\..\\..\\..\\test\\test_1p.txt");
+	string file("\\..\\..\\..\\test\\test_2p.txt");
 
 	ifstream netListFile(path + file);
 
