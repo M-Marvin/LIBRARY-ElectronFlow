@@ -20,8 +20,9 @@ public:
 	~CircuitContainer();
 	bool linkNodes();
 
-	vector<NODE_t*> nodes; // TODO can not make constant
+	vector<NODE_t*> nodes;
 	vector<Element*> elements;
+	vector<char*> commands;
 private:
 	double parseNumberValue(const char* valueStr);
 	NODE_t* parseNode(const char* nodeName, vector<NODE_t*>* nodes);

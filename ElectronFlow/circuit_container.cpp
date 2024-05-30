@@ -25,6 +25,8 @@ CircuitContainer::~CircuitContainer() {
 	CircuitContainer::nodes.clear();
 	for (Element* e : CircuitContainer::elements) delete e;
 	CircuitContainer::elements.clear();
+	for (char* l : CircuitContainer::commands) free(l);
+	CircuitContainer::commands.clear();
 }
 
 bool CircuitContainer::linkNodes() {
@@ -77,7 +79,7 @@ NODE_t* CircuitContainer::parseNode(const char* nodeName, vector<NODE_t*>* nodes
 	}
 	nodes->push_back(new NODE_t());
 	strcpy(nodes->back()->name, nodeName);
-	nodes->back()->potential = 0.0;
+	nodes->back()->charge = 0.0;
 	return nodes->back();
 }
 
@@ -103,16 +105,28 @@ pair<vector<NODE_t*>, vector<Element*>> CircuitContainer::parseCircuit(char* net
 		// parse line, read element name
 
 		char* tokptrl;
-		char* elementName = strtok_r(line, " ", &tokptrl);
 
-		switch (*elementName) {
+		switch (*line) {
 		case '#': break; // # = Comment
+		case '.': {
+
+			// Copy command line into command vector
+			size_t lineLen = strlen(line);
+			char* commandLine = (char*) malloc(lineLen);
+			memset(commandLine, 0, lineLen);
+			strcpy(commandLine, line + 1);
+			CircuitContainer::commands.push_back(commandLine);
+
+			break;
+		}
+
 		case 'R':
 		case 'V':
 		case 'I': {
 
 			// parse element specific arguments and construct
 
+			char* elementName = strtok_r(line, " ", &tokptrl);
 			NODE_t* node1 = parseNode(strtok_r(NULL, " ", &tokptrl), &nodesVec);
 			NODE_t* node2 = parseNode(strtok_r(NULL, " ", &tokptrl), &nodesVec);
 
@@ -130,27 +144,26 @@ pair<vector<NODE_t*>, vector<Element*>> CircuitContainer::parseCircuit(char* net
 
 			switch (*elementName) {
 			case 'R': {
-
-				printf("resistor between '%s' and '%s' with value '%fOhm'\n", node1->name, node2->name, value);
+				//printf("resistor between '%s' and '%s' with value '%fOhm'\n", node1->name, node2->name, value);
 				elementsVec.push_back(new Resistor(elementName, node1->name, node2->name, value));
 				break;
 			}
 			case 'V': {
-				printf("voltage source between '%s' and '%s' with value '%fV'\n", node1->name, node2->name, value);
+				//printf("voltage source between '%s' and '%s' with value '%fV'\n", node1->name, node2->name, value);
 				elementsVec.push_back(new VoltageSource(elementName, node1->name, node2->name, value));
 				break;
 			}
-			case 'I': {
-				printf("current source between '%s' and '%s' with value '%fA'\n", node1->name, node2->name, value);
-				elementsVec.push_back(new CurrentSource(elementName, node1->name, node2->name, value));
-				break;
-			}
+//			case 'I': {
+//				printf("current source between '%s' and '%s' with value '%fA'\n", node1->name, node2->name, value);
+//				elementsVec.push_back(new CurrentSource(elementName, node1->name, node2->name, value));
+//				break;
+//			}
 			}
 
 			break;
 		}
 		default: {
-			printf("[!] unknown component type '%s'!\n", elementName);
+			printf("[!] unknown component type '%s'!\n", line);
 			break;
 		}
 		}

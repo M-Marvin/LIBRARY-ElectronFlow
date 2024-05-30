@@ -1,4 +1,4 @@
-/*
+ /*
  * circuit.h
  *
  *  Created on: 20.05.2024
@@ -14,7 +14,7 @@
 
 typedef struct {
 	char name[NODE_NAME_LENGTH];
-	double potential;
+	double charge;
 } NODE_t;
 
 #define NODE NODE_t*
@@ -23,8 +23,10 @@ class Element {
 
 public:
 	Element(const char* name, const char* node1name, const char* node2name);
-	~Element();
+	virtual ~Element();
+
 	bool linkNodes(NODE* nodeArray, size_t nodesLen);
+	virtual void step(double nodeCapacity, double timestep);
 
 	char* name;
 	char* node1name;
@@ -40,6 +42,8 @@ public:
 	Resistor(const char* name, const char* node1name, const char* node2name, double value);
 	~Resistor();
 
+	void step(double nodeCapacity, double timestep);
+
 	double resistance;
 
 };
@@ -50,17 +54,9 @@ public:
 	VoltageSource(const char* name, const char* node1name, const char* node2name, double value);
 	~VoltageSource();
 
+	void step(double nodeCapacity, double timestep);
+
 	double voltage;
-
-};
-
-class CurrentSource : public Element {
-
-public:
-	CurrentSource(const char* name, const char* node1name, const char* node2name, double value);
-	~CurrentSource();
-
-	double current;
 
 };
 

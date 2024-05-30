@@ -10,6 +10,8 @@
 #include "circuit.h"
 #include <stdio.h>
 
+/* Define base element */
+
 Element::Element(const char* name, const char* node1name, const char* node2name) {
 	Element::name = (char*) malloc(strlen(name) + 1);
 	strcpy(Element::name, name);
@@ -39,11 +41,29 @@ bool Element::linkNodes(NODE* nodes, size_t nodesLen) {
 	return Element::node1 != 0 && Element::node2 != 0;
 }
 
+void Element::step(double nodeCapacity, double timestep) {}
+
+/* Define resistor element */
+
 Resistor::Resistor(const char* name, const char* node1name, const char* node2name, double value) : Element(name, node1name, node2name) {
 	Resistor::resistance = value;
 }
 
 Resistor::~Resistor() {}
+
+void Resistor::step(double nodeCapacity, double timestep) {
+	double vNode1 = Resistor::node1->charge / nodeCapacity;
+	double vNode2 = Resistor::node2->charge / nodeCapacity;
+	double i = (vNode1 - vNode2) / Resistor::resistance;
+	double cTransfer = i * timestep;
+//	printf("I %f\n", i);
+//	printf("V %f %f\n", vNode1, vNode2);
+//	printf("C %f\n\n", cTransfer);
+	Resistor::node1->charge -= cTransfer;
+	Resistor::node2->charge += cTransfer;
+}
+
+/* Define voltage source element */
 
 VoltageSource::VoltageSource(const char* name, const char* node1name, const char* node2name, double value) : Element(name, node1name, node2name) {
 	VoltageSource::voltage = value;
@@ -51,8 +71,14 @@ VoltageSource::VoltageSource(const char* name, const char* node1name, const char
 
 VoltageSource::~VoltageSource() {}
 
-CurrentSource::CurrentSource(const char* name, const char* node1name, const char* node2name, double value) : Element(name, node1name, node2name) {
-	CurrentSource::current = value;
-}
+void VoltageSource::step(double nodeCapacity, double timestep) {
+	double vNodes = (VoltageSource::node1->charge / nodeCapacity) - (VoltageSource::node2->charge / nodeCapacity);
+	double cTransfer = (VoltageSource::voltage - vNodes) * nodeCapacity * 0.5;
+	VoltageSource::node1->charge += cTransfer;
+	VoltageSource::node2->charge -= cTransfer;
 
-CurrentSource::~CurrentSource() {}
+	double vNode1 = VoltageSource::node1->charge / nodeCapacity;
+	double vNode2 = VoltageSource::node2->charge / nodeCapacity;
+//	printf("V %f %f\n", vNode1, vNode2);
+//	printf("%f - %f\n\n", VoltageSource::node1->charge, VoltageSource::node2->charge);
+}
