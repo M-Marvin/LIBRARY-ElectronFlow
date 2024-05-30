@@ -8,18 +8,13 @@ using namespace std;
 int main(int argc, char **argv) {
 
 	char* filePath = 0;
-	char** controllCommand = 0;
-	int controllCommandN = 0;
 	bool runFileCommand = false;
 
 	// Parse arguments
 	for (int i = 0; i < argc; i++) {
 		if (strcmp(argv[i], "-f") == 0) {
 			filePath = argv[i + 1];
-		} else if (strcmp(argv[i], "-r") == 0) {
-			controllCommand = argv + i + 1;
-			controllCommandN = argc - i - 1;
-		} else if (strcmp(argv[i], "-e") == 0) {
+		} if (strcmp(argv[i], "-e") == 0) {
 			runFileCommand = true;
 		}
 	}
@@ -59,12 +54,24 @@ int main(int argc, char **argv) {
 
 	}
 
-	if (controllCommand != 0) {
+	printf("run cli commands\n");
 
-		printf("run cli command\n");
+	// Run CLI commands
+	char** clicmd = 0;
+	int cliargc = 0;
+	for (int i = 0; i < argc; i++) {
+		cliargc++;
 
-		simulator.controllCommand(controllCommandN, controllCommand);
+		if (strcmp(argv[i], "-r") == 0 || i == argc - 1) {
 
+			// Run command
+			if (clicmd != 0) {
+				simulator.controllCommand(cliargc, clicmd);
+			}
+
+			clicmd = argv + i + 1;
+			cliargc = 0;
+		}
 	}
 
 	return 0;
