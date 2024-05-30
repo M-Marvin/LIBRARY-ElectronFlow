@@ -28,6 +28,4 @@ private:
 
 };
 
-
-
 #endif /* ELECTRON_FLOW_H_ */

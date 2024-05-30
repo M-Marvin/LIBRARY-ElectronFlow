@@ -1,18 +1,27 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-OBJS = ElectronFlowCLI.o circuit.o circuit_container.o circuit_solver.o electron_flow.o
+CLI_NAME = electronflow
+LIB_NAME = libelectonflow.dll
+
+OBJS = circuit.o circuit_container.o circuit_solver.o electron_flow.o
 
 ifeq ($(BUILD_MODE),debug)
 	CFLAGS += -g
-else ifeq ($(BUILD_MODE),run)
+else
 	CFLAGS += -O2
 endif
 
-all:	ElectronFlowCLI
+all:	cli lib
 
-ElectronFlowCLI:	$(OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $^
-	$(EXTRA_CMDS)
+cli:	ElectronFlowCLI
+
+lib:	ElectronFlowLIB
+
+ElectronFlowCLI:	ElectronFlowCLI.o $(OBJS)
+	$(CXX) $(LDFLAGS) -o $(CLI_NAME) $^
+
+ElectronFlowLIB:	$(OBJS)
+	$(CXX) $(LDFLAGS) -shared -o $(LIB_NAME) $^
 
 %.o:	$(PROJECT_ROOT)%.cpp
 	$(CXX) -c $(CFLAGS) $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
@@ -21,4 +30,4 @@ ElectronFlowCLI:	$(OBJS)
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
 
 clean:
-	rm -fr ElectronFlowCLI $(OBJS)
+	rm -fr ElectronFlowCLI ElectronFlowLIB $(OBJS)

@@ -1,8 +1,5 @@
 #include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
-#include <vector>
 #include <fstream>
 #include "electron_flow.h"
 
