@@ -13,11 +13,12 @@
 #include <vector>
 
 using namespace std;
+using namespace equations;
+using namespace electronflow;
 
-CircuitContainer::CircuitContainer(char* netList) {
-	pair<vector<NODE_t*>, vector<Element*>> vecp = parseCircuit(netList);
-	CircuitContainer::nodes = vector<NODE_t*>(vecp.first); // TODO error when member vectors constant
-	CircuitContainer::elements = vector<Element*>(vecp.second);
+CircuitContainer::CircuitContainer() {
+	CircuitContainer::nodes = vector<NODE_t*>();
+	CircuitContainer::elements = vector<Element*>();
 }
 
 CircuitContainer::~CircuitContainer() {
@@ -42,48 +43,26 @@ bool CircuitContainer::linkNodes() {
 	return true;
 }
 
-double CircuitContainer::parseNumberValue(const char* valueStr) {
-	if (valueStr == 0) {
-		printf("invalid component, value == null!\n");
-		return 0.0;
-	}
-
-	const char* lastChar = valueStr + strlen(valueStr) - 1;
-
-	double multiplier;
-	switch (*lastChar) {
-	case 'p': multiplier = 1E-9; break;
-	case 'n': multiplier = 1E-6; break;
-	case 'm': multiplier = 1E-3; break;
-	case 'k': multiplier = 1E+3; break;
-	case 'M': multiplier = 1E+6; break;
-	case 'G': multiplier = 1E+9; break;
-	default: multiplier = 1; break;
-	}
-
-	double value = atof(valueStr);
-	return value * multiplier;
-}
-
-NODE_t* CircuitContainer::parseNode(const char* nodeName, vector<NODE_t*>* nodes) {
+NODE_t* CircuitContainer::parseNode(const char* nodeName) {
 	if (nodeName == 0) {
 		printf("invalid component, node == null!\n");
 		return 0;
 	}
 
 	if (strlen(nodeName) == 0) return {0};
-	for (int i = 0; i < nodes->size(); i++) {
-		if (strcmp((*nodes)[i]->name, nodeName) == 0)  {
-			return (*nodes)[i];
+	for (int i = 0; i < nodes.size(); i++) {
+		if (strcmp(CircuitContainer::nodes[i]->name, nodeName) == 0)  {
+			return CircuitContainer::nodes[i];
 		}
 	}
-	nodes->push_back(new NODE_t());
-	strcpy(nodes->back()->name, nodeName);
-	nodes->back()->charge = 0.0;
-	return nodes->back();
+	CircuitContainer::nodes.push_back(new NODE_t());
+	strcpy(CircuitContainer::nodes.back()->name, nodeName);
+	CircuitContainer::nodes.back()->charge = 0.0;
+
+	return CircuitContainer::nodes.back();
 }
 
-pair<vector<NODE_t*>, vector<Element*>> CircuitContainer::parseCircuit(char* netList) {
+bool CircuitContainer::parseCircuit(char* netList) {
 
 	// parse circuit name
 
@@ -94,10 +73,7 @@ pair<vector<NODE_t*>, vector<Element*>> CircuitContainer::parseCircuit(char* net
 
 	// parse nodes and elements
 
-	vector<NODE_t*> nodesVec = vector<NODE_t*>();
-	vector<Element*> elementsVec = vector<Element*>();
 	bool errorFlag = false;
-
 	char* line = strtok_r(NULL, "\n", &tokptr);
 	int lineNr = 1;
 	while (line != 0) {
@@ -127,8 +103,8 @@ pair<vector<NODE_t*>, vector<Element*>> CircuitContainer::parseCircuit(char* net
 			// parse element specific arguments and construct
 
 			char* elementName = strtok_r(line, " ", &tokptrl);
-			NODE_t* node1 = parseNode(strtok_r(NULL, " ", &tokptrl), &nodesVec);
-			NODE_t* node2 = parseNode(strtok_r(NULL, " ", &tokptrl), &nodesVec);
+			NODE_t* node1 = parseNode(strtok_r(NULL, " ", &tokptrl));
+			NODE_t* node2 = parseNode(strtok_r(NULL, " ", &tokptrl));
 
 			if (strlen(node1->name) == 0) {
 				printf("empty node1 on element '%s', line %d", elementName, lineNr);
@@ -140,17 +116,17 @@ pair<vector<NODE_t*>, vector<Element*>> CircuitContainer::parseCircuit(char* net
 			}
 
 			char* valueStr = strtok_r(NULL, " ", &tokptrl);
-			double value = parseNumberValue(valueStr);
+			equation* value = new equation(valueStr);
 
 			switch (*elementName) {
 			case 'R': {
 				//printf("resistor between '%s' and '%s' with value '%fOhm'\n", node1->name, node2->name, value);
-				elementsVec.push_back(new Resistor(elementName, node1->name, node2->name, value));
+				CircuitContainer::elements.push_back(new Resistor(elementName, node1->name, node2->name, value));
 				break;
 			}
 			case 'V': {
 				//printf("voltage source between '%s' and '%s' with value '%fV'\n", node1->name, node2->name, value);
-				elementsVec.push_back(new VoltageSource(elementName, node1->name, node2->name, value));
+				CircuitContainer::elements.push_back(new VoltageSource(elementName, node1->name, node2->name, value));
 				break;
 			}
 //			case 'I': {
@@ -176,13 +152,14 @@ pair<vector<NODE_t*>, vector<Element*>> CircuitContainer::parseCircuit(char* net
 
 	if (!errorFlag) {
 		printf("loading of circuit successful\n");
-		printf("loaded elements: %d\n", elementsVec.size());
-		printf("loaded nodes: %d\n", nodesVec.size());
+		printf("loaded elements: %d\n", CircuitContainer::elements.size());
+		printf("loaded nodes: %d\n", CircuitContainer::nodes.size());
 	} else {
 		printf("[!] error while parsing circuit, not all entries loaded!\n");
+		return false;
 	}
 
-	return make_pair(nodesVec, elementsVec);
+	return true;
 
 }
 

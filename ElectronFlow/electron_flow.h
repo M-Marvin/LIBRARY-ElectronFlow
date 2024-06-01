@@ -10,6 +10,8 @@
 
 #include "circuit_solver.h"
 
+namespace electronflow {
+
 class ElectronFlow {
 
 public:
@@ -27,5 +29,7 @@ private:
 	SourceSolver* solver;
 
 };
+
+}
 
 #endif /* ELECTRON_FLOW_H_ */

@@ -3,7 +3,7 @@ PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 CLI_NAME = electronflow
 LIB_NAME = libelectonflow.dll
 
-OBJS = circuit.o circuit_container.o circuit_solver.o electron_flow.o
+OBJS = circuit.o circuit_container.o circuit_solver.o electron_flow.o equations.o
 
 ifeq ($(BUILD_MODE),debug)
 	CFLAGS += -g

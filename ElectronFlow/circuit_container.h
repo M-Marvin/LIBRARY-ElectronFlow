@@ -12,22 +12,26 @@
 #include <vector>
 
 using namespace std;
+using namespace equations;
+
+namespace electronflow {
 
 class CircuitContainer {
 
 public:
-	CircuitContainer(char* netList);
+	CircuitContainer();
 	~CircuitContainer();
+	bool parseCircuit(char* netList);
 	bool linkNodes();
 
 	vector<NODE_t*> nodes;
 	vector<Element*> elements;
 	vector<char*> commands;
 private:
-	double parseNumberValue(const char* valueStr);
-	NODE_t* parseNode(const char* nodeName, vector<NODE_t*>* nodes);
-	pair<vector<NODE_t*>, vector<Element*>> parseCircuit(char* netList);
+	NODE_t* parseNode(const char* nodeName);
 
 };
+
+}
 
 #endif /* CIRCUIT_CONTAINER_H_ */

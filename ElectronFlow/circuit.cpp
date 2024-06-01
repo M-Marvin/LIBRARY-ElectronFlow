@@ -10,6 +10,8 @@
 #include "circuit.h"
 #include <stdio.h>
 
+using namespace electronflow;
+
 /* Define base element */
 
 Element::Element(const char* name, const char* node1name, const char* node2name) {
@@ -41,15 +43,25 @@ bool Element::linkNodes(NODE* nodes, size_t nodesLen) {
 	return Element::node1 != 0 && Element::node2 != 0;
 }
 
+bool Element::calc() {
+	return true;
+}
 void Element::step(double nodeCapacity, double timestep) {}
 
 /* Define resistor element */
 
-Resistor::Resistor(const char* name, const char* node1name, const char* node2name, double value) : Element(name, node1name, node2name) {
-	Resistor::resistance = value;
+Resistor::Resistor(const char* name, const char* node1name, const char* node2name, equation* value) : Element(name, node1name, node2name) {
+	Resistor::resistanceEq = value;
+	Resistor::resistance = 1.0;
 }
 
-Resistor::~Resistor() {}
+Resistor::~Resistor() {
+	delete Resistor::resistanceEq;
+}
+
+bool Resistor::calc() {
+	return Resistor::resistanceEq->evaluate(&(Resistor::resistance));
+}
 
 void Resistor::step(double nodeCapacity, double timestep) {
 	double vNode1 = Resistor::node1->charge / nodeCapacity;
@@ -65,11 +77,16 @@ void Resistor::step(double nodeCapacity, double timestep) {
 
 /* Define voltage source element */
 
-VoltageSource::VoltageSource(const char* name, const char* node1name, const char* node2name, double value) : Element(name, node1name, node2name) {
-	VoltageSource::voltage = value;
+VoltageSource::VoltageSource(const char* name, const char* node1name, const char* node2name, equation* value) : Element(name, node1name, node2name) {
+	VoltageSource::voltageEq = value;
+	VoltageSource::voltage = 0.0;
 }
 
 VoltageSource::~VoltageSource() {}
+
+bool VoltageSource::calc() {
+	return VoltageSource::voltageEq->evaluate(&(VoltageSource::voltage));
+}
 
 void VoltageSource::step(double nodeCapacity, double timestep) {
 	double vNodes = (VoltageSource::node1->charge / nodeCapacity) - (VoltageSource::node2->charge / nodeCapacity);

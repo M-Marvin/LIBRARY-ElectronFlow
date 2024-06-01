@@ -4,6 +4,7 @@
 #include "electron_flow.h"
 
 using namespace std;
+using namespace electronflow;
 
 int main(int argc, char **argv) {
 

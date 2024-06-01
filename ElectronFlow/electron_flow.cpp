@@ -10,6 +10,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+using namespace electronflow;
+
 ElectronFlow::ElectronFlow() {
 	ElectronFlow::circuit = 0;
 	ElectronFlow::solver = 0;
@@ -24,8 +26,8 @@ ElectronFlow::~ElectronFlow() {
 
 bool ElectronFlow::loadNetList(char* netList) {
 	printf("[>] load net list\n");
-	ElectronFlow::circuit = new CircuitContainer(netList);
-	if (ElectronFlow::circuit->linkNodes()) {
+	ElectronFlow::circuit = new CircuitContainer();
+	if (ElectronFlow::circuit->parseCircuit(netList) && ElectronFlow::circuit->linkNodes()) {
 		ElectronFlow::solver = new SourceSolver(ElectronFlow::circuit);
 		return true;
 	}
