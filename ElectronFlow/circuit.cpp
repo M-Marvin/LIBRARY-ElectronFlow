@@ -9,7 +9,9 @@
 #include <string.h>
 #include "circuit.h"
 #include <stdio.h>
+#include <math.h>
 
+using namespace std;
 using namespace electronflow;
 
 /* Define base element */
@@ -46,7 +48,10 @@ bool Element::linkNodes(NODE* nodes, size_t nodesLen) {
 bool Element::calc() {
 	return true;
 }
-void Element::step(double nodeCapacity, double timestep) {}
+void Element::setvfmaps(var_map* varmap, func_map* funcmap) {}
+double Element::step(double nodeCapacity, double timestep) {
+	return timestep;
+}
 
 /* Define resistor element */
 
@@ -63,16 +68,28 @@ bool Resistor::calc() {
 	return Resistor::resistanceEq->evaluate(&(Resistor::resistance));
 }
 
-void Resistor::step(double nodeCapacity, double timestep) {
-	double vNode1 = Resistor::node1->charge / nodeCapacity;
-	double vNode2 = Resistor::node2->charge / nodeCapacity;
-	double i = (vNode1 - vNode2) / Resistor::resistance;
-	double cTransfer = i * timestep;
-//	printf("I %f\n", i);
-//	printf("V %f %f\n", vNode1, vNode2);
-//	printf("C %f\n\n", cTransfer);
-	Resistor::node1->charge -= cTransfer;
-	Resistor::node2->charge += cTransfer;
+void Resistor::setvfmaps(var_map* varmap, func_map* funcmap) {
+	Resistor::resistanceEq->ext_fmap(funcmap);
+	Resistor::resistanceEq->ext_vmap(varmap);
+}
+
+double Resistor::step(double nodeCapacity, double timestep) {
+	double cNode1 = Resistor::node1->charge;
+	double cNode2 = Resistor::node2->charge;
+	double cDiff = (cNode1 - cNode2);
+	double i = cDiff / (nodeCapacity * Resistor::resistance);
+	Element::cTlast = Element::cTnow;
+	Element::cTnow = i * timestep;
+
+	//printf("%s resistance %f Ct = %f\n", name, Resistor::resistance, Element::cTnow);
+
+	if (Element::cTnow > abs(cDiff / 2)) {
+		return (cDiff / 2) / i;
+	}
+
+	Resistor::node1->charge -= Element::cTnow;
+	Resistor::node2->charge += Element::cTnow;
+	return timestep;
 }
 
 /* Define voltage source element */
@@ -88,14 +105,31 @@ bool VoltageSource::calc() {
 	return VoltageSource::voltageEq->evaluate(&(VoltageSource::voltage));
 }
 
-void VoltageSource::step(double nodeCapacity, double timestep) {
-	double vNodes = (VoltageSource::node1->charge / nodeCapacity) - (VoltageSource::node2->charge / nodeCapacity);
-	double cTransfer = (VoltageSource::voltage - vNodes) * nodeCapacity * 0.5;
-	VoltageSource::node1->charge += cTransfer;
-	VoltageSource::node2->charge -= cTransfer;
+void VoltageSource::setvfmaps(var_map* varmap, func_map* funcmap) {
+	VoltageSource::voltageEq->ext_fmap(funcmap);
+	VoltageSource::voltageEq->ext_vmap(varmap);
+}
 
-	double vNode1 = VoltageSource::node1->charge / nodeCapacity;
-	double vNode2 = VoltageSource::node2->charge / nodeCapacity;
-//	printf("V %f %f\n", vNode1, vNode2);
-//	printf("%f - %f\n\n", VoltageSource::node1->charge, VoltageSource::node2->charge);
+double VoltageSource::step(double nodeCapacity, double timestep) {
+	//VoltageSource::voltage = 5;
+	double vNodes = (VoltageSource::node1->charge / nodeCapacity) - (VoltageSource::node2->charge / nodeCapacity);
+	double v = VoltageSource::voltage - vNodes;
+	Element::cTlast = Element::cTnow;
+
+
+	if (VoltageSource::voltage > 0) { //  && v > 0
+		Element::cTnow = v * nodeCapacity * 0.5; // (v > 1 ? 1 : v)
+		//printf("%s voltage %f -> %f Ct = %f\n", name, vNodes, VoltageSource::voltage, Element::cTnow);
+		//double cTransfer = min(abs(v * nodeCapacity * 0.5), nodeCapacity) * (v > 0 ? 1 : -1); // TODO
+		VoltageSource::node1->charge += Element::cTnow;
+		VoltageSource::node2->charge -= Element::cTnow;
+	} else if (VoltageSource::voltage < 0) { //  && v < 0
+		Element::cTnow = v * nodeCapacity * 0.5; // (v < -1 ? -1 : v)
+		//printf("%s voltage %f -> %f Ct = %f\n", name, vNodes, VoltageSource::voltage, Element::cTnow);
+		//double cTransfer = min(abs(v * nodeCapacity * 0.5), nodeCapacity) * (v > 0 ? 1 : -1); // TODO
+		VoltageSource::node1->charge += Element::cTnow;
+		VoltageSource::node2->charge -= Element::cTnow;
+	}
+
+	return timestep;
 }

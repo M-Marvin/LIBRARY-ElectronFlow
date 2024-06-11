@@ -82,6 +82,9 @@ double mfunc_1_atan(double* argv);
 #define func_map map<string, pair<function<double(double*)>, int>>
 #define var_map map<string, double>
 
+void set_vmap_default(var_map* varmap);
+void set_fmap_default(func_map* funcmap);
+
 /**
  * Represents an mathematical equation that can be solved by supplying variable values and functions
  */

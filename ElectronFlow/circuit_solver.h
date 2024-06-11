@@ -20,11 +20,14 @@ public:
 	~SourceSolver();
 
 	void reset();
-	void step(double timestep);
+	bool step(double* timestep);
 	double nodeCapacity = 0;
+	double lastCtChange = 0;
+	double simtime;
 
 private:
 	var_map varmap;
+	func_map funcmap;
 	CircuitContainer* circuit;
 
 };

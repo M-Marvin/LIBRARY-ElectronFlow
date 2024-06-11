@@ -53,21 +53,50 @@ bool ElectronFlow::loadAndRunNetList(char* netList) {
 	return true;
 }
 
-void ElectronFlow::stepSimulation(double nodeCapacity, double timestep, int steps) {
-	printf("[>] run %d steps at %f s with %f F node capacity ...\n", steps, timestep, nodeCapacity);
+bool ElectronFlow::stepStableSimulation(double nodeCapacity, double timestep, double timeout) {
+	printf("[>] run until stable at %f s with %f F node capacity ...\n", timestep, nodeCapacity);
 
 	if (ElectronFlow::solver == 0) {
 		printf("no netlist loaded yet!\n");
-		return;
+		return false;
 	}
 
 	ElectronFlow::solver->nodeCapacity = nodeCapacity;
-	for (int i = 0; i < steps; i++) {
-		ElectronFlow::solver->step(timestep);
+	ElectronFlow::solver->reset();
+	while (true) { // TODO timeout
+		if (!ElectronFlow::solver->step(&timestep)) {
+			printf("simulation interrupted!\n");
+			return false;
+		}
+
+		if (ElectronFlow::solver->lastCtChange < 0.00001) {
+			printf("stableized at %f s\n", ElectronFlow::solver->simtime);
+		}
 	}
 
 	printf("done\n");
+	return true;
+}
 
+bool ElectronFlow::stepSimulation(double nodeCapacity, double timestep, double simulateTime) {
+	printf("[>] run %f s at %f s with %f F node capacity ...\n", simulateTime, timestep, nodeCapacity);
+
+	if (ElectronFlow::solver == 0) {
+		printf("no netlist loaded yet!\n");
+		return false;
+	}
+
+	ElectronFlow::solver->nodeCapacity = nodeCapacity;
+	ElectronFlow::solver->reset();
+	while (ElectronFlow::solver->simtime < simulateTime) {
+		if (!ElectronFlow::solver->step(&timestep)) {
+			printf("simulation interrupted!\n");
+			return false;
+		}
+	}
+
+	printf("done\n");
+	return true;
 }
 
 void ElectronFlow::printNodeVoltages(const char* refNodeName) {
@@ -86,10 +115,36 @@ void ElectronFlow::printNodeVoltages(const char* refNodeName) {
 		}
 	}
 
+	double vdc1 = 0;
+	double tn1 = 0;
+	double vdc2 = 0;
+	double tn2 = 0;
+	double gnd2 = 0;
+
 	for (NODE node : ElectronFlow::circuit->nodes) {
 		double v = node->charge / ElectronFlow::solver->nodeCapacity - ground;
 		printf("node %s v: %f\n", node->name, v);
+
+		if (strcmp(node->name, "vdc1") == 0) vdc1 = v;
+		if (strcmp(node->name, "tn1") == 0) tn1 = v;
+		if (strcmp(node->name, "vdc2") == 0) vdc2 = v;
+		if (strcmp(node->name, "gnd2") == 0) gnd2 = v;
+		if (strcmp(node->name, "tn2") == 0) tn2 = v;
+
 	}
+
+	double c = vdc2 - gnd2;
+	double rv = c * 0.001;
+	double tn2t = vdc2 + rv;
+
+	double curr1 = (tn1 - vdc1) / 0.001;
+	double volt1 = vdc1;
+	double curr = (tn2 - vdc2) / 0.001;
+	double volt = vdc2 - gnd2;
+
+	printf("\ntn2 is: %f, tn2 trgt: %f\n\n", tn2, tn2t);
+	printf("\ncurrent at %f: %f\n\n", volt1, curr1);
+	printf("\ncurrent at %f: %f\n\n", volt, curr);
 
 }
 
@@ -98,17 +153,51 @@ void ElectronFlow::controllCommand(int argc, char** argv) {
 
 	printf("[>] run %s\n", argv[0]);
 
-	if (strcmp(argv[0], "step") == 0) {
-		if (argc < 4) {
-			printf("[i] step [timestep] [node capacity] [steps]\n");
+	if (strcmp(argv[0], "step_stable") == 0) {
+		if (argc < 0) {
+			printf("[i] step_stable [initial timestep s] [node capacity F] [simulation timeout s]\n");
+		}
+
+		double timestep;
+		if (!equations::strtonum(argv[1], &timestep)) {
+			printf("invalid number format: %s\n", argv[1]);
+			return;
+		}
+		double nodeCapacity;
+		if (!equations::strtonum(argv[2], &nodeCapacity)) {
+			printf("invalid number format: %s\n", argv[2]);
+			return;
+		}
+		double timeout;
+		if (!equations::strtonum(argv[3], &timeout)) {
+			printf("invalid number format: %s\n", argv[2]);
 			return;
 		}
 
-		double timestep = atof(argv[1]);
-		double nodeCapacity = atof(argv[2]);
-		int steps = atoi(argv[3]);
+		stepStableSimulation(nodeCapacity, timestep, timeout);
+	} else if (strcmp(argv[0], "step") == 0) {
+		if (argc < 4) {
+			printf("[i] step [initial timestep s] [node capacity F] [simulate time s]\n");
+			return;
+		}
 
-		stepSimulation(nodeCapacity, timestep, steps);
+		double timestep;
+		if (!equations::strtonum(argv[1], &timestep)) {
+			printf("invalid number format: %s\n", argv[1]);
+			return;
+		}
+		double nodeCapacity;
+		if (!equations::strtonum(argv[2], &nodeCapacity)) {
+			printf("invalid number format: %s\n", argv[2]);
+			return;
+		}
+		double simulateTime;
+		if (!equations::strtonum(argv[3], &simulateTime)) {
+			printf("invalid number format: %s\n", argv[2]);
+			return;
+		}
+
+		stepSimulation(nodeCapacity, timestep, simulateTime);
 	} else if (strcmp(argv[0], "printv") == 0) {
 		if (argc < 2) {
 			printf("[i] printv [ref node]\n");

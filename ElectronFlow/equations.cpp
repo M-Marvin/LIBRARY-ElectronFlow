@@ -93,19 +93,8 @@ void equation::ext_vmap(var_map* vmap) {
 }
 
 void equation::setvf_default() {
-	setv("pi", mvar_pi);
-	setv("e", mvar_e);
-
-	setf("sqrt", mfunc_1_sqrt, 1);
-	setf("pow", mfunc_2_pow, 2);
-	setf("max", mfunc_2_max, 2);
-	setf("min", mfunc_2_min, 2);
-	setf("sin", mfunc_1_sin, 1);
-	setf("cos", mfunc_1_cos, 1);
-	setf("tan", mfunc_1_tan, 1);
-	setf("asin", mfunc_1_asin, 1);
-	setf("acos", mfunc_1_acos, 1);
-	setf("atan", mfunc_1_atan, 1);
+	set_vmap_default(variables);
+	set_fmap_default(functions);
 }
 
 bool equation::evaluate(double* result) {
@@ -121,7 +110,8 @@ bool equation::evaluate(double* result) {
 				printf("undefined variable %s!\n", vname.c_str());
 				return false;
 			}
-			stack.push_back((*equation::variables)[vname]);
+			double v = (*equation::variables)[vname];
+			stack.push_back(v);
 		} else if (eqitem.type == OPERATOR_FNC) {
 			string fname = string(eqitem.value.str_name);
 			if (equation::functions->count(fname) == 0) {
@@ -134,8 +124,8 @@ bool equation::evaluate(double* result) {
 					return false;
 				}
 				double argv[funcpair.second] = {0};
-				for (int i = 0; i < funcpair.second; i++) {
-					argv[i] = stack.back();
+				for (int i = funcpair.second; i > 0; i--) {
+					argv[i - 1] = stack.back();
 					stack.pop_back();
 				}
 				double result = funcpair.first(argv);
@@ -250,7 +240,23 @@ double equations::mfunc_1_atan(double* argv) {
 	return atan(argv[0]);
 }
 
+void equations::set_vmap_default(var_map* varmap) {
+	varmap->emplace(string("pi"), mvar_pi);
+	varmap->emplace(string("e"), mvar_e);
+}
 
+void equations::set_fmap_default(func_map* funcmap) {
+	funcmap->emplace(string("sqrt"), make_pair(mfunc_1_sqrt, 1));
+	funcmap->emplace(string("pow"), make_pair(mfunc_2_pow, 2));
+	funcmap->emplace(string("max"), make_pair(mfunc_2_max, 2));
+	funcmap->emplace(string("min"), make_pair(mfunc_2_min, 2));
+	funcmap->emplace(string("sin"), make_pair(mfunc_1_sin, 1));
+	funcmap->emplace(string("cos"), make_pair(mfunc_1_cos, 1));
+	funcmap->emplace(string("tan"), make_pair(mfunc_1_tan, 1));
+	funcmap->emplace(string("asin"), make_pair(mfunc_1_asin, 1));
+	funcmap->emplace(string("acos"), make_pair(mfunc_1_acos, 1));
+	funcmap->emplace(string("atan"), make_pair(mfunc_1_atan, 1));
+}
 
 bool equations::infix2rpn(eq_vec* infix, eq_vec* rpnbuf) {
 

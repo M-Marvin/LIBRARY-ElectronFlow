@@ -23,6 +23,7 @@ public:
 	~CircuitContainer();
 	bool parseCircuit(char* netList);
 	bool linkNodes();
+	void setvfmaps(var_map* varmap, func_map* funcmap);
 
 	vector<NODE_t*> nodes;
 	vector<Element*> elements;

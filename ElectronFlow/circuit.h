@@ -31,14 +31,17 @@ public:
 	virtual ~Element();
 
 	bool linkNodes(NODE* nodeArray, size_t nodesLen);
-	virtual void step(double nodeCapacity, double timestep);
+	virtual double step(double nodeCapacity, double timestep);
 	virtual bool calc();
+	virtual void setvfmaps(var_map* varmap, func_map* funcmap);
 
 	char* name;
 	char* node1name;
 	char* node2name;
 	NODE node1;
 	NODE node2;
+	double cTlast;
+	double cTnow;
 
 };
 
@@ -48,8 +51,9 @@ public:
 	Resistor(const char* name, const char* node1name, const char* node2name, equation* value);
 	~Resistor();
 
-	void step(double nodeCapacity, double timestep);
+	double step(double nodeCapacity, double timestep);
 	bool calc();
+	void setvfmaps(var_map* varmap, func_map* funcmap);
 
 	equation* resistanceEq;
 	double resistance;
@@ -62,8 +66,9 @@ public:
 	VoltageSource(const char* name, const char* node1name, const char* node2name, equation* value);
 	~VoltageSource();
 
-	void step(double nodeCapacity, double timestep);
+	double step(double nodeCapacity, double timestep);
 	bool calc();
+	void setvfmaps(var_map* varmap, func_map* funcmap);
 
 	equation* voltageEq;
 	double voltage;

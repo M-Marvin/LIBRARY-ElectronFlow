@@ -20,7 +20,8 @@ public:
 
 	bool loadNetList(char* netList);
 	bool loadAndRunNetList(char* netList);
-	void stepSimulation(double nodeCapacity, double timestep, int steps);
+	bool stepStableSimulation(double nodeCapacity, double timestep, double timeout);
+	bool stepSimulation(double nodeCapacity, double timestep, double simulateTime);
 	void printNodeVoltages(const char* refNodeName);
 	void controllCommand(int argc, char** argv);
 

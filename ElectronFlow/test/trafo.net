@@ -1,0 +1,17 @@
+trafo circuit
+
+V1 tn1 gnd 10
+R1s tn1 vdc1 1m
+
+R2 vdc1 gnd max(V(vdc1,gnd)/max(V(tn2,vdc2)/1m,1m),1m)
+R2i gnd gnd2 1m
+# -- isolated --
+V2 tn2 gnd2 10*V(vdc1,gnd)
+#20*V(vdc1,gnd)
+R2s tn2 vdc2 1m
+
+R4 vdc2 gnd2 1
+
+.step 2m 600 30
+# .step_stable 1m 10 999
+.printv gnd

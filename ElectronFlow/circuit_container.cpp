@@ -43,6 +43,12 @@ bool CircuitContainer::linkNodes() {
 	return true;
 }
 
+void CircuitContainer::setvfmaps(var_map* varmap, func_map* funcmap) {
+	for (Element* element : CircuitContainer::elements) {
+		element->setvfmaps(varmap, funcmap);
+	}
+}
+
 NODE_t* CircuitContainer::parseNode(const char* nodeName) {
 	if (nodeName == 0) {
 		printf("invalid component, node == null!\n");
