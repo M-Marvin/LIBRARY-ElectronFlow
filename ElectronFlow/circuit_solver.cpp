@@ -39,34 +39,24 @@ SourceSolver::SourceSolver(CircuitContainer* circuit) {
 
 SourceSolver::~SourceSolver() {}
 
-int t = 0;
-
 void SourceSolver::reset() {
 	for (NODE node : SourceSolver::circuit->nodes) {
 		SourceSolver::varmap[string(node->name)] = 2.0;
 	}
 	SourceSolver::simtime = 0;
 	SourceSolver::lastCtChange = 0;
-	t = 0;
 }
 
 bool SourceSolver::step(double* timestep) {
 
 	// Solve equations
 	if (SourceSolver::lastCtChange < SourceSolver::nodeCapacity * CT_STABLE_LIMIT) {
-//		if (t < 20) {
-//			t++;
-			//printf("ttttttttttttttttttttttttt\n");
-			for (Element* element : SourceSolver::circuit->elements) {
-				if (!element->calc()) {
-					printf("failed to calculate component: %s\n", element->name);
-					return false;
-				}
+		for (Element* element : SourceSolver::circuit->elements) {
+			if (!element->calc()) {
+				printf("failed to calculate component: %s\n", element->name);
+				return false;
 			}
-//		}else {
-//			printf("TT");
-//		}
-
+		}
 		SourceSolver::simtime += *timestep;
 	}
 
@@ -97,8 +87,6 @@ bool SourceSolver::step(double* timestep) {
 	}
 	SourceSolver::lastCtChange /= SourceSolver::circuit->elements.size();
 
-	//printf("cTchange = %f\n", SourceSolver::lastCtChange);
-
 	// Copy node charges
 	for (NODE node : SourceSolver::circuit->nodes) {
 		if (!isfinite(node->charge)) {
@@ -107,19 +95,6 @@ bool SourceSolver::step(double* timestep) {
 		}
 		SourceSolver::varmap[string(node->name)] = node->charge;
 	}
-
-//	double ground = 0;
-//	for (NODE node : circuit->nodes) {
-//		if (strcmp(node->name, "gnd") == 0) {
-//			ground = node->charge / nodeCapacity;
-//			break;
-//		}
-//	}
-//
-//	for (NODE node : circuit->nodes) {
-//		double v = node->charge / nodeCapacity - ground;
-//		printf("node %s v: %f\n", node->name, v);
-//	}
 
 	return true;
 }

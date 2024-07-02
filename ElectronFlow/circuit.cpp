@@ -25,6 +25,8 @@ Element::Element(const char* name, const char* node1name, const char* node2name)
 	strcpy(Element::node2name, node2name);
 	Element::node1 = 0;
 	Element::node2 = 0;
+	Element::cTlast = 0;
+	Element::cTnow = 0;
 }
 
 Element::~Element() {
@@ -81,8 +83,6 @@ double Resistor::step(double nodeCapacity, double timestep) {
 	Element::cTlast = Element::cTnow;
 	Element::cTnow = i * timestep;
 
-	//printf("%s resistance %f Ct = %f\n", name, Resistor::resistance, Element::cTnow);
-
 	if (Element::cTnow > abs(cDiff / 2)) {
 		return (cDiff / 2) / i;
 	}
@@ -111,25 +111,13 @@ void VoltageSource::setvfmaps(var_map* varmap, func_map* funcmap) {
 }
 
 double VoltageSource::step(double nodeCapacity, double timestep) {
-	//VoltageSource::voltage = 5;
 	double vNodes = (VoltageSource::node1->charge / nodeCapacity) - (VoltageSource::node2->charge / nodeCapacity);
 	double v = VoltageSource::voltage - vNodes;
 	Element::cTlast = Element::cTnow;
 
-
-	if (VoltageSource::voltage > 0) { //  && v > 0
-		Element::cTnow = v * nodeCapacity * 0.5; // (v > 1 ? 1 : v)
-		//printf("%s voltage %f -> %f Ct = %f\n", name, vNodes, VoltageSource::voltage, Element::cTnow);
-		//double cTransfer = min(abs(v * nodeCapacity * 0.5), nodeCapacity) * (v > 0 ? 1 : -1); // TODO
-		VoltageSource::node1->charge += Element::cTnow;
-		VoltageSource::node2->charge -= Element::cTnow;
-	} else if (VoltageSource::voltage < 0) { //  && v < 0
-		Element::cTnow = v * nodeCapacity * 0.5; // (v < -1 ? -1 : v)
-		//printf("%s voltage %f -> %f Ct = %f\n", name, vNodes, VoltageSource::voltage, Element::cTnow);
-		//double cTransfer = min(abs(v * nodeCapacity * 0.5), nodeCapacity) * (v > 0 ? 1 : -1); // TODO
-		VoltageSource::node1->charge += Element::cTnow;
-		VoltageSource::node2->charge -= Element::cTnow;
-	}
+	Element::cTnow = v * nodeCapacity * 0.5;
+	VoltageSource::node1->charge += Element::cTnow;
+	VoltageSource::node2->charge -= Element::cTnow;
 
 	return timestep;
 }

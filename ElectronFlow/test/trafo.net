@@ -13,5 +13,6 @@ R2s tn2 vdc2 1m
 R4 vdc2 gnd2 1
 
 .step 2m 600 30
+# .step 2m 600 30
 # .step_stable 1m 10 999
 .printv gnd
