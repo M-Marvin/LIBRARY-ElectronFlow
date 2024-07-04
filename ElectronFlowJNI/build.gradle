@@ -1,0 +1,50 @@
+
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+group = 'com.github.M-Marvin'
+version = '0.1'
+
+repositories {
+	mavenCentral()
+	maven { url 'https://jitpack.io' }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+java {
+	sourceCompatibility = "1.17"
+	targetCompatibility = "1.17"
+    withSourcesJar()
+}
+
+dependencies {
+	
+	// ArchiveUtility
+	api 'com.github.M-Marvin:LIBRARY-ArchiveUtility:v2.0'
+	
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+			from components.java
+        }
+    }
+}
+
+// Specify gradle version to use for jitpack
+wrapper {
+    gradleVersion = "7.4.2"
+    distributionType = Wrapper.DistributionType.ALL
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Version': version
+        attributes 'Implementation-Title': project.name
+        attributes 'Implementation-Vendor-Id': 'de.m_marvin'
+    }
+}

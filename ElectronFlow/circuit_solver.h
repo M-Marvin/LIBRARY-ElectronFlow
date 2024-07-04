@@ -19,6 +19,7 @@ public:
 	SourceSolver(CircuitContainer* circuit);
 	~SourceSolver();
 
+	void setCallback(void (*step_callback) (double, NODE*, size_t, double));
 	void reset();
 	bool step(double* timestep);
 	double nodeCapacity = 0;
@@ -28,6 +29,7 @@ public:
 private:
 	var_map varmap;
 	func_map funcmap;
+	void (*step_callback) (double, NODE*, size_t, double);
 	CircuitContainer* circuit;
 
 };

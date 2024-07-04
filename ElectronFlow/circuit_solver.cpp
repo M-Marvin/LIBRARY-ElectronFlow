@@ -24,6 +24,7 @@ SourceSolver::SourceSolver(CircuitContainer* circuit) {
 	SourceSolver::circuit = circuit;
 	SourceSolver::varmap = var_map();
 	SourceSolver::funcmap = func_map();
+	SourceSolver::step_callback = 0;
 	SourceSolver::simtime = 0;
 
 	equations::set_fmap_default(&funcmap);
@@ -38,6 +39,10 @@ SourceSolver::SourceSolver(CircuitContainer* circuit) {
 }
 
 SourceSolver::~SourceSolver() {}
+
+void SourceSolver::setCallback(void (*step_callback) (double, NODE*, size_t, double)) {
+	SourceSolver::step_callback = step_callback;
+}
 
 void SourceSolver::reset() {
 	for (NODE node : SourceSolver::circuit->nodes) {
@@ -58,6 +63,8 @@ bool SourceSolver::step(double* timestep) {
 			}
 		}
 		SourceSolver::simtime += *timestep;
+
+		if (SourceSolver::step_callback != 0) SourceSolver::step_callback(SourceSolver::simtime, SourceSolver::circuit->nodes.data(), SourceSolver::circuit->nodes.size(), SourceSolver::nodeCapacity);
 	}
 
 	// Step elements

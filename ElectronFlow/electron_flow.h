@@ -18,9 +18,9 @@ public:
 	ElectronFlow();
 	~ElectronFlow();
 
+	void setCallbacks(void (*step_callback) (double, NODE*, size_t, double), void (*final_callback) (NODE*, size_t, double));
 	bool loadNetList(char* netList);
 	bool loadAndRunNetList(char* netList);
-	bool stepStableSimulation(double nodeCapacity, double timestep, double timeout);
 	bool stepSimulation(double nodeCapacity, double timestep, double simulateTime);
 	void printNodeVoltages(const char* refNodeName);
 	void controllCommand(int argc, char** argv);
@@ -28,6 +28,8 @@ public:
 private:
 	CircuitContainer* circuit;
 	SourceSolver* solver;
+	void (*final_callback) (NODE*, size_t, double);
+	void (*step_callback) (double, NODE*, size_t, double);
 
 };
 
