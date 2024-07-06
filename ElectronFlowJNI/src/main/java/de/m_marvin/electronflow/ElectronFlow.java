@@ -18,7 +18,7 @@ public class ElectronFlow extends NativeElectronFlow {
 		setCallbacks_n(stepCallback, finalCallback);
 	}
 	public boolean loadNetList(String netList) {
-		return loadNetList(netList);
+		return loadNetList_n(netList);
 	}
 	public boolean loadAndRunNetList(String netList) {
 		return loadAndRunNetList_n(netList);

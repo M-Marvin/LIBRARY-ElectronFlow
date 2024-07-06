@@ -19,7 +19,7 @@ public class NativeElectronFlow {
 			this.charge = charge;
 		}
 		
-		public String name;
+		public final String name;
 		public double charge;
 	}
 	
