@@ -8,7 +8,7 @@
 #ifndef CIRCUIT_H_
 #define CIRCUIT_H_
 
-#define NODE_NAME_LENGTH 16
+#define NODE_NAME_LENGTH 64
 
 #include <stdint.h>
 #include "equations.h"

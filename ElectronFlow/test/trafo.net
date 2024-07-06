@@ -1,18 +1,11 @@
-trafo circuit
+ingame-level-circuit
 
-V1 tn1 gnd 10
-R1s tn1 vdc1 1m
+#* Component Block{industriacore:power_source} BlockPos{x=1, y=-60, z=-4}
 
-R2 vdc1 gnd max(V(vdc1,gnd)/max(V(tn2,vdc2)/1m,1m),1m)
-R2i gnd gnd2 1m
-# -- isolated --
-V2 tn2 gnd2 10*V(vdc1,gnd)
-#20*V(vdc1,gnd)
-R2s tn2 vdc2 1m
+#* Power limited voltage source [ p_maxmimum=400, v_nominal=230 ]
+V1_0 node|pos1_-60_-4_id0_lid2_lnmpower_shunt| node|pos1_-60_-4_id0_lid1_lnmn| 230 400
+R1_0 node|pos1_-60_-4_id0_lid2_lnmpower_shunt| node|pos1_-60_-4_id0_lid0_lnml| 0.001
 
-R4 vdc2 gnd2 1
-
+R0GND node|pos1_-60_-4_id0_lid0_lnml| 0 1
 .step 2m 600 30
-# .step 2m 600 30
-# .step_stable 1m 10 999
-.printv gnd
+#.end

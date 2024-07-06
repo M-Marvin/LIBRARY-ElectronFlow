@@ -37,7 +37,14 @@ public class ElectronFlowTest {
 			reader.close();
 			String netlist = sb.toString();
 			
-			nef.loadAndRunNetList(netlist);
+			nef.loadNetList(netlist);
+			
+			nef.controllCommand("step 2m 600 30");
+			
+			nef.loadNetList(netlist);
+			
+			nef.controllCommand("step 2m 600 30");
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -51,7 +51,11 @@ void CircuitContainer::setvfmaps(var_map* varmap, func_map* funcmap) {
 
 NODE_t* CircuitContainer::parseNode(const char* nodeName) {
 	if (nodeName == 0) {
-		printf("invalid component, node == null!\n");
+		printf("invalid nodename, node == null!\n");
+		return 0;
+	}
+	if (strlen(nodeName) > NODE_NAME_LENGTH) {
+		printf("invalid nodename, %s len > %d!\n", nodeName, NODE_NAME_LENGTH);
 		return 0;
 	}
 
@@ -89,7 +93,8 @@ bool CircuitContainer::parseCircuit(char* netList) {
 		char* tokptrl;
 
 		switch (*line) {
-		case '#': break; // # = Comment
+		case '#':
+		case '*': break; // # and * = Comment
 		case '.': {
 
 			// Copy command line into command vector
@@ -126,12 +131,10 @@ bool CircuitContainer::parseCircuit(char* netList) {
 
 			switch (*elementName) {
 			case 'R': {
-				//printf("resistor between '%s' and '%s' with value '%fOhm'\n", node1->name, node2->name, value);
 				CircuitContainer::elements.push_back(new Resistor(elementName, node1->name, node2->name, value));
 				break;
 			}
 			case 'V': {
-				//printf("voltage source between '%s' and '%s' with value '%fV'\n", node1->name, node2->name, value);
 				CircuitContainer::elements.push_back(new VoltageSource(elementName, node1->name, node2->name, value));
 				break;
 			}

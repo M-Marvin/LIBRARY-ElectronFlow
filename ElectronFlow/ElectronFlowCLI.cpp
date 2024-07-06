@@ -30,6 +30,8 @@ void nodeDataCallbackFinal(NODE* nodes, size_t nodec, double nodecharge) {
 
 int main(int argc, const char **argv) {
 
+	setvbuf(stdout, NULL, _IONBF, 0);
+
 	if (argc == 1) {
 		printf("\t-f\tinput file\n");
 		printf("\t-o\toutput file\n");
