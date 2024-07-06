@@ -40,7 +40,7 @@ SourceSolver::SourceSolver(CircuitContainer* circuit) {
 
 SourceSolver::~SourceSolver() {}
 
-void SourceSolver::setCallback(void (*step_callback) (double, NODE*, size_t, double)) {
+void SourceSolver::setCallback(function<void(double, NODE*, size_t, double)> step_callback) {
 	SourceSolver::step_callback = step_callback;
 }
 

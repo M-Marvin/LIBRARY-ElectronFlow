@@ -16,6 +16,7 @@
 		<pathentry base-path="ElectronFlow" include="" kind="inc" path="" system="true"/>
 		<pathentry base-path="ElectronFlowJNI" include="build/generated/sources/headers/java/main" kind="inc" path="" system="true"/>
 		<pathentry include="C:/Program Files/Java/jdk-17.0.10+7/include" kind="inc" path="" system="true"/>
+		<pathentry include="C:/Program Files/Java/jdk-17.0.10+7/include/win32" kind="inc" path="" system="true"/>
 		<pathentry kind="src" path=""/>
 		<pathentry kind="out" path=""/>
 	</storageModule>

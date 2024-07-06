@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 using namespace electronflow;
+using namespace std;
 
 ElectronFlow::ElectronFlow() {
 	ElectronFlow::circuit = 0;
@@ -26,7 +27,14 @@ ElectronFlow::~ElectronFlow() {
 	ElectronFlow::solver = 0;
 }
 
-void ElectronFlow::setCallbacks(void (*step_callback) (double, NODE*, size_t, double), void (*final_callback) (NODE*, size_t, double)) {
+void ElectronFlow::printVersionInfo() {
+	printf("===============\n");
+	printf(" electron flow\n");
+	printf(" v%s\n", VERSION_STR);
+	printf("===============\n");
+}
+
+void ElectronFlow::setCallbacks(function<void(double, NODE*, size_t, double)> step_callback, function<void(NODE*, size_t, double)> final_callback) {
 	ElectronFlow::step_callback = step_callback;
 	ElectronFlow::final_callback = final_callback;
 }
@@ -49,8 +57,8 @@ bool ElectronFlow::loadAndRunNetList(char* netList) {
 	for (char* line : ElectronFlow::circuit->commands) {
 
 		// Parse command
-		vector<char*> args = vector<char*>();
-		char* arg = strtok(line, " ");
+		vector<const char*> args = vector<const char*>();
+		const char* arg = strtok(line, " ");
 		do {
 			args.push_back(arg);
 		} while ((arg = strtok(NULL, " ")) != 0);
@@ -104,10 +112,9 @@ void ElectronFlow::printNodeVoltages(const char* refNodeName) {
 		double v = node->charge / ElectronFlow::solver->nodeCapacity - ground;
 		printf("node %s v: %f\n", node->name, v);
 	}
-
 }
 
-void ElectronFlow::controllCommand(int argc, char** argv) {
+void ElectronFlow::controllCommand(int argc, const char** argv) {
 	if (argc == 0) return;
 
 	printf("[>] run %s\n", argv[0]);
@@ -141,11 +148,10 @@ void ElectronFlow::controllCommand(int argc, char** argv) {
 			return;
 		}
 
-		char* refNodeName = argv[1];
+		const char* refNodeName = argv[1];
 
 		printNodeVoltages(refNodeName);
 	} else {
 		printf("[!] unknown command '%s'\n", argv[0]);
 	}
-
 }

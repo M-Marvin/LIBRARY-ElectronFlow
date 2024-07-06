@@ -22,9 +22,6 @@ java {
 
 dependencies {
 	
-	// ArchiveUtility
-	api 'com.github.M-Marvin:LIBRARY-ArchiveUtility:v2.0'
-	
 }
 
 publishing {

@@ -18,18 +18,19 @@ public:
 	ElectronFlow();
 	~ElectronFlow();
 
-	void setCallbacks(void (*step_callback) (double, NODE*, size_t, double), void (*final_callback) (NODE*, size_t, double));
+	void setCallbacks(function<void(double, NODE*, size_t, double)> step_callback, function<void(NODE*, size_t, double)> final_callback);
 	bool loadNetList(char* netList);
 	bool loadAndRunNetList(char* netList);
 	bool stepSimulation(double nodeCapacity, double timestep, double simulateTime);
 	void printNodeVoltages(const char* refNodeName);
-	void controllCommand(int argc, char** argv);
+	void controllCommand(int argc, const char** argv);
+	void printVersionInfo();
 
 private:
 	CircuitContainer* circuit;
 	SourceSolver* solver;
-	void (*final_callback) (NODE*, size_t, double);
-	void (*step_callback) (double, NODE*, size_t, double);
+	std::function<void(double, NODE*, size_t, double)> step_callback;
+	std::function<void(NODE*, size_t, double)> final_callback;
 
 };
 

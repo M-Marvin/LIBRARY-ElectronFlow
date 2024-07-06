@@ -10,6 +10,7 @@
 
 #include "circuit_container.h"
 #include "equations.h"
+#include <functional>
 
 namespace electronflow {
 
@@ -19,7 +20,7 @@ public:
 	SourceSolver(CircuitContainer* circuit);
 	~SourceSolver();
 
-	void setCallback(void (*step_callback) (double, NODE*, size_t, double));
+	void setCallback(std::function<void(double, NODE*, size_t, double)> step_callback);
 	void reset();
 	bool step(double* timestep);
 	double nodeCapacity = 0;
@@ -29,7 +30,7 @@ public:
 private:
 	var_map varmap;
 	func_map funcmap;
-	void (*step_callback) (double, NODE*, size_t, double);
+	std::function<void(double, NODE*, size_t, double)> step_callback;
 	CircuitContainer* circuit;
 
 };

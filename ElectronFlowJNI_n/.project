@@ -3,6 +3,7 @@
 	<name>ElectronFlowJNI_n</name>
 	<comment></comment>
 	<projects>
+		<project>ElectronFlow</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -28,7 +28,7 @@ void nodeDataCallbackFinal(NODE* nodes, size_t nodec, double nodecharge) {
 	}
 }
 
-int main(int argc, char **argv) {
+int main(int argc, const char **argv) {
 
 	if (argc == 1) {
 		printf("\t-f\tinput file\n");
@@ -39,8 +39,8 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	char* filePath = 0;
-	char* dataFilePath = 0;
+	const char* filePath = 0;
+	const char* dataFilePath = 0;
 	bool runFileCommand = false;
 	bool recordNodeHistory = false;
 
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 	printf("run cli commands\n");
 
 	// Run CLI commands
-	char** clicmd = 0;
+	const char** clicmd = 0;
 	int cliargc = 0;
 	for (int i = 0; i < argc; i++) {
 		cliargc++;
