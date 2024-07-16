@@ -1,0 +1,43 @@
+ingame-level-circuit
+
+* Component Block{industria:portable_fuel_generator} BlockPos{x=5, y=-60, z=8}
+
+* Power limited voltage source [ p_maxmimum=2000, v_nominal=230 ]
+V1_19 node|pos5_-60_8_id0_lid2_lnmpower_shunt| node|pos5_-60_8_id0_lid1_lnmn| 230 2000
+R2_19 node|pos5_-60_8_id0_lid2_lnmpower_shunt| node|pos5_-60_8_id0_lid0_lnml| 0.001
+
+* Component Conduit{industria:insulated_copper_wire} ConduitPos{A=NodePos{block=[10 -60 8],node=2},B=NodePos{block=[5 -60 8],node=0}}
+
+* Simple resistor for different applications [ r=0.005 ]
+R1_20 node|pos10_-60_8_id2_lid0_lnml| node|pos5_-60_8_id0_lid0_lnml| 0.005
+
+* Simple resistor for different applications [ r=0.005 ]
+R1_21 node|pos10_-60_8_id2_lid1_lnmn| node|pos5_-60_8_id0_lid1_lnmn| 0.005
+
+* Simple resistor for different applications [ r=0.005 ]
+R1_22 node|pos10_-60_8_id2_lid2_lnm| node|pos5_-60_8_id0_lid2_lnm| 0.005
+
+* Simple resistor for different applications [ r=0.005 ]
+R1_23 node|pos10_-60_8_id2_lid3_lnm| node|pos5_-60_8_id0_lid3_lnm| 0.005
+
+* Simple resistor for different applications [ r=0.005 ]
+R1_24 node|pos10_-60_8_id2_lid4_lnm| node|pos5_-60_8_id0_lid4_lnm| 0.005
+
+* Simple resistor for different applications [ r=0.005 ]
+R1_25 node|pos10_-60_8_id2_lid5_lnm| node|pos5_-60_8_id0_lid5_lnm| 0.005
+
+* Component Block{industria:brass_floodlight} BlockPos{x=10, y=-60, z=8}
+
+* Junction resistor [ r_fixed=0.015 ]
+R1_26 node|pos10_-60_8_id2_lid0_lnml| node|pos10_-60_8_id0_lid0_lnml| 0.015
+
+* Junction resistor [ r_fixed=0.015 ]
+R1_27 node|pos10_-60_8_id2_lid1_lnmn| node|pos10_-60_8_id0_lid1_lnmn| 0.015
+
+* Load-Resistor with fixed power consumption [ power_nominal=N/A ]
+R1_28 node|pos10_-60_8_id0_lid0_lnml| node|pos10_-60_8_id0_lid1_lnmn| 100
+
+R0GND node|pos10_-60_8_id2_lid0_lnml| 0 1
+.end
+.step 2u 6m 1m
+.printv node|pos10_-60_8_id0_lid1_lnmn|

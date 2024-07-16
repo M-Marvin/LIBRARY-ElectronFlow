@@ -485,8 +485,9 @@ bool equations::strtonum(const char* numberStr, double* value) {
 
 	double factor;
 	switch (*factorStr) {
-	case 'p': factor = 1E-9; break;
-	case 'n': factor = 1E-6; break;
+	case 'p': factor = 1E-12; break;
+	case 'n': factor = 1E-9; break;
+	case 'u': factor = 1E-6; break;
 	case 'm': factor = 1E-3; break;
 	case 'k': factor = 1E+3; break;
 	case 'M': factor = 1E+6; break;
