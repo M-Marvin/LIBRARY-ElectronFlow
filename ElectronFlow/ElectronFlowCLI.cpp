@@ -10,20 +10,27 @@ using namespace electronflow;
 ofstream dataOut = 0;
 
 // Data callback
-void nodeDataCallback(double simtime, NODE* nodes, size_t nodec, double nodecharge) {
+void nodeDataCallback(double simtime, NODE* nodes, size_t nodec, Element** elements, size_t elementc, double nodecharge, double timestep) {
 	if (dataOut.is_open()) {
+		dataOut << "T\t" << simtime << endl;
 		for (size_t i = 0; i < nodec; i++) {
-			dataOut << nodes[i]->name << "\t" << simtime << "\t" << (nodes[i]->charge / nodecharge) << endl;
+			dataOut << "V\t" << nodes[i]->name <<"\t" << (nodes[i]->charge / nodecharge) << endl;
+		}
+		for (size_t i = 0; i < elementc; i++) {
+			dataOut << "I\t" << elements[i]->name << "\t" << (elements[i]->cTnow / timestep) << endl;
 		}
 	}
 }
 
 // Data callback
-void nodeDataCallbackFinal(NODE* nodes, size_t nodec, double nodecharge) {
+void nodeDataCallbackFinal(NODE* nodes, size_t nodec, Element** elements, size_t elementc, double nodecharge, double timestep) {
 	if (dataOut.is_open()) {
 		dataOut << "== final data ==" << endl;
 		for (size_t i = 0; i < nodec; i++) {
-			dataOut << nodes[i]->name << "\t" << (nodes[i]->charge / nodecharge) << endl;
+			dataOut << "V\t" << nodes[i]->name <<"\t" << (nodes[i]->charge / nodecharge) << endl;
+		}
+		for (size_t i = 0; i < elementc; i++) {
+			dataOut << "I\t" << elements[i]->name << "\t" << (elements[i]->cTnow / timestep) << endl;
 		}
 	}
 }

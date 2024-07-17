@@ -116,8 +116,16 @@ double VoltageSource::step(double nodeCapacity, double timestep) {
 	Element::cTlast = Element::cTnow;
 
 	Element::cTnow = v * nodeCapacity * 0.5;
-	VoltageSource::node1->charge += Element::cTnow;
-	VoltageSource::node2->charge -= Element::cTnow;
+
+	if (Element::cTnow >= 0) {
+		double diff = max(Element::cTnow - VoltageSource::node2->charge, 0.0);
+		VoltageSource::node1->charge += Element::cTnow + diff;
+		VoltageSource::node2->charge -= Element::cTnow - diff;
+	} else {
+		double diff = max(-Element::cTnow - VoltageSource::node1->charge, 0.0);
+		VoltageSource::node1->charge += Element::cTnow + diff;
+		VoltageSource::node2->charge -= Element::cTnow - diff;
+	}
 
 	return timestep;
 }

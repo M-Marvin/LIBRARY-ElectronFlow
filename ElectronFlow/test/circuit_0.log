@@ -1,1 +1,5 @@
-Fatal Error: Syntax error in .STEP command.
+Circuit: ingame-level-circuit
+
+Error on line 4 : v1_103 node|pos5_-60_8_id0_lid2_lnmpower_shunt| node|pos5_-60_8_id0_lid1_lnmn| 230 2000
+	 Unknown parameter "2000"
+Fatal Error: No analysis request found.

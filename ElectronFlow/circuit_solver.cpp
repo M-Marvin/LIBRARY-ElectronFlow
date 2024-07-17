@@ -40,7 +40,7 @@ SourceSolver::SourceSolver(CircuitContainer* circuit) {
 
 SourceSolver::~SourceSolver() {}
 
-void SourceSolver::setCallback(function<void(double, NODE*, size_t, double)> step_callback) {
+void SourceSolver::setCallback(function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback) {
 	SourceSolver::step_callback = step_callback;
 }
 
@@ -53,19 +53,6 @@ void SourceSolver::reset() {
 }
 
 bool SourceSolver::step(double* timestep) {
-
-	// Solve equations
-	if (SourceSolver::lastCtChange < SourceSolver::nodeCapacity * CT_STABLE_LIMIT) {
-		for (Element* element : SourceSolver::circuit->elements) {
-			if (!element->calc()) {
-				printf("failed to calculate component: %s\n", element->name);
-				return false;
-			}
-		}
-		SourceSolver::simtime += *timestep;
-
-		if (SourceSolver::step_callback != 0) SourceSolver::step_callback(SourceSolver::simtime, SourceSolver::circuit->nodes.data(), SourceSolver::circuit->nodes.size(), SourceSolver::nodeCapacity);
-	}
 
 	// Step elements
 	SourceSolver::lastCtChange = 0;
@@ -101,6 +88,24 @@ bool SourceSolver::step(double* timestep) {
 			return false;
 		}
 		SourceSolver::varmap[string(node->name)] = node->charge;
+	}
+
+	// Solve equations
+	if (SourceSolver::lastCtChange < SourceSolver::nodeCapacity * CT_STABLE_LIMIT) {
+		for (Element* element : SourceSolver::circuit->elements) {
+			if (!element->calc()) {
+				printf("failed to calculate component: %s\n", element->name);
+				return false;
+			}
+		}
+		SourceSolver::simtime += *timestep;
+
+		if (SourceSolver::step_callback != 0)
+			SourceSolver::step_callback(
+					SourceSolver::simtime,
+					SourceSolver::circuit->nodes.data(), SourceSolver::circuit->nodes.size(),
+					SourceSolver::circuit->elements.data(), SourceSolver::circuit->elements.size(),
+					SourceSolver::nodeCapacity, *timestep);
 	}
 
 	return true;

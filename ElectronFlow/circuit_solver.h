@@ -20,7 +20,7 @@ public:
 	SourceSolver(CircuitContainer* circuit);
 	~SourceSolver();
 
-	void setCallback(std::function<void(double, NODE*, size_t, double)> step_callback);
+	void setCallback(std::function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback);
 	void reset();
 	bool step(double* timestep);
 	double nodeCapacity = 0;
@@ -30,7 +30,7 @@ public:
 private:
 	var_map varmap;
 	func_map funcmap;
-	std::function<void(double, NODE*, size_t, double)> step_callback;
+	std::function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback;
 	CircuitContainer* circuit;
 
 };

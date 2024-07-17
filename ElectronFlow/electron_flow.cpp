@@ -34,7 +34,7 @@ void ElectronFlow::printVersionInfo() {
 	printf("===============\n");
 }
 
-void ElectronFlow::setCallbacks(function<void(double, NODE*, size_t, double)> step_callback, function<void(NODE*, size_t, double)> final_callback) {
+void ElectronFlow::setCallbacks(function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback, function<void(NODE*, size_t, Element**, size_t, double, double)> final_callback) {
 	ElectronFlow::step_callback = step_callback;
 	ElectronFlow::final_callback = final_callback;
 }
@@ -86,7 +86,11 @@ bool ElectronFlow::stepSimulation(double nodeCapacity, double timestep, double s
 		}
 	}
 
-	if (ElectronFlow::final_callback != 0) ElectronFlow::final_callback(ElectronFlow::circuit->nodes.data(), ElectronFlow::circuit->nodes.size(), ElectronFlow::solver->nodeCapacity);
+	if (ElectronFlow::final_callback != 0)
+		ElectronFlow::final_callback(
+				ElectronFlow::circuit->nodes.data(), ElectronFlow::circuit->nodes.size(),
+				ElectronFlow::circuit->elements.data(), ElectronFlow::circuit->elements.size(),
+				ElectronFlow::solver->nodeCapacity, timestep);
 
 	printf("done\n");
 	return true;

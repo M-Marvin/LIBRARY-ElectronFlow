@@ -11,12 +11,17 @@
 #define J_NODE_CONSTRUCTOR_SIG "(Ljava/lang/String;D)V"
 #define J_NODE_CHARGE_FIELD "charge"
 #define J_NODE_CHARGE_FIELD_SIG "D"
+#define J_ELEMENT_CLASS "de/m_marvin/electronflow/NativeElectronFlow$Element"
+#define J_ELEMENT_CONSTRUCTOR "<init>"
+#define J_ELEMENT_CONSTRUCTOR_SIG "(Ljava/lang/String;D)V"
+#define J_ELEMENT_CHARGE_FIELD "transferCharge"
+#define J_ELEMENT_CHARGE_FIELD_SIG "D"
 #define J_STEP_CALLBACK_INTERFACE "de/m_marvin/electronflow/NativeElectronFlow$StepCallback"
 #define J_STEP_CALLBACK_METHOD "stepData"
-#define J_STEP_CALLBACK_METHOD_SIG "(D[Lde/m_marvin/electronflow/NativeElectronFlow$Node;D)V"
+#define J_STEP_CALLBACK_METHOD_SIG "(D[Lde/m_marvin/electronflow/NativeElectronFlow$Node;[Lde/m_marvin/electronflow/NativeElectronFlow$Element;DD)V"
 #define J_FINAL_CALLBACK_INTERFACE "de/m_marvin/electronflow/NativeElectronFlow$FinalCallback"
 #define J_FINAL_CALLBACK_METHOD "finalData"
-#define J_FINAL_CALLBACK_METHOD_SIG "([Lde/m_marvin/electronflow/NativeElectronFlow$Node;D)V"
+#define J_FINAL_CALLBACK_METHOD_SIG "([Lde/m_marvin/electronflow/NativeElectronFlow$Node;[Lde/m_marvin/electronflow/NativeElectronFlow$Element;DD)V"
 
 using namespace electronflow;
 
@@ -24,10 +29,14 @@ map<jint, ElectronFlow*> instance_map = map<jint, ElectronFlow*>();
 map<jint, jobject> step_callback_map = map<jint, jobject>();
 map<jint, jobject> final_callback_map = map<jint, jobject>();
 map<jint, jobjectArray> node_array_cache_map = map<jint, jobjectArray>();
+map<jint, jobjectArray> element_array_cache_map = map<jint, jobjectArray>();
 
 jclass j_node_class = 0;
 jmethodID j_node_constructor = 0;
 jfieldID j_node_charge_field = 0;
+jclass j_element_class = 0;
+jmethodID j_element_constructor = 0;
+jfieldID j_element_charge_field = 0;
 jclass j_step_callback_interface = 0;
 jmethodID j_step_callback_method = 0;
 jclass j_final_callback_interface = 0;
@@ -63,6 +72,23 @@ JNI_OnLoad(JavaVM *vm, void *reserved) {
 	j_node_charge_field = env->GetFieldID(j_node_class, J_NODE_CHARGE_FIELD, J_NODE_CHARGE_FIELD_SIG);
 	if (j_node_constructor == NULL) {
 		printf("failed to locate node charge field: %s %s\n", J_NODE_CHARGE_FIELD, J_NODE_CHARGE_FIELD_SIG);
+		return -1;
+	}
+
+	// Get Element class, constructor and charge field
+	j_element_class = (jclass) env->NewGlobalRef(env->FindClass(J_ELEMENT_CLASS));
+	if (j_element_class == NULL) {
+		printf("failed to locate element class: %s\n", J_ELEMENT_CLASS);
+		return -1;
+	}
+	j_element_constructor = env->GetMethodID(j_element_class, J_ELEMENT_CONSTRUCTOR, J_ELEMENT_CONSTRUCTOR_SIG);
+	if (j_element_constructor == NULL) {
+		printf("failed to locate element constructor: %s %s\n", J_ELEMENT_CONSTRUCTOR, J_ELEMENT_CONSTRUCTOR_SIG);
+		return -1;
+	}
+	j_element_charge_field = env->GetFieldID(j_element_class, J_ELEMENT_CHARGE_FIELD, J_ELEMENT_CHARGE_FIELD_SIG);
+	if (j_element_constructor == NULL) {
+		printf("failed to locate element charge field: %s %s\n", J_ELEMENT_CHARGE_FIELD, J_ELEMENT_CHARGE_FIELD_SIG);
 		return -1;
 	}
 
@@ -137,6 +163,11 @@ JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_destroy
 		env->DeleteGlobalRef(node_array_cache_map[objid]);
 		node_array_cache_map.erase(objid);
 	}
+
+	if (element_array_cache_map[objid] != 0) {
+		env->DeleteGlobalRef(element_array_cache_map[objid]);
+		element_array_cache_map.erase(objid);
+	}
 }
 
 JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_printVersionInfo_1n
@@ -172,10 +203,10 @@ JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_setCall
 
 	// Create and set new callback lambdas using the callback objects
 	ef_instance->setCallbacks(
-			(stepCallbackObj == NULL) ? (function<void(double, NODE*, size_t, double)>) 0 :
-				[env, objid, j_step_callback](double simtime, NODE* nodes, size_t nodec, double nodecharge) {
+			(stepCallbackObj == NULL) ? (function<void(double, NODE*, size_t, Element**, size_t, double, double)>) 0 :
+				[env, objid, j_step_callback](double simtime, NODE* nodes, size_t nodec, Element** elements, size_t elementc, double nodecharge, double timestep) {
 
-					// Get and update or create Node arrays from the nodes in the callback
+					// Get and update or create Node array from the nodes in the callback
 					jobjectArray j_nodes = node_array_cache_map[objid];
 					if (j_nodes == 0) {
 						j_nodes = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(nodec, j_node_class, NULL));
@@ -193,11 +224,29 @@ JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_setCall
 						}
 					}
 
-					env->CallVoidMethod(j_step_callback, j_step_callback_method, simtime, j_nodes, nodecharge);
+					// Get and update or create Element array from the elements in the callback
+					jobjectArray j_elements = element_array_cache_map[objid];
+					if (j_elements == 0) {
+						j_elements = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(nodec, j_element_class, NULL));
+						for (unsigned int i = 0; i < elementc; i++) {
+							jstring j_element_name = env->NewStringUTF(elements[i]->name);
+							jobject j_element = env->NewObject(j_element_class, j_element_constructor, j_element_name, elements[i]->cTnow);
+							env->SetObjectArrayElement(j_elements, i, j_element);
+						}
+						node_array_cache_map[objid] = j_nodes;
+					} else {
+						// We can assume here that order and length of the elements is correct, since it does not change without loading a new circuit
+						for (unsigned int i = 0; i < elementc; i++) {
+							jobject j_element = env->GetObjectArrayElement(j_elements, i);
+							env->SetDoubleField(j_element, j_element_charge_field, elements[i]->cTnow);
+						}
+					}
+
+					env->CallVoidMethod(j_step_callback, j_step_callback_method, simtime, j_nodes, j_elements, nodecharge, timestep);
 
 				},
-			(finalCallbackObj == NULL) ? (function<void(NODE*, size_t, double)>) 0 :
-				[env, objid, j_final_callback](NODE* nodes, size_t nodec, double nodecharge) {
+			(finalCallbackObj == NULL) ? (function<void(NODE*, size_t, Element**, size_t, double, double)>) 0 :
+				[env, objid, j_final_callback](NODE* nodes, size_t nodec, Element** elements, size_t elementc, double nodecharge, double timestep) {
 
 					// Get and update or create Node arrays from the nodes in the callback
 					jobjectArray j_nodes = node_array_cache_map[objid];
@@ -217,7 +266,25 @@ JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_setCall
 						}
 					}
 
-					env->CallVoidMethod(j_final_callback, j_final_callback_method, j_nodes, nodecharge);
+					// Get and update or create Element array from the elements in the callback
+					jobjectArray j_elements = element_array_cache_map[objid];
+					if (j_elements == 0) {
+						j_elements = (jobjectArray) env->NewGlobalRef(env->NewObjectArray(elementc, j_element_class, NULL));
+						for (unsigned int i = 0; i < elementc; i++) {
+							jstring j_element_name = env->NewStringUTF(elements[i]->name);
+							jobject j_element = env->NewObject(j_element_class, j_element_constructor, j_element_name, elements[i]->cTnow);
+							env->SetObjectArrayElement(j_elements, i, j_element);
+						}
+						node_array_cache_map[objid] = j_nodes;
+					} else {
+						// We can assume here that order and length of the elements is correct, since it does not change without loading a new circuit
+						for (unsigned int i = 0; i < elementc; i++) {
+							jobject j_element = env->GetObjectArrayElement(j_elements, i);
+							env->SetDoubleField(j_element, j_element_charge_field, elements[i]->cTnow);
+						}
+					}
+
+					env->CallVoidMethod(j_final_callback, j_final_callback_method, j_nodes, j_elements, nodecharge, timestep);
 
 				});
 
@@ -234,6 +301,10 @@ JNIEXPORT jboolean JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_loa
 	if (node_array_cache_map[objid] != 0) {
 		env->DeleteGlobalRef(node_array_cache_map[objid]);
 		node_array_cache_map.erase(objid);
+	}
+	if (element_array_cache_map[objid] != 0) {
+		env->DeleteGlobalRef(element_array_cache_map[objid]);
+		element_array_cache_map.erase(objid);
 	}
 
 	const char* netlist_str = env->GetStringUTFChars(netlist, NULL);
@@ -254,6 +325,10 @@ JNIEXPORT jboolean JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_loa
 	if (node_array_cache_map[objid] != 0) {
 		env->DeleteGlobalRef(node_array_cache_map[objid]);
 		node_array_cache_map.erase(objid);
+	}
+	if (element_array_cache_map[objid] != 0) {
+		env->DeleteGlobalRef(element_array_cache_map[objid]);
+		element_array_cache_map.erase(objid);
 	}
 
 	const char* netlist_str = env->GetStringUTFChars(netlist, NULL);

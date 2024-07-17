@@ -18,7 +18,7 @@ public:
 	ElectronFlow();
 	~ElectronFlow();
 
-	void setCallbacks(function<void(double, NODE*, size_t, double)> step_callback, function<void(NODE*, size_t, double)> final_callback);
+	void setCallbacks(function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback, function<void(NODE*, size_t, Element**, size_t, double, double)> final_callback);
 	bool loadNetList(char* netList);
 	bool loadAndRunNetList(char* netList);
 	bool stepSimulation(double nodeCapacity, double timestep, double simulateTime);
@@ -29,8 +29,8 @@ public:
 private:
 	CircuitContainer* circuit;
 	SourceSolver* solver;
-	std::function<void(double, NODE*, size_t, double)> step_callback;
-	std::function<void(NODE*, size_t, double)> final_callback;
+	std::function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback;
+	std::function<void(NODE*, size_t, Element**, size_t, double, double)> final_callback;
 
 };
 

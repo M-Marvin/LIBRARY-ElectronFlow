@@ -23,14 +23,25 @@ public class NativeElectronFlow {
 		public double charge;
 	}
 	
+	public static class Element {
+		
+		public Element(String name, double transferCharge) {
+			this.name = name;
+			this.transferCharge = transferCharge;
+		}
+		
+		public final String name;
+		public double transferCharge;
+	}
+	
 	@FunctionalInterface
 	public static interface StepCallback {
-		public void stepData(double simtime, Node[] node, double nodecharge);
+		public void stepData(double simtime, Node[] nodes, Element[] elements, double nodecharge, double timestep);
 	}
 
 	@FunctionalInterface
 	public static interface FinalCallback {
-		public void finalData(Node[] node, double nodecharge);
+		public void finalData(Node[] nodes, Element[] elements, double nodecharge, double timestep);
 	}
 
 	protected native void printVersionInfo_n();
