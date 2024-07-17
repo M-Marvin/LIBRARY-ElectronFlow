@@ -17,9 +17,11 @@ using namespace std;
 
 namespace equations {
 
+#define VAR_FUNC_NAME_LEN 64
+
 union eqdata_t {
 	double number_value;
-	char str_name[4];
+	char str_name[VAR_FUNC_NAME_LEN];
 };
 
 typedef struct {
@@ -41,9 +43,8 @@ typedef struct {
 #define OPERATOR_POW '^'
 #define OPERATOR_BRO '('
 #define OPERATOR_BRC ')'
-
 #define OPERATOR_SEP ','
-#define PARSE_ITEM_BUFFER_LEN 64
+#define PARSE_ITEM_BUFFER_LEN 256
 
 /**
  * Convert an string representing an infix equation to an equation vector
@@ -92,7 +93,7 @@ class equation {
 
 public:
 	/** Construct equation from infix notation string */
-	equation(const char* equationStr);
+	equation(const char* equationStr, bool* success);
 	/** Construct equation from infix or rpn notation vec */
 	equation(eq_vec* equation, bool infix);
 	~equation();

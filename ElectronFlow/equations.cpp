@@ -14,16 +14,18 @@
 
 using namespace equations;
 
-equation::equation(const char* equationStr) {
+equation::equation(const char* equationStr, bool* success) {
 	eq_vec infix = eq_vec();
 	if (!strtoeq(equationStr, &infix)) {
 		printf("failed to parse equation: %s\n", equationStr);
+		if (success != 0) *success = false;
 		return;
 	}
 
 	equation::eqvec = new eq_vec();
 	if (!infix2rpn(&infix, equation::eqvec)) {
-		printf("could convert equation!\n");
+		printf("could not convert equation!\n");
+		if (success != 0) *success = false;
 		return;
 	}
 
@@ -33,6 +35,7 @@ equation::equation(const char* equationStr) {
 	equation::ext_functions = false;
 
 	setvf_default();
+	if (success != 0) *success = true;
 }
 
 equation::equation(eq_vec* equation, bool infix) {
@@ -395,7 +398,11 @@ bool equations::strtoeq(const char* equation, eq_vec* infixbuf) {
 					infixbuf->push_back(eqitem_t());
 					infixbuf->back().type = OPERATOR_VAR;
 					infixbuf->back().precedence = 0;
-					memcpy(infixbuf->back().value.str_name, buffer, 4);
+					if (strlen(buffer) > VAR_FUNC_NAME_LEN) {
+						printf("variable name '%s' length > %d!\n", buffer, VAR_FUNC_NAME_LEN);
+						return false;
+					}
+					strcpy(infixbuf->back().value.str_name, buffer);
 
 				}
 				memset(buffer, 0, 64);
@@ -423,7 +430,12 @@ bool equations::strtoeq(const char* equation, eq_vec* infixbuf) {
 				// Put function
 				infixbuf->push_back(eqitem_t());
 				infixbuf->back().type = OPERATOR_FNC;
-				memcpy(infixbuf->back().value.str_name, buffer, 4);
+				if (strlen(buffer) > VAR_FUNC_NAME_LEN) {
+					printf("function name '%s' length > %d!\n", buffer, VAR_FUNC_NAME_LEN);
+					return false;
+				}
+				strcpy(infixbuf->back().value.str_name, buffer);
+				//memcpy(infixbuf->back().value.str_name, buffer, 4);
 
 				memset(buffer, 0, 64);
 				bufferPtr = 0;

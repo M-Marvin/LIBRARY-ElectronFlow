@@ -5,7 +5,7 @@ LIB_NAME = electronflow_x64.dll
 TARGET_DIR = "$(PROJECT_ROOT)..\ElectronFlowJNI\src\main\resources\natives\"
 
 OBJS = circuit.o circuit_container.o circuit_solver.o electron_flow.o equations.o
-CFLAGS = -DVERSION_STR=\"0.2_alpha\"
+CFLAGS = -DVERSION_STR=\"0.2_alpha_3\"
 
 ifeq ($(BUILD_MODE),debug)
 	CFLAGS += -g

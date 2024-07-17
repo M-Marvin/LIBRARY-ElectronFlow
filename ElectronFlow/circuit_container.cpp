@@ -127,7 +127,9 @@ bool CircuitContainer::parseCircuit(char* netList) {
 			}
 
 			char* valueStr = strtok_r(NULL, " ", &tokptrl);
-			equation* value = new equation(valueStr);
+			bool parseSuccess = false;
+			equation* value = new equation(valueStr, &parseSuccess);
+			if (!parseSuccess) return false;
 
 			switch (*elementName) {
 			case 'R': {
