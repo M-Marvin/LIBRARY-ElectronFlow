@@ -93,6 +93,7 @@ bool ElectronFlow::stepSimulation(double nodeCapacity, double timestep, double s
 				ElectronFlow::solver->nodeCapacity, timestep);
 
 	printf("done\n");
+	ElectronFlow::lastTimestep = timestep;
 	return true;
 }
 
@@ -115,6 +116,20 @@ void ElectronFlow::printNodeVoltages(const char* refNodeName) {
 	for (NODE node : ElectronFlow::circuit->nodes) {
 		double v = node->charge / ElectronFlow::solver->nodeCapacity - ground;
 		printf("node %s v: %f\n", node->name, v);
+	}
+}
+
+void ElectronFlow::printElementCurrents() {
+	printf("[>] print element currents\n");
+
+	if (ElectronFlow::circuit == 0) {
+		printf("no netlist loaded yet!\n");
+		return;
+	}
+
+	for (Element* element : ElectronFlow::circuit->elements) {
+		double i = element->cTnow / ElectronFlow::lastTimestep;
+		printf("element %s i: %f\n", element->name, i);
 	}
 }
 
@@ -155,6 +170,8 @@ void ElectronFlow::controllCommand(int argc, const char** argv) {
 		const char* refNodeName = argv[1];
 
 		printNodeVoltages(refNodeName);
+	} else if (strcmp(argv[0], "printi") == 0) {
+		printElementCurrents();
 	} else {
 		printf("[!] unknown command '%s'\n", argv[0]);
 	}

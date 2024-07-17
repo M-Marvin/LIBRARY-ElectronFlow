@@ -23,12 +23,14 @@ public:
 	bool loadAndRunNetList(char* netList);
 	bool stepSimulation(double nodeCapacity, double timestep, double simulateTime);
 	void printNodeVoltages(const char* refNodeName);
+	void printElementCurrents();
 	void controllCommand(int argc, const char** argv);
 	void printVersionInfo();
 
 private:
 	CircuitContainer* circuit;
 	SourceSolver* solver;
+	double lastTimestep;
 	std::function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback;
 	std::function<void(NODE*, size_t, Element**, size_t, double, double)> final_callback;
 

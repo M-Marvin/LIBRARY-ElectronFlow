@@ -3,9 +3,8 @@ ingame-level-circuit
 * Component Block{industria:portable_fuel_generator} BlockPos{x=5, y=-60, z=8}
 
 * Power limited voltage source [ p_maxmimum=2000, v_nominal=230 ]
-V1_103 node|pos5_-60_8_id0_lid2_lnmpower_shunt| node|pos5_-60_8_id0_lid1_lnmn| 230 2000
-* R1_999 XXX node|pos5_-60_8_id0_lid2_lnmpower_shunt| 0.01
-R2_103 node|pos5_-60_8_id0_lid2_lnmpower_shunt| node|pos5_-60_8_id0_lid0_lnml| 0.01
+V1_57_pos5_-60_8 node|pos5_-60_8_id0_lid2_lnmpower_shunt| node|pos5_-60_8_id0_lid1_lnmn| 230 2000
+R2_57 node|pos5_-60_8_id0_lid2_lnmpower_shunt| node|pos5_-60_8_id0_lid0_lnml| 0.001
 
 * Component Conduit{industria:insulated_copper_wire} ConduitPos{A=NodePos{block=[10 -60 8],node=2},B=NodePos{block=[5 -60 8],node=0}}
 
@@ -189,6 +188,6 @@ R1_154 node|pos15_-60_12_id0_lid0_lnml| node|pos15_-60_12_id0_lid1_lnmn| 100
 * Component Block{industria:gold_wire_holder} BlockPos{x=8, y=-60, z=5}
 
 R0GND node|pos5_-60_8_id0_lid0_lnml| 0 1
-.end
 
-.op
+.printv node|pos10_-60_8_id0_lid1_lnmn|
+.printi

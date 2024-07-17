@@ -45,7 +45,7 @@ public class ElectronFlowTest {
 			double vi0 = voltages.getOrDefault("node|pos5_-60_8_id0_lid1_lnmn|", v0) - v0;
 			double vi1 = voltages.getOrDefault("node|pos5_-60_8_id0_lid2_lnmpower_shunt|", v0) - v0;
 			double vi2 = voltages.getOrDefault("node|pos5_-60_8_id0_lid0_lnml|", v0) - v0;
-			double ii = currents.getOrDefault("V1_103", 0.0);
+			double ii = currents.getOrDefault("V1_57_pos5_-60_8", 0.0);
 			
 			double vo1 = voltages.getOrDefault("node|pos15_-60_12_id0_lid0_lnml|", v0) - v0;
 			double vo2 = voltages.getOrDefault("node|pos15_-60_12_id0_lid1_lnmn|", v0) - v0;
@@ -95,6 +95,8 @@ public class ElectronFlowTest {
 			nef.loadNetList(netlist);
 			
 			nef.controllCommand("step", "0.5u", "0.06m", "2m");
+
+			nef.controllCommand("printi");
 			
 			//nef.loadNetList(netlist);
 			
