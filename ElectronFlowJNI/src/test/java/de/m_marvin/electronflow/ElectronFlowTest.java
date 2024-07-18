@@ -42,13 +42,13 @@ public class ElectronFlowTest {
 			
 			double v0 = voltages.getOrDefault("0", 0.0);
 			
-			double vi0 = voltages.getOrDefault("node|pos5_-60_8_id0_lid1_lnmn|", v0) - v0;
-			double vi1 = voltages.getOrDefault("node|pos5_-60_8_id0_lid2_lnmpower_shunt|", v0) - v0;
-			double vi2 = voltages.getOrDefault("node|pos5_-60_8_id0_lid0_lnml|", v0) - v0;
-			double ii = currents.getOrDefault("V1_57_pos5_-60_8", 0.0);
+			double vi0 = voltages.getOrDefault("node|pos5_~60_8_id0_lid1_lnmn|", v0) - v0;
+			double vi2 = voltages.getOrDefault("node|pos5_~60_8_id0_lid0_lnml|", v0) - v0;
+			double ii = currents.getOrDefault("V1_55_pos5_~60_8", 0.0);
 			
-			double vo1 = voltages.getOrDefault("node|pos15_-60_12_id0_lid0_lnml|", v0) - v0;
-			double vo2 = voltages.getOrDefault("node|pos15_-60_12_id0_lid1_lnmn|", v0) - v0;
+			double vo1 = voltages.getOrDefault("node|pos10_~60_8_id0_lid0_lnml|", v0) - v0;
+			double vo2 = voltages.getOrDefault("node|pos10_~60_8_id0_lid1_lnmn|", v0) - v0;
+			double io = currents.getOrDefault("R1_82", 0.0);
 			
 			
 			
@@ -57,27 +57,12 @@ public class ElectronFlowTest {
 			double Pgen = Vgen * Igen;
 			
 			double Vload = vo1 - vo2;
-			double Iload = Vload / 100;
+			double Iload = io;
 			double Pload = Vload * Iload;
 			
 			System.out.println("Vgen " + Vgen + " -- Vload " + Vload);
 			System.out.println("Igen " + Igen + " -- Iload " + Iload);
 			System.out.println("Pgen " + Pgen + " -- Pload " + Pload);
-			
-//			double Ic = (vo1 - vo2) / 100;
-//			double Pc = (vo1 - vo2) * Ic;
-//			
-//			System.out.println(vi1 + "  " + vi2);
-//			
-//			double I = (vi1 - vi2) / 0.01;
-//			double P = 230 * I;
-//			
-//			double Pt = Pc;
-//			
-//			double t = P / Pt;
-//			
-//			System.out.println("I " + I + " == Ic " + Ic);
-//			System.out.println(" = " + P + " / " + Pt + " --> " + t);
 			
 		});
 		
@@ -92,11 +77,11 @@ public class ElectronFlowTest {
 			reader.close();
 			String netlist = sb.toString();
 			
-			nef.loadNetList(netlist);
+			nef.loadAndRunNetList(netlist);
 			
-			nef.controllCommand("step", "0.5u", "0.06m", "2m");
-
-			nef.controllCommand("printi");
+//			nef.controllCommand("step", "0.5u", "0.06m", "2m");
+//
+//			nef.controllCommand("printi");
 			
 			//nef.loadNetList(netlist);
 			

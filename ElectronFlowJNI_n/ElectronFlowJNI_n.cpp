@@ -1,3 +1,9 @@
+/*
+ * ElectronFlowJNI_n.cpp
+ *
+ *  Created on: 18.07.2024
+ *      Author: Marvin K.
+ */
 
 #include <de_m_marvin_electronflow_NativeElectronFlow.h>
 #include <jni.h>
@@ -338,14 +344,24 @@ JNIEXPORT jboolean JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_loa
 	return result;
 }
 
+JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_resetSimulation_1n
+  (JNIEnv *env, jobject obj) {
+
+	jint objid = env->CallIntMethod(obj, j_hash_method);
+	ElectronFlow* ef_instance = instance_map[objid];
+	if (ef_instance == 0) return;
+
+	return ef_instance->resetSimulation();
+}
+
 JNIEXPORT jboolean JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_stepSimulation_1n
-  (JNIEnv *env, jobject obj, jdouble nodeCapacity, jdouble timestep, jdouble simulateTime) {
+  (JNIEnv *env, jobject obj, jdouble nodeCapacity, jdouble timestep, jdouble simulateTime, jboolean enableLimits) {
 
 	jint objid = env->CallIntMethod(obj, j_hash_method);
 	ElectronFlow* ef_instance = instance_map[objid];
 	if (ef_instance == 0) return false;
 
-	return ef_instance->stepSimulation(nodeCapacity, timestep, simulateTime);
+	return ef_instance->stepSimulation(nodeCapacity, timestep, simulateTime, enableLimits);
 }
 
 JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_printNodeVoltages_1n
@@ -356,6 +372,16 @@ JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_printNo
 	if (ef_instance == 0) return;
 
 	ef_instance->printNodeVoltages(env->GetStringUTFChars(refNode, NULL));
+}
+
+JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_printElementCurrents_1n
+  (JNIEnv *env, jobject obj) {
+
+	jint objid = env->CallIntMethod(obj, j_hash_method);
+	ElectronFlow* ef_instance = instance_map[objid];
+	if (ef_instance == 0) return;
+
+	ef_instance->printElementCurrents();
 }
 
 JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_controllCommand_1n

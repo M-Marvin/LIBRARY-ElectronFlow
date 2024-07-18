@@ -2,7 +2,7 @@
  * circuit_container.cpp
  *
  *  Created on: 21.05.2024
- *      Author: marvi
+ *      Author: Marvin K.
  */
 
 #include "circuit_container.h"
@@ -126,25 +126,28 @@ bool CircuitContainer::parseCircuit(char* netList) {
 				errorFlag = true; break;
 			}
 
-			char* valueStr = strtok_r(NULL, " ", &tokptrl);
-			bool parseSuccess = false;
-			equation* value = new equation(valueStr, &parseSuccess);
-			if (!parseSuccess) return false;
+			char* valueStr1 = strtok_r(NULL, " ", &tokptrl);
+			char* valueStr2 = strtok_r(NULL, " ", &tokptrl);
 
 			switch (*elementName) {
 			case 'R': {
+
+				bool parseSuccess = false;
+				equation* value = new equation(valueStr1, &parseSuccess);
+				if (!parseSuccess) return false;
+
 				CircuitContainer::elements.push_back(new Resistor(elementName, node1->name, node2->name, value));
 				break;
 			}
 			case 'V': {
-				CircuitContainer::elements.push_back(new VoltageSource(elementName, node1->name, node2->name, value));
+				bool parseSuccess = false;
+				equation* value = new equation(valueStr1, &parseSuccess);
+				equation* limit = valueStr2 == 0 ? new equation("0", &parseSuccess) : new equation(valueStr2, &parseSuccess);
+				if (!parseSuccess) return false;
+
+				CircuitContainer::elements.push_back(new VoltageSource(elementName, node1->name, node2->name, value, limit));
 				break;
 			}
-//			case 'I': {
-//				printf("current source between '%s' and '%s' with value '%fA'\n", node1->name, node2->name, value);
-//				elementsVec.push_back(new CurrentSource(elementName, node1->name, node2->name, value));
-//				break;
-//			}
 			}
 
 			break;

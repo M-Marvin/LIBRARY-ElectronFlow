@@ -1,7 +1,7 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 LIB_NAME = electronflow_jni_x64.dll
-TARGET_DIR = "$(PROJECT_ROOT)..\ElectronFlowJNI\src\main\resources\natives\"
+TARGET_DIR = "$(PROJECT_ROOT)..\ElectronFlowJNI\src\main\resources\natives\$(LIB_NAME)"
 
 OBJS = ElectronFlowJNI_n.o
 CFLAGS = -I"$(PROJECT_ROOT)..\ElectronFlowJNI\build\generated\sources\headers\java\main" -I"$(PROJECT_ROOT)..\ElectronFlow" -I"C:\Program Files\Java\jdk-17.0.10+7\include" -I"C:\Program Files\Java\jdk-17.0.10+7\include\win32"
@@ -24,3 +24,5 @@ ElectronFlowJNI_n:	$(OBJS)
 
 clean:
 	rm -fr ElectronFlowJNI_n $(OBJS)
+	rm -fr $(LIB_NAME)
+	rm -fr $(TARGET_DIR)

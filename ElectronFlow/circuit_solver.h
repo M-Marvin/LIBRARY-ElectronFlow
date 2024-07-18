@@ -2,7 +2,7 @@
  * circuit_solver.h
  *
  *  Created on: 21.05.2024
- *      Author: marvi
+ *      Author: Marvin K.
  */
 
 #ifndef CIRCUIT_SOLVER_H_
@@ -24,6 +24,7 @@ public:
 	void reset();
 	bool step(double* timestep);
 	double nodeCapacity = 0;
+	bool enableLimits = false;
 	double lastCtChange = 0;
 	double simtime;
 
@@ -32,6 +33,7 @@ private:
 	func_map funcmap;
 	std::function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback;
 	CircuitContainer* circuit;
+	double lastTimestep;
 
 };
 

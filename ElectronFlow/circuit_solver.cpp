@@ -2,7 +2,7 @@
  * circuit_solver.cpp
  *
  *  Created on: 21.05.2024
- *      Author: marvi
+ *      Author: Marvin K.
  */
 
 #include "circuit_solver.h"
@@ -35,6 +35,9 @@ SourceSolver::SourceSolver(CircuitContainer* circuit) {
 	funcmap.emplace(string("V"), make_pair([this](double* args) {
 		return (args[0] - args[1]) / SourceSolver::nodeCapacity;
 	}, 2));
+	funcmap.emplace(string("I"), make_pair([this](double* args) {
+		return (args[0] / SourceSolver::lastTimestep);
+	}, 1));
 	SourceSolver::circuit->setvfmaps(&varmap, &funcmap);
 }
 
@@ -48,8 +51,9 @@ void SourceSolver::reset() {
 	for (NODE node : SourceSolver::circuit->nodes) {
 		SourceSolver::varmap[string(node->name)] = 2.0;
 	}
-	SourceSolver::simtime = 0;
-	SourceSolver::lastCtChange = 0;
+	for (Element* element : SourceSolver::circuit->elements) {
+		element->cTlast = element->cTnow = 0;
+	}
 }
 
 bool SourceSolver::step(double* timestep) {
@@ -58,7 +62,7 @@ bool SourceSolver::step(double* timestep) {
 	SourceSolver::lastCtChange = 0;
 	for (Element* element : SourceSolver::circuit->elements) {
 
-		double change_timestep = element->step(SourceSolver::nodeCapacity, *timestep);
+		double change_timestep = element->step(SourceSolver::nodeCapacity, *timestep, SourceSolver::enableLimits);
 
 		if (change_timestep != *timestep) {
 
@@ -73,7 +77,7 @@ bool SourceSolver::step(double* timestep) {
 			}
 
 			*timestep = change_timestep;
-			printf("change timestep: %f s\n", *timestep);
+			printf("change timestep: %1.16lf s\n", *timestep);
 			return true;
 		}
 
@@ -84,11 +88,21 @@ bool SourceSolver::step(double* timestep) {
 	// Copy node charges
 	for (NODE node : SourceSolver::circuit->nodes) {
 		if (!isfinite(node->charge)) {
-			printf("non-finite detected in node %s after %f s!\n", node->name, SourceSolver::simtime);
+			printf("non-finite detected in node %s after %1.16lf s!\n", node->name, SourceSolver::simtime);
 			return false;
 		}
 		SourceSolver::varmap[string(node->name)] = node->charge;
 	}
+	// Copy element charges
+	for (Element* element : SourceSolver::circuit->elements) {
+		if (!isfinite(element->cTnow)) {
+			printf("non-finite detected in element %s after %1.16lf s!\n", element->name, SourceSolver::simtime);
+			return false;
+		}
+		SourceSolver::varmap[string(element->name)] = element->cTnow;
+	}
+
+	SourceSolver::lastTimestep = *timestep;
 
 	// Solve equations
 	if (SourceSolver::lastCtChange < SourceSolver::nodeCapacity * CT_STABLE_LIMIT) {

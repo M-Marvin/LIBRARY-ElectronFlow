@@ -2,7 +2,7 @@
  * circuit.cpp
  *
  *  Created on: 21.05.2024
- *      Author: marvi
+ *      Author: Marvin K.
  */
 
 #include <stdlib.h>
@@ -51,7 +51,7 @@ bool Element::calc() {
 	return true;
 }
 void Element::setvfmaps(var_map* varmap, func_map* funcmap) {}
-double Element::step(double nodeCapacity, double timestep) {
+double Element::step(double nodeCapacity, double timestep, bool enableLimits) {
 	return timestep;
 }
 
@@ -75,7 +75,7 @@ void Resistor::setvfmaps(var_map* varmap, func_map* funcmap) {
 	Resistor::resistanceEq->ext_vmap(varmap);
 }
 
-double Resistor::step(double nodeCapacity, double timestep) {
+double Resistor::step(double nodeCapacity, double timestep, bool enableLimits) {
 	double cNode1 = Resistor::node1->charge;
 	double cNode2 = Resistor::node2->charge;
 	double cDiff = (cNode1 - cNode2);
@@ -94,28 +94,37 @@ double Resistor::step(double nodeCapacity, double timestep) {
 
 /* Define voltage source element */
 
-VoltageSource::VoltageSource(const char* name, const char* node1name, const char* node2name, equation* value) : Element(name, node1name, node2name) {
+VoltageSource::VoltageSource(const char* name, const char* node1name, const char* node2name, equation* value, equation* limit) : Element(name, node1name, node2name) {
 	VoltageSource::voltageEq = value;
 	VoltageSource::voltage = 0.0;
+	VoltageSource::currentLimitEq = limit;
+	VoltageSource::currentLimit = 0.0;
 }
 
 VoltageSource::~VoltageSource() {}
 
 bool VoltageSource::calc() {
-	return VoltageSource::voltageEq->evaluate(&(VoltageSource::voltage));
+	return	VoltageSource::voltageEq->evaluate(&(VoltageSource::voltage)) &&
+			VoltageSource::currentLimitEq->evaluate(&(VoltageSource::currentLimit));
 }
 
 void VoltageSource::setvfmaps(var_map* varmap, func_map* funcmap) {
 	VoltageSource::voltageEq->ext_fmap(funcmap);
 	VoltageSource::voltageEq->ext_vmap(varmap);
+	VoltageSource::currentLimitEq->ext_fmap(funcmap);
+	VoltageSource::currentLimitEq->ext_vmap(varmap);
 }
 
-double VoltageSource::step(double nodeCapacity, double timestep) {
+double VoltageSource::step(double nodeCapacity, double timestep, bool enableLimits) {
 	double vNodes = (VoltageSource::node1->charge / nodeCapacity) - (VoltageSource::node2->charge / nodeCapacity);
 	double v = VoltageSource::voltage - vNodes;
 	Element::cTlast = Element::cTnow;
 
+	double mct = VoltageSource::currentLimit * timestep;
 	Element::cTnow = v * nodeCapacity * 0.5;
+	if (mct != 0 && abs(Element::cTnow) > mct && enableLimits) {
+		Element::cTnow = signbit(Element::cTnow) == 0 ? mct : -mct;
+	}
 
 	if (Element::cTnow >= 0) {
 		double diff = max(Element::cTnow - VoltageSource::node2->charge, 0.0);

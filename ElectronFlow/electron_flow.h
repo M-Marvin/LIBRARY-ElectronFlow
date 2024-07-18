@@ -2,7 +2,7 @@
  * electron_flow.h
  *
  *  Created on: 30.05.2024
- *      Author: marvi
+ *      Author: Marvin K.
  */
 
 #ifndef ELECTRON_FLOW_H_
@@ -21,7 +21,8 @@ public:
 	void setCallbacks(function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback, function<void(NODE*, size_t, Element**, size_t, double, double)> final_callback);
 	bool loadNetList(char* netList);
 	bool loadAndRunNetList(char* netList);
-	bool stepSimulation(double nodeCapacity, double timestep, double simulateTime);
+	void resetSimulation();
+	bool stepSimulation(double nodeCapacity, double timestep, double simulateTime, bool enableLimits);
 	void printNodeVoltages(const char* refNodeName);
 	void printElementCurrents();
 	void controllCommand(int argc, const char** argv);

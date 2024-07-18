@@ -2,7 +2,7 @@
  * circuit.h
  *
  *  Created on: 20.05.2024
- *      Author: marvi
+ *      Author: Marvin K.
  */
 
 #ifndef CIRCUIT_H_
@@ -31,7 +31,7 @@ public:
 	virtual ~Element();
 
 	bool linkNodes(NODE* nodeArray, size_t nodesLen);
-	virtual double step(double nodeCapacity, double timestep);
+	virtual double step(double nodeCapacity, double timestep, bool enableLimits);
 	virtual bool calc();
 	virtual void setvfmaps(var_map* varmap, func_map* funcmap);
 
@@ -51,7 +51,7 @@ public:
 	Resistor(const char* name, const char* node1name, const char* node2name, equation* value);
 	~Resistor();
 
-	double step(double nodeCapacity, double timestep);
+	double step(double nodeCapacity, double timestep, bool enableLimits);
 	bool calc();
 	void setvfmaps(var_map* varmap, func_map* funcmap);
 
@@ -63,15 +63,17 @@ public:
 class VoltageSource : public Element {
 
 public:
-	VoltageSource(const char* name, const char* node1name, const char* node2name, equation* value);
+	VoltageSource(const char* name, const char* node1name, const char* node2name, equation* value, equation* limit);
 	~VoltageSource();
 
-	double step(double nodeCapacity, double timestep);
+	double step(double nodeCapacity, double timestep, bool enableLimits);
 	bool calc();
 	void setvfmaps(var_map* varmap, func_map* funcmap);
 
 	equation* voltageEq;
 	double voltage;
+	equation* currentLimitEq;
+	double currentLimit;
 
 };
 

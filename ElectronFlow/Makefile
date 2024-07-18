@@ -2,10 +2,10 @@ PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 CLI_NAME = electronflow
 LIB_NAME = electronflow_x64.dll
-TARGET_DIR = "$(PROJECT_ROOT)..\ElectronFlowJNI\src\main\resources\natives\"
+TARGET_DIR = "$(PROJECT_ROOT)..\ElectronFlowJNI\src\main\resources\natives\$(LIB_NAME)"
 
 OBJS = circuit.o circuit_container.o circuit_solver.o electron_flow.o equations.o
-CFLAGS = -DVERSION_STR=\"0.2_alpha_3\"
+CFLAGS = -DVERSION_STR=\"0.2_alpha_4\"
 
 ifeq ($(BUILD_MODE),debug)
 	CFLAGS += -g
@@ -31,3 +31,6 @@ ElectronFlowLIB:	$(OBJS)
 
 clean:
 	rm -fr ElectronFlowCLI ElectronFlowLIB $(OBJS)
+	rm -fr $(LIB_NAME)
+	rm -fr $(CLI_NAME)
+	rm -fr $(TARGET_DIR)

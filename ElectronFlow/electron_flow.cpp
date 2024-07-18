@@ -2,13 +2,20 @@
  * electron_flow.cpp
  *
  *  Created on: 30.05.2024
- *      Author: marvi
+ *      Author: Marvin K.
  */
 
-#include <stdio.h>
 #include "electron_flow.h"
+
+#include <corecrt.h>
+#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
+#include <functional>
+#include <vector>
+
+#include "circuit.h"
+#include "circuit_container.h"
+#include "equations.h"
 
 using namespace electronflow;
 using namespace std;
@@ -18,6 +25,7 @@ ElectronFlow::ElectronFlow() {
 	ElectronFlow::solver = 0;
 	ElectronFlow::final_callback = 0;
 	ElectronFlow::step_callback = 0;
+	ElectronFlow::lastTimestep = 0;
 }
 
 ElectronFlow::~ElectronFlow() {
@@ -69,16 +77,29 @@ bool ElectronFlow::loadAndRunNetList(char* netList) {
 	return true;
 }
 
-bool ElectronFlow::stepSimulation(double nodeCapacity, double timestep, double simulateTime) {
-	printf("[>] run %f s at %f s with %f F node capacity ...\n", simulateTime, timestep, nodeCapacity);
+void ElectronFlow::resetSimulation() {
+	printf("[>] reset simulation data\n");
+	ElectronFlow::solver->reset();
+}
+
+bool ElectronFlow::stepSimulation(double nodeCapacity, double timestep, double simulateTime, bool enableLimits) {
+	printf("[>] run %1.16lf s at %1.16lf s with %1.16lf F node capacity ...\n", simulateTime, timestep, nodeCapacity);
 
 	if (ElectronFlow::solver == 0) {
 		printf("no netlist loaded yet!\n");
 		return false;
 	}
 
+	// Configure solver
 	ElectronFlow::solver->nodeCapacity = nodeCapacity;
-	ElectronFlow::solver->reset();
+	if (enableLimits) printf("source limits enabled\n");
+	ElectronFlow::solver->enableLimits = enableLimits;
+
+	// Reset simtime
+	ElectronFlow::solver->simtime = 0;
+	ElectronFlow::solver->lastCtChange = 0;
+
+	// Run simulation
 	while (ElectronFlow::solver->simtime < simulateTime) {
 		if (!ElectronFlow::solver->step(&timestep)) {
 			printf("simulation interrupted!\n");
@@ -138,9 +159,11 @@ void ElectronFlow::controllCommand(int argc, const char** argv) {
 
 	printf("[>] run %s\n", argv[0]);
 
-	if (strcmp(argv[0], "step") == 0) {
+	if (strcmp(argv[0], "reset") == 0) {
+		resetSimulation();
+	} else if (strcmp(argv[0], "step") == 0) {
 		if (argc < 4) {
-			printf("[i] step [initial timestep s] [node capacity F] [simulate time s]\n");
+			printf("[i] step [initial timestep s] [node capacity F] [simulate time s] (do reset true/false)\n");
 			return;
 		}
 
@@ -159,8 +182,9 @@ void ElectronFlow::controllCommand(int argc, const char** argv) {
 			printf("invalid number format: %s\n", argv[2]);
 			return;
 		}
+		bool enableLimits = argc < 5 ? false : strcmp(argv[4], "true") == 0;
 
-		stepSimulation(nodeCapacity, timestep, simulateTime);
+		stepSimulation(nodeCapacity, timestep, simulateTime, enableLimits);
 	} else if (strcmp(argv[0], "printv") == 0) {
 		if (argc < 2) {
 			printf("[i] printv [ref node]\n");

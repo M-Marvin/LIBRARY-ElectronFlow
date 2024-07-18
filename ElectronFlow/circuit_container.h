@@ -2,7 +2,7 @@
  * circuit_container.h
  *
  *  Created on: 21.05.2024
- *      Author: marvi
+ *      Author: Marvin K.
  */
 
 #ifndef CIRCUIT_CONTAINER_H_

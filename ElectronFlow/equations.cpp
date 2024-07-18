@@ -2,7 +2,7 @@
  * equations.cpp
  *
  *  Created on: 31.05.2024
- *      Author: marvi
+ *      Author: Marvin K.
  */
 
 #include "equations.h"

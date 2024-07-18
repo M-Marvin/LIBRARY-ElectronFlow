@@ -48,8 +48,10 @@ public class NativeElectronFlow {
 	protected native void setCallbacks_n(StepCallback stepCallback, FinalCallback finalCallback);
 	protected native boolean loadNetList_n(String netList);
 	protected native boolean loadAndRunNetList_n(String netList);
-	protected native boolean stepSimulation_n(double nodeCapacity, double timestep, double simulateTime);
+	protected native void resetSimulation_n();
+	protected native boolean stepSimulation_n(double nodeCapacity, double timestep, double simulateTime, boolean enableLimits);
 	protected native void printNodeVoltages_n(String refNodeName);
+	protected native void printElementCurrents_n();
 	protected native void controllCommand_n(String... args);
 	
 }
