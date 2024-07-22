@@ -24,6 +24,17 @@ typedef struct {
 
 #define NODE NODE_t*
 
+typedef struct step_profile {
+	bool enableSourceLimits;
+	double initialStepsize;
+	double nodeCapacity;
+	bool fixedStepsize;
+} step_profile_t;
+
+#define DEFAULT_NODE_CAP 0.12
+#define DEFAULT_ENABLE_SOURCE_LIMITS true
+#define DEFAULT_ENABLE_FIXED_TIMESTEP false
+
 class Element {
 
 public:
@@ -31,7 +42,7 @@ public:
 	virtual ~Element();
 
 	bool linkNodes(NODE* nodeArray, size_t nodesLen);
-	virtual double step(double nodeCapacity, double timestep, bool enableLimits);
+	virtual double step(double timestep, step_profile_t* profile);
 	virtual bool calc();
 	virtual void setvfmaps(var_map* varmap, func_map* funcmap);
 
@@ -51,7 +62,7 @@ public:
 	Resistor(const char* name, const char* node1name, const char* node2name, equation* value);
 	~Resistor();
 
-	double step(double nodeCapacity, double timestep, bool enableLimits);
+	double step(double timestep, step_profile_t* profile);
 	bool calc();
 	void setvfmaps(var_map* varmap, func_map* funcmap);
 
@@ -66,7 +77,7 @@ public:
 	VoltageSource(const char* name, const char* node1name, const char* node2name, equation* value, equation* limit);
 	~VoltageSource();
 
-	double step(double nodeCapacity, double timestep, bool enableLimits);
+	double step(double timestep, step_profile_t* profile);
 	bool calc();
 	void setvfmaps(var_map* varmap, func_map* funcmap);
 

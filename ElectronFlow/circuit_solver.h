@@ -22,10 +22,11 @@ public:
 
 	void setCallback(std::function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback);
 	void reset();
-	bool step(double* timestep);
-	double nodeCapacity = 0;
-	bool enableLimits = false;
+	void init();
+	bool step();
+	step_profile_t profile;
 	double lastCtChange = 0;
+	double lastTimestep;
 	double simtime;
 
 private:
@@ -33,8 +34,6 @@ private:
 	func_map funcmap;
 	std::function<void(double, NODE*, size_t, Element**, size_t, double, double)> step_callback;
 	CircuitContainer* circuit;
-	double lastTimestep;
-
 };
 
 }

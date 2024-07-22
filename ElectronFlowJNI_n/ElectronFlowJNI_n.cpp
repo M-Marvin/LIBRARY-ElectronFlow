@@ -354,14 +354,24 @@ JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_resetSi
 	return ef_instance->resetSimulation();
 }
 
-JNIEXPORT jboolean JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_stepSimulation_1n
-  (JNIEnv *env, jobject obj, jdouble nodeCapacity, jdouble timestep, jdouble simulateTime, jboolean enableLimits) {
+JNIEXPORT jboolean JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_setProfile_1n
+  (JNIEnv *env, jobject obj, jdouble nodeCapacity, jboolean enableLimits, jboolean fixedTimestep) {
 
 	jint objid = env->CallIntMethod(obj, j_hash_method);
 	ElectronFlow* ef_instance = instance_map[objid];
 	if (ef_instance == 0) return false;
 
-	return ef_instance->stepSimulation(nodeCapacity, timestep, simulateTime, enableLimits);
+	return ef_instance->setProfile(nodeCapacity, enableLimits, fixedTimestep);
+}
+
+JNIEXPORT jboolean JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_stepSimulation_1n
+  (JNIEnv *env, jobject obj, jdouble timestep, jdouble simulateTime) {
+
+	jint objid = env->CallIntMethod(obj, j_hash_method);
+	ElectronFlow* ef_instance = instance_map[objid];
+	if (ef_instance == 0) return false;
+
+	return ef_instance->stepSimulation(timestep, simulateTime);
 }
 
 JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_printNodeVoltages_1n

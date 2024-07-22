@@ -51,7 +51,7 @@ bool Element::calc() {
 	return true;
 }
 void Element::setvfmaps(var_map* varmap, func_map* funcmap) {}
-double Element::step(double nodeCapacity, double timestep, bool enableLimits) {
+double Element::step(double timestep, step_profile_t* profile) {
 	return timestep;
 }
 
@@ -75,16 +75,20 @@ void Resistor::setvfmaps(var_map* varmap, func_map* funcmap) {
 	Resistor::resistanceEq->ext_vmap(varmap);
 }
 
-double Resistor::step(double nodeCapacity, double timestep, bool enableLimits) {
+double Resistor::step(double timestep, step_profile_t* profile) {
 	double cNode1 = Resistor::node1->charge;
 	double cNode2 = Resistor::node2->charge;
 	double cDiff = (cNode1 - cNode2);
-	double i = cDiff / (nodeCapacity * Resistor::resistance);
+	double i = cDiff / (profile->nodeCapacity * Resistor::resistance);
 	Element::cTlast = Element::cTnow;
 	Element::cTnow = i * timestep;
 
-	if (Element::cTnow > abs(cDiff / 2)) {
-		return (cDiff / 2) / i;
+	if (abs(Element::cTnow) > abs(cDiff / 2)) {
+		if (profile->fixedStepsize) {
+			Element::cTnow = cDiff > 0 ? min(cDiff, Element::cTnow) : max(cDiff, Element::cTnow);
+		} else {
+			return (cDiff / 2) / i;
+		}
 	}
 
 	Resistor::node1->charge -= Element::cTnow;
@@ -115,14 +119,14 @@ void VoltageSource::setvfmaps(var_map* varmap, func_map* funcmap) {
 	VoltageSource::currentLimitEq->ext_vmap(varmap);
 }
 
-double VoltageSource::step(double nodeCapacity, double timestep, bool enableLimits) {
-	double vNodes = (VoltageSource::node1->charge / nodeCapacity) - (VoltageSource::node2->charge / nodeCapacity);
+double VoltageSource::step(double timestep, step_profile_t* profile) {
+	double vNodes = (VoltageSource::node1->charge / profile->nodeCapacity) - (VoltageSource::node2->charge / profile->nodeCapacity);
 	double v = VoltageSource::voltage - vNodes;
 	Element::cTlast = Element::cTnow;
 
 	double mct = VoltageSource::currentLimit * timestep;
-	Element::cTnow = v * nodeCapacity * 0.5;
-	if (mct != 0 && abs(Element::cTnow) > mct && enableLimits) {
+	Element::cTnow = v * profile->nodeCapacity * 0.5;
+	if (mct != 0 && abs(Element::cTnow) > mct && profile->enableSourceLimits) {
 		Element::cTnow = signbit(Element::cTnow) == 0 ? mct : -mct;
 	}
 

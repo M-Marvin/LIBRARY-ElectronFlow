@@ -26,8 +26,11 @@ public class ElectronFlow extends NativeElectronFlow {
 	public void resetSimulation() {
 		resetSimulation_n();
 	}
-	public boolean stepSimulation(double nodeCapacity, double timestep, double simulateTime, boolean enableLimits) {
-		return stepSimulation_n(nodeCapacity, timestep, simulateTime, enableLimits);
+	public boolean setProfile(double nodeCapacity, boolean enableLimits, boolean fixedTimestep) {
+		return setProfile_n(nodeCapacity, enableLimits, fixedTimestep);
+	}
+	public boolean stepSimulation(double timestep, double simulateTime) {
+		return stepSimulation_n(timestep, simulateTime);
 	}
 	public void printNodeVoltages(String refNodeName) {
 		printNodeVoltages_n(refNodeName);

@@ -26,14 +26,17 @@ SourceSolver::SourceSolver(CircuitContainer* circuit) {
 	SourceSolver::funcmap = func_map();
 	SourceSolver::step_callback = 0;
 	SourceSolver::simtime = 0;
+	SourceSolver::profile.nodeCapacity = DEFAULT_NODE_CAP;
+	SourceSolver::profile.enableSourceLimits = DEFAULT_ENABLE_SOURCE_LIMITS;
+	SourceSolver::profile.fixedStepsize = DEFAULT_ENABLE_FIXED_TIMESTEP;
 
 	equations::set_fmap_default(&funcmap);
 	equations::set_vmap_default(&varmap);
 	funcmap.emplace(string("P"), make_pair([this](double* args) {
-		return args[0] / SourceSolver::nodeCapacity;
+		return args[0] / SourceSolver::profile.nodeCapacity;
 	}, 1));
 	funcmap.emplace(string("V"), make_pair([this](double* args) {
-		return (args[0] - args[1]) / SourceSolver::nodeCapacity;
+		return (args[0] - args[1]) / SourceSolver::profile.nodeCapacity;
 	}, 2));
 	funcmap.emplace(string("I"), make_pair([this](double* args) {
 		return (args[0] / SourceSolver::lastTimestep);
@@ -56,15 +59,20 @@ void SourceSolver::reset() {
 	}
 }
 
-bool SourceSolver::step(double* timestep) {
+void SourceSolver::init() {
+	SourceSolver::lastTimestep = profile.initialStepsize;
+	SourceSolver::simtime = 0;
+}
+
+bool SourceSolver::step() {
 
 	// Step elements
 	SourceSolver::lastCtChange = 0;
 	for (Element* element : SourceSolver::circuit->elements) {
 
-		double change_timestep = element->step(SourceSolver::nodeCapacity, *timestep, SourceSolver::enableLimits);
+		double change_timestep = element->step(SourceSolver::lastTimestep, &(SourceSolver::profile));
 
-		if (change_timestep != *timestep) {
+		if (change_timestep != SourceSolver::lastTimestep) {
 
 			if (change_timestep <= 0) {
 				printf("timestep == 0, unable to continue!\n");
@@ -76,8 +84,8 @@ bool SourceSolver::step(double* timestep) {
 				node->charge = SourceSolver::varmap[string(node->name)];
 			}
 
-			*timestep = change_timestep;
-			printf("change timestep: %1.16lf s\n", *timestep);
+			SourceSolver::lastTimestep = change_timestep;
+			printf("change timestep: %1.16lf s\n", SourceSolver::lastTimestep);
 			return true;
 		}
 
@@ -102,24 +110,22 @@ bool SourceSolver::step(double* timestep) {
 		SourceSolver::varmap[string(element->name)] = element->cTnow;
 	}
 
-	SourceSolver::lastTimestep = *timestep;
-
 	// Solve equations
-	if (SourceSolver::lastCtChange < SourceSolver::nodeCapacity * CT_STABLE_LIMIT) {
+	if (SourceSolver::lastCtChange < SourceSolver::profile.nodeCapacity * CT_STABLE_LIMIT) {
 		for (Element* element : SourceSolver::circuit->elements) {
 			if (!element->calc()) {
 				printf("failed to calculate component: %s\n", element->name);
 				return false;
 			}
 		}
-		SourceSolver::simtime += *timestep;
+		SourceSolver::simtime += SourceSolver::lastTimestep;
 
 		if (SourceSolver::step_callback != 0)
 			SourceSolver::step_callback(
 					SourceSolver::simtime,
 					SourceSolver::circuit->nodes.data(), SourceSolver::circuit->nodes.size(),
 					SourceSolver::circuit->elements.data(), SourceSolver::circuit->elements.size(),
-					SourceSolver::nodeCapacity, *timestep);
+					SourceSolver::profile.nodeCapacity, SourceSolver::lastTimestep);
 	}
 
 	return true;
