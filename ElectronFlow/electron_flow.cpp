@@ -130,15 +130,19 @@ bool ElectronFlow::stepSimulation(double timestep, double simulateTime) {
 		}
 	}
 
+	printf("done\n");
+	ElectronFlow::lastTimestep = timestep;
+	return true;
+}
+
+void ElectronFlow::sendFinalData() {
+	printf("[>] send final data\n");
+
 	if (ElectronFlow::final_callback != 0)
 		ElectronFlow::final_callback(
 				ElectronFlow::circuit->nodes.data(), ElectronFlow::circuit->nodes.size(),
 				ElectronFlow::circuit->elements.data(), ElectronFlow::circuit->elements.size(),
 				ElectronFlow::solver->profile.nodeCapacity, ElectronFlow::solver->lastTimestep);
-
-	printf("done\n");
-	ElectronFlow::lastTimestep = timestep;
-	return true;
 }
 
 void ElectronFlow::printNodeVoltages(const char* refNodeName) {
@@ -218,6 +222,8 @@ void ElectronFlow::controllCommand(int argc, const char** argv) {
 		}
 
 		stepSimulation(timestep, simulateTime);
+	} else if (strcmp(argv[0], "end") == 0) {
+		sendFinalData();
 	} else if (strcmp(argv[0], "printv") == 0) {
 		if (argc < 2) {
 			printf("[i] printv [ref node]\n");

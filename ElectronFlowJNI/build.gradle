@@ -27,6 +27,8 @@ dependencies {
 publishing {
     publications {
         maven(MavenPublication) {
+        	groupId = 'de.m_marvin.electronflow'
+        	
 			from components.java
         }
     }

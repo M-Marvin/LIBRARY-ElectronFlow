@@ -23,6 +23,7 @@ public:
 	bool loadAndRunNetList(char* netList);
 	void resetSimulation();
 	bool setProfile(double nodeCapacity, bool enableLimits, bool fixedTimestep);
+	void sendFinalData();
 	bool stepSimulation(double timestep, double simulateTime);
 	void printNodeVoltages(const char* refNodeName);
 	void printElementCurrents();

@@ -32,6 +32,9 @@ public class ElectronFlow extends NativeElectronFlow {
 	public boolean stepSimulation(double timestep, double simulateTime) {
 		return stepSimulation_n(timestep, simulateTime);
 	}
+	public void sendFinalData() {
+		sendFinalData_n();
+	}
 	public void printNodeVoltages(String refNodeName) {
 		printNodeVoltages_n(refNodeName);
 	}

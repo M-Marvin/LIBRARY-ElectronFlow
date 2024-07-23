@@ -374,6 +374,16 @@ JNIEXPORT jboolean JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_ste
 	return ef_instance->stepSimulation(timestep, simulateTime);
 }
 
+JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_sendFinalData_1n
+  (JNIEnv *env, jobject obj) {
+
+	jint objid = env->CallIntMethod(obj, j_hash_method);
+	ElectronFlow* ef_instance = instance_map[objid];
+	if (ef_instance == 0) return;
+
+	ef_instance->sendFinalData();
+}
+
 JNIEXPORT void JNICALL Java_de_m_1marvin_electronflow_NativeElectronFlow_printNodeVoltages_1n
   (JNIEnv *env, jobject obj, jstring refNode) {
 
