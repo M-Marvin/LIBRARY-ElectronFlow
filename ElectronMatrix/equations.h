@@ -8,10 +8,10 @@
 #ifndef EQUATIONS_H_
 #define EQUATIONS_H_
 
-#include <vector>
+#include <functional>
 #include <map>
 #include <string>
-#include <functional>
+#include <vector>
 
 using namespace std;
 
@@ -80,8 +80,8 @@ double mfunc_1_asin(double* argv);
 double mfunc_1_acos(double* argv);
 double mfunc_1_atan(double* argv);
 
-#define func_map map<string, pair<function<double(double*)>, int>>
-#define var_map map<string, double>
+typedef map<string, pair<function<double(double*)>, int>> func_map;
+typedef map<string, double> var_map;
 
 void set_vmap_default(var_map* varmap);
 void set_fmap_default(func_map* funcmap);
@@ -98,6 +98,9 @@ public:
 	equation(eq_vec* equation, bool infix);
 	~equation();
 
+	/** Unlocks the destructor which is locked after initial construction to prevent problems with vectors for storing equations (reallocation) **/
+	void finalize();
+
 	/** Define default functions and variables */
 	void setvf_default();
 	/** Define variable */
@@ -112,6 +115,7 @@ public:
 	bool evaluate(double* result);
 
 private:
+	bool finalized;
 	eq_vec* eqvec;
 	bool ext_variables;
 	bool ext_functions;

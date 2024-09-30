@@ -36,6 +36,8 @@ equation::equation(const char* equationStr, bool* success) {
 
 	setvf_default();
 	if (success != 0) *success = true;
+
+	equation::finalized = false;
 }
 
 equation::equation(eq_vec* equation, bool infix) {
@@ -55,9 +57,16 @@ equation::equation(eq_vec* equation, bool infix) {
 	equation::ext_functions = false;
 
 	setvf_default();
+
+	equation::finalized = false;
+}
+
+void equation::finalize() {
+	equation::finalized = true;
 }
 
 equation::~equation() {
+	if (!equation::finalized) return;
 	delete equation::eqvec;
 	if (!equation::ext_functions) delete equation::functions;
 	if (!equation::ext_variables) delete equation::variables;
