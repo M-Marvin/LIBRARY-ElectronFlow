@@ -108,7 +108,11 @@ int parseComponent(char* line, component_t* component, vector<equation>* equatio
 	return -1;
 }
 
-int netanalysis::parseNetlist(char* netlist, size_t len, network_t* network) {
+int netanalysis::parseNetlist(char* netlist, network_t* network) {
+
+	network->components.clear();
+	network->nodes.clear();
+	network->component_equations.clear();
 
 	char* tokptr;
 	char* line = strtok_r(netlist, "\n", &tokptr);
@@ -118,14 +122,17 @@ int netanalysis::parseNetlist(char* netlist, size_t len, network_t* network) {
 	printf("%s > parse components ...\n", network->name);
 	while ((line = strtok_r(NULL, "\n", &tokptr)) != 0) {
 
+		if (strlen(line) < 2) continue;
+
 		if (*line == '*') continue;
 
 		if (*line == '.') {
 			printf("controll command: %s\n", line);
 			continue;
+
 		}
 
-		network->components.push_back({0});
+		network->components.push_back({});
 		if (parseComponent(line, &network->components.back(), &network->component_equations) != 0) {
 			printf("failed to parse component: %s\n", line);
 			return -1;
@@ -138,6 +145,39 @@ int netanalysis::parseNetlist(char* netlist, size_t len, network_t* network) {
 		network->component_equations[i].finalize();
 	}
 
+	printf("%s > scan for nodes ...\n", network->name);
+	for (unsigned int i = 0; i < network->components.size(); i++) {
+		char* nodeAname = network->components[i].node_a.name;
+		char* nodeBname = network->components[i].node_b.name;
+
+		unsigned long long nodeAindex = -1;
+		unsigned long long nodeBindex = -1;
+		for (unsigned int n = 0; n < network->nodes.size(); n++) {
+			char* nodeName = network->nodes[n].name;
+			if (strcmp(nodeName, nodeAname) == 0) nodeAindex = n;
+			if (strcmp(nodeName, nodeBname) == 0) nodeBindex = n;
+			if (nodeAindex != -1 && nodeBindex != -1) break;
+		}
+		if (nodeAindex == -1) {
+			printf("create node: %s\n", nodeAname);
+
+			network->nodes.push_back({});
+			strcpy_s(network->nodes.back().name, NODE_NAME_LEN, nodeAname);
+			node_t* node = &network->nodes.back();
+			node->component_ptr = vector<void*>();
+			node->component_ptr.clear();
+		}
+		if (nodeBindex == -1) {
+			printf("create node: %s\n", nodeBname);
+
+			network->nodes.push_back({});
+			strcpy_s(network->nodes.back().name, NODE_NAME_LEN, nodeBname);
+			node_t* node = &network->nodes.back();
+			node->component_ptr = vector<void*>();
+			node->component_ptr.clear();
+		}
+	}
+
 	printf("%s > linking nodes ...\n", network->name);
 	for (unsigned int i = 0; i < network->components.size(); i++) {
 		char* nodeAname = network->components[i].node_a.name;
@@ -146,28 +186,24 @@ int netanalysis::parseNetlist(char* netlist, size_t len, network_t* network) {
 		node_t* nodeA = 0;
 		node_t* nodeB = 0;
 		for (unsigned int n = 0; n < network->nodes.size(); n++) {
-			char* nodeName = network->nodes[i].name;
+			char* nodeName = network->nodes[n].name;
 			if (strcmp(nodeName, nodeAname) == 0) nodeA = network->nodes.data() + n;
 			if (strcmp(nodeName, nodeBname) == 0) nodeB = network->nodes.data() + n;
 			if (nodeA != 0 && nodeB != 0) break;
 		}
 		if (nodeA == 0) {
-			printf("create node: %s\n", nodeAname);
-
-			network->nodes.push_back({0});
-			strcpy_s(network->nodes.back().name, NODE_NAME_LEN, nodeAname);
-			nodeA = &network->nodes.back();
+			printf("error, not found node %s\n", nodeAname);
+			return -1;
 		}
 		if (nodeB == 0) {
-			printf("create node: %s\n", nodeAname);
-
-			network->nodes.push_back({0});
-			strcpy_s(network->nodes.back().name, NODE_NAME_LEN, nodeBname);
-			nodeB = &network->nodes.back();
+			printf("error, not found node %s\n", nodeBname);
+			return -1;
 		}
 
 		network->components[i].node_a.ptr = nodeA;
 		network->components[i].node_b.ptr = nodeB;
+		nodeA->component_ptr.push_back(network->components.data() + i);
+		nodeB->component_ptr.push_back(network->components.data() + i);
 	}
 
 	return 0;

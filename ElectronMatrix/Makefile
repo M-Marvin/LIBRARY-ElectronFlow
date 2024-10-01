@@ -2,7 +2,7 @@ PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 OBJS = equations.o netparsing.o netmeshing.o ElectronMatrix.o
 
-CFLAGS += -g -Og
+CFLAGS += -g -O0
 ifeq ($(BUILD_MODE),debug)
 	CFLAGS += -g
 else ifeq ($(BUILD_MODE),run)

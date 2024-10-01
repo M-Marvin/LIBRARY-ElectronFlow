@@ -27,8 +27,9 @@ typedef enum component_type {
 } component_type_t;
 
 typedef struct node {
-	char name[NODE_NAME_LEN];
-	double voltage;
+	char name[NODE_NAME_LEN] = {0};
+	vector<void*> component_ptr = vector<void*>();
+	double voltage = 0;
 } node_t;
 
 union node_link {
@@ -37,25 +38,25 @@ union node_link {
 };
 
 typedef struct eq_param {
-	equation* equation;
-	double value;
+	equation* equation = 0x0;
+	double value = 0;
 } eq_param_t;
 
 typedef struct vsource_param {
-	eq_param u_source;
-	eq_param r_series;
-	bool is_ideal;
+	eq_param u_source = {};
+	eq_param r_series = {};
+	bool is_ideal = true;
 } vsource_param_t;
 
 typedef struct isource_param {
-	eq_param i_source;
-	eq_param r_parallel;
-	bool is_ideal;
+	eq_param i_source = {};
+	eq_param r_parallel = {};
+	bool is_ideal = true;
 } isource_param_t;
 
 typedef struct gate_param {
-	unsigned int param_count;
-	eq_param parameters[MAX_GATE_PARAMETERS];
+	unsigned int param_count = 0;
+	eq_param parameters[MAX_GATE_PARAMETERS] = {0};
 } gate_param_t;
 
 union component_param {
@@ -65,38 +66,45 @@ union component_param {
 };
 
 typedef struct component {
-	char name[COMPONENT_NAME_LEN];
-	node_link node_a;
-	node_link node_b;
-	component_type_t type;
-	component_param parameters;
+	char name[COMPONENT_NAME_LEN] = {0};
+	node_link node_a = {};
+	node_link node_b = {};
+	component_type_t type = G;
+	component_param parameters = {};
 } component_t;
 
 typedef struct branch {
-	node_t* node_a;
-	node_t* node_b;
-	vector<component_t*> components; // sorted from node_a to node_b
-	double current;
+	node_t* node_a = 0x0;
+	node_t* node_b = 0x0;
+	vector<component_t*> components = vector<component_t*>(); // sorted from node_a to node_b
+	double current = 0;
 } branch_t;
 
 typedef struct mesh {
-	vector<branch_t*> branchs; // sorted
+	vector<branch_t*> branchs = vector<branch_t*>(); // sorted from tendom node a to tendem node b (tendom last entry in list)
+	double current = 0;
 } mesh_t;
 
+typedef struct subnet {
+	vector<branch_t*> branches = vector<branch_t*>();
+	vector<node_t*> knots = vector<node_t*>();
+	vector<mesh_t> meshes = vector<mesh_t>();
+} subnet_t;
+
 typedef struct network {
-	char name[NETWORK_NAME_LEN];
+	char name[NETWORK_NAME_LEN] = {0};
 	vector<equation> component_equations;
-	vector<component_t> components;
-	vector<node_t> nodes;
-	vector<branch_t> branches;
-	vector<branch_t> tendoms;
-	vector<mesh_t> meshes;
+	vector<component_t> components = vector<component_t>();
+	vector<node_t> nodes = vector<node_t>();
+	vector<branch_t> branches = vector<branch_t>();
+	vector<mesh_t*> meshes = vector<mesh_t*>();
+	vector<subnet_t> subnets = vector<subnet_t>();
 } network_t;
 
-int parseNetlist(char* netlist, size_t len, network_t* network);
+int parseNetlist(char* netlist, network_t* network);
 void freeNetwork(network_t* network);
 
-void findBranches(network_t* network);
+int findBranches(network_t* network);
 
 }
 
