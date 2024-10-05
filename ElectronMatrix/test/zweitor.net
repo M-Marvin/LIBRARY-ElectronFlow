@@ -1,0 +1,14 @@
+zweitor
+
+* B1 V1n 0 V=I(B1)*0.0+V(V2n,N02)*0.1
+* B3 N02 V2n I=I(B1)*0.1+V(V2n,N02)*0.0
+
+ZT1 V1n 0 N02 V2n H[ 0.0 0.1 0.1 0.0 ]
+
+R1 VLn N02 100
+V1c VG 0 10
+R2 V1n VG 12.5
+R3 N02 0 1G
+R4 VLn V2n 10m
+.tran 0.1 1
+.end

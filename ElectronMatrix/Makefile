@@ -1,8 +1,9 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 OBJS = equations.o netparsing.o netmeshing.o ElectronMatrix.o
+INCLUDES = -I../../../External
+CFLAGS = $(INCLUDES)
 
-CFLAGS += -g -O0
 ifeq ($(BUILD_MODE),debug)
 	CFLAGS += -g
 else ifeq ($(BUILD_MODE),run)

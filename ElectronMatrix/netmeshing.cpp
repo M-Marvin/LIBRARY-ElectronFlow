@@ -11,7 +11,9 @@ using namespace netanalysis;
 
 int netanalysis::findBranches(network_t* network) {
 
+	network->subnets.clear();
 	network->branches.clear();
+	network->meshes.clear();
 
 	vector<component_t*> components;
 	for (size_t i = 0; i < network->components.size(); i++)

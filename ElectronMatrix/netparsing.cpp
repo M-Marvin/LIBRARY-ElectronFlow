@@ -5,6 +5,7 @@
  *      Author: marvi
  */
 
+#include "netmath.h"
 #include "netanalysis.h"
 #include <string.h>
 #include <string>
@@ -12,9 +13,10 @@
 
 using namespace std;
 using namespace equations;
+using namespace netmath;
 using namespace netanalysis;
 
-int parseComponent(char* line, component_t* component, vector<equation>* equations) {
+int parseComponent(char* line, component_t* component) {
 
 	char* tokptr;
 	char* componentName = strtok_r(line, " ", &tokptr);
@@ -34,23 +36,12 @@ int parseComponent(char* line, component_t* component, vector<equation>* equatio
 		component->type = V;
 
 		char* equationStr = strtok_r(NULL, " ", &tokptr);
-		bool eqres;
-		equations->emplace_back(equationStr, &eqres);
-		if (!eqres) {
-			printf("failed to parse v source voltage equation: %s %s\n", componentName, equationStr);
-			return -1;
-		}
-		component->parameters.v.u_source.equation = &equations->back();
+		component->parameters.v.u_source = parsemt(equationStr);
 
 		equationStr = strtok_r(NULL, " ", &tokptr);
 		if (equationStr != NULL) {
 			component->parameters.v.is_ideal = false;
-			equations->emplace_back(equationStr, &eqres);
-			if (!eqres) {
-				printf("failed to parse v source series resistance equation: %s %s\n", componentName, equationStr);
-				return -1;
-			}
-			component->parameters.v.r_series.equation = &equations->back();
+			component->parameters.v.r_series = parsemt(equationStr);
 		} else {
 			component->parameters.v.is_ideal = true;
 		}
@@ -61,23 +52,12 @@ int parseComponent(char* line, component_t* component, vector<equation>* equatio
 		component->type = I;
 
 		char* equationStr = strtok_r(NULL, " ", &tokptr);
-		bool eqres;
-		equations->emplace_back(equationStr, &eqres);
-		if (!eqres) {
-			printf("failed to parse i source current equation: %s %s\n", componentName, equationStr);
-			return -1;
-		}
-		component->parameters.i.i_source.equation = &equations->back();
+		component->parameters.i.i_source = parsemt(equationStr);
 
 		equationStr = strtok_r(NULL, " ", &tokptr);
 		if (equationStr != NULL) {
 			component->parameters.i.is_ideal = false;
-			equations->emplace_back(equationStr, &eqres);
-			if (!eqres) {
-				printf("failed to parse v source parallel resistance equation: %s %s\n", componentName, equationStr);
-				return -1;
-			}
-			component->parameters.i.r_parallel.equation = &equations->back();
+			component->parameters.i.r_parallel = parsemt(equationStr);
 		} else {
 			component->parameters.i.is_ideal = true;
 		}
@@ -90,13 +70,7 @@ int parseComponent(char* line, component_t* component, vector<equation>* equatio
 		component->parameters.g.param_count = 1;
 
 		char* equationStr = strtok_r(NULL, " ", &tokptr);
-		bool eqres;
-		equations->emplace_back(equationStr, &eqres);
-		if (!eqres) {
-			printf("failed to parse resistor value equation: %s %s\n", componentName, equationStr);
-			return -1;
-		}
-		component->parameters.g.parameters[0].equation = &equations->back();
+		component->parameters.g.parameters[0] = parsemt(equationStr);
 
 		// TODO Gate equations
 
@@ -112,7 +86,6 @@ int netanalysis::parseNetlist(char* netlist, network_t* network) {
 
 	network->components.clear();
 	network->nodes.clear();
-	network->component_equations.clear();
 
 	char* tokptr;
 	char* line = strtok_r(netlist, "\n", &tokptr);
@@ -133,16 +106,61 @@ int netanalysis::parseNetlist(char* netlist, network_t* network) {
 		}
 
 		network->components.push_back({});
-		if (parseComponent(line, &network->components.back(), &network->component_equations) != 0) {
+		if (parseComponent(line, &network->components.back()) != 0) {
 			printf("failed to parse component: %s\n", line);
 			return -1;
 		}
 
 	}
 
-	printf("%s > finalize equations ...\n", network->name);
-	for (unsigned int i = 0; i < network->component_equations.size(); i++) {
-		network->component_equations[i].finalize();
+	printf("%s > transform sources ...\n", network->name);
+	for (size_t i = 0; i < network->components.size(); i++) {
+		component_t* c = network->components.data() + i;
+
+		if (c->type == V && !c->parameters.v.is_ideal) {
+			// Create new component and node
+			network->components.push_back({});
+			component_t* r = &network->components.back();
+			network->nodes.push_back({});
+			node_t* n = &network->nodes.back();
+
+			// Configure series resistor
+			r->type = G;
+			strcat(r->name, "T_");
+			strcat_s(r->name, COMPONENT_NAME_LEN, c->name);
+			r->parameters.g.parameters[0] = c->parameters.v.r_series;
+			r->gate_equation; // TODO gate equation
+
+			// Configure node and connector source and resistor
+			strcat(n->name, "T_");
+			strcat_s(n->name, NODE_NAME_LEN, c->node_a.name);
+			r->node_b = c->node_a;
+			strcpy(r->node_a.name, n->name);
+			strcpy(c->node_a.name, n->name);
+
+			// Change source to ideal
+			c->parameters.v.is_ideal = true;
+			c->parameters.v.r_series.clear();
+		} else if (c->type == I && !c->parameters.i.is_ideal) {
+			// Create new component
+			network->components.push_back({});
+			component_t* r = &network->components.back();
+
+			// Configure parallel resistor
+			r->type = G;
+			strcat(r->name, "T_");
+			strcat_s(r->name, COMPONENT_NAME_LEN, c->name);
+			r->node_a = c->node_a;
+			r->node_b = c->node_b;
+			r->parameters.g.parameters[0] = c->parameters.i.r_parallel;
+			r->gate_equation = "$0*I()"_mt; // TODO gate equation
+
+			// Change source to ideal voltage source
+			c->type = V;
+			c->parameters.v.u_source = c->parameters.i.i_source;
+			c->parameters.v.u_source.insert_start("("_mt).insert_end(")*("_mt).insert_end(r->parameters.g.parameters[0]).insert_end(")"_mt);
+		}
+
 	}
 
 	printf("%s > scan for nodes ...\n", network->name);

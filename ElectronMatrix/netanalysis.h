@@ -10,7 +10,9 @@
 
 #include "equations.h"
 #include <map>
+#include "netmath.h"
 
+using namespace netmath;
 using namespace equations;
 
 namespace netanalysis {
@@ -18,6 +20,7 @@ namespace netanalysis {
 #define NODE_NAME_LEN 64
 #define COMPONENT_NAME_LEN 64
 #define NETWORK_NAME_LEN 256
+#define TERM_LEN 256
 #define MAX_GATE_PARAMETERS 8
 
 typedef enum component_type {
@@ -37,26 +40,21 @@ union node_link {
 	char name[NODE_NAME_LEN];
 };
 
-typedef struct eq_param {
-	equation* equation = 0x0;
-	double value = 0;
-} eq_param_t;
-
 typedef struct vsource_param {
-	eq_param u_source = {};
-	eq_param r_series = {};
+	mtemplate u_source = {};
+	mtemplate r_series = {};
 	bool is_ideal = true;
 } vsource_param_t;
 
 typedef struct isource_param {
-	eq_param i_source = {};
-	eq_param r_parallel = {};
+	mtemplate i_source = {};
+	mtemplate r_parallel = {};
 	bool is_ideal = true;
 } isource_param_t;
 
 typedef struct gate_param {
 	unsigned int param_count = 0;
-	eq_param parameters[MAX_GATE_PARAMETERS] = {0};
+	mtemplate parameters[MAX_GATE_PARAMETERS] = {};
 } gate_param_t;
 
 union component_param {
@@ -69,6 +67,7 @@ typedef struct component {
 	char name[COMPONENT_NAME_LEN] = {0};
 	node_link node_a = {};
 	node_link node_b = {};
+	mtemplate gate_equation = {};
 	component_type_t type = G;
 	component_param parameters = {};
 } component_t;
@@ -93,7 +92,7 @@ typedef struct subnet {
 
 typedef struct network {
 	char name[NETWORK_NAME_LEN] = {0};
-	vector<equation> component_equations;
+	//vector<equation> component_equations;
 	vector<component_t> components = vector<component_t>();
 	vector<node_t> nodes = vector<node_t>();
 	vector<branch_t> branches = vector<branch_t>();
@@ -102,9 +101,8 @@ typedef struct network {
 } network_t;
 
 int parseNetlist(char* netlist, network_t* network);
-void freeNetwork(network_t* network);
-
 int findBranches(network_t* network);
+void freeNetwork(network_t* network);
 
 }
 

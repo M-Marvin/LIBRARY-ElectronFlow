@@ -1,0 +1,6 @@
+resistor chain
+V1 vcc gnd 100
+R1 vcc out 10k/10
+R2 out gnd 1k
+.step 1m 1m 60000
+.printv gnd
