@@ -16,13 +16,14 @@ using namespace electronflow;
 bool solver::upload(string netlist) {
 
 	if (!solver::checkSPICE()) {
-		logout("failed to load spice library");
+		logout("\tfailed to load spice library");
 		return false;
 	}
 
 	solver::netname.clear();
+	solver::timepoint.clear();
 	solver::nodes.clear();
-	solver::components.clear();
+//	solver::components.clear();
 
 	stringstream netstream(netlist);
 	stringstream netout;
@@ -35,7 +36,7 @@ bool solver::upload(string netlist) {
 			solver::netname = line;
 			netout << line << "\n";
 
-			logout(format("{} > parse components ...", solver::netname));
+			logout(format("\t{} > parse components ...", solver::netname));
 			continue;
 		}
 
@@ -64,18 +65,18 @@ bool solver::upload(string netlist) {
 
 	}
 
-	// TODO debug print
-	print(cout, "filtered:\n{}\n", netout.str());
+	solver::filtered = netout.str();
+	logout(format("\t{} > upload to SPICE ...", solver::netname));
 
-	logout(format("{} > upload to SPICE ...", solver::netname));
-
-	if (!solver::nglspice.loadCircuit(netout.str())) {
+	if (!solver::nglspice.loadCircuit(solver::filtered)) {
 		logout("failed to upload netlist");
 		return false;
 	}
 
-	logout(format("{} > upload complete, initialized and ready for execution", solver::netname));
+	logout(format("\t{} > upload complete, initialized and ready for execution", solver::netname));
 	return true;
 }
 
-
+string solver::netfiltered() {
+	return solver::filtered;
+}

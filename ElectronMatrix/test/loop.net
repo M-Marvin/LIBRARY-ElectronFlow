@@ -1,9 +1,12 @@
-loop
-R1 n001 n002 1
-R2 n002 n003 1
-R3 n003 n004 1
-R4 n004 n001 1
-RA n004 none 1
-RB n004 none 1
-RC n004 none 1
-RD n004 none 1
+gen_test
+R1 GN1 VG1 1m
+B1 GN1 0G1 V=min(10,100/max(1m, -I(R1)))
+R2 GN2 VG2 1m
+B2 GN2 0G2 V=min(10,100/max(1m, -I(R2)))
+R3 0G1 VG2 1m
+B1_ZT1 VG1 0G2 V=I(B1_ZT1)*0.0+V(VT1,0T1)*2.0
+B2_ZT1 0T1 VT1 I=I(B1_ZT1)*2.0+V(VT1,0T1)*0.0
+R4 VT1 0T1 0.0
+
+R0 0G2 0 1u
+.op

@@ -1,1 +1,5 @@
-Fatal Error: Empty netlist file: "E:\GitHub\LIBRARY-ElectronFlow\ElectronMatrix\test\loop.net"
+Circuit: gen_test
+
+ERROR: Node VT1 is floating and connected to current source B2_ZT1
+
+Fatal Error: R4: Resistance must not be zero.

@@ -1,0 +1,28 @@
+gen_test
+
+* Generator 1
+R1 GN1 VG1 1m
+B1 GN1 0G1 V=min(10,100/max(1m,+I(R1)))
+
+* Generator 2
+R2 GN2 VG2 1m
+B2 GN2 0G2 V=min(10,100/max(1m,+I(R2)))
+
+* Serienschaltung G1 und G2
+R3 0G1 VG2 1m
+
+* Transformator 1
+*ZT1 VG1 0G2 VT1 0T1 H[ 0.0 2.0 2.0 0.0 ]
+ZT1 VT1 0T1 VG1 0G2 H[ 0.0 2.0 2.0 0.0 ]
+RT1 0G2 0T1 1G
+
+* Transformator 2
+*ZT2 VG1 0G2 VT2 0T2 H[ 0.0 2.0 2.0 0.0 ]
+ZT2 VT2 0T2 VG1 0G2 H[ 0.0 2.0 2.0 0.0 ]
+RT2 0G2 0T2 1G
+
+* Serienschaltung T1 und T2
+R5 0T1 VT2 1u
+
+* Last
+R4 VT1 0T2 1k

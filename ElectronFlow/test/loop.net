@@ -1,0 +1,9 @@
+loop
+R1 n001 n002 1
+R2 n002 n003 1
+R3 n003 n004 1
+R4 n004 n001 1
+RA n004 none 1
+RB n004 none 1
+RC n004 none 1
+RD n004 none 1

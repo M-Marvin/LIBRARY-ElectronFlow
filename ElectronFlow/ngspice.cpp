@@ -11,10 +11,20 @@ using namespace ngspice;
 using namespace electronflow;
 using namespace std;
 
-solver::solver() {
+solver::solver(function<void(string)> logout) {
+	solver::logout = logout;
+
 	if (!solver::nglspice.initNGLinkFull(solver::logout, [](){}, [this](pvecvaluesall d) { solver::dataReceive(d); }, [](pvecinfoall){})) {
-		logout("failed to initialize nglink");
+		logout("\tfailed to initialize nglink");
 	}
+}
+
+void solver::setlogger(function<void(string)> logout) {
+	solver::logout = logout;
+}
+
+void solver::setlibname(string libname) {
+	solver::spicelibname = libname;
 }
 
 solver::~solver() {
@@ -29,7 +39,7 @@ bool solver::checkSPICE() {
 }
 
 bool solver::executeList() {
-	logout(format("{} > run netlist commands", solver::netname));
+	logout(format("\t{} > run netlist commands", solver::netname));
 	for (string command : solver::commands) {
 		solver::execute(command);
 	}
@@ -37,6 +47,6 @@ bool solver::executeList() {
 }
 
 bool solver::execute(string command) {
-	logout(format("{} > run {}", solver::netname, command));
+	logout(format("\t{} > run {}", solver::netname, command));
 	return solver::nglspice.execCommand(command);
 }
