@@ -19,7 +19,7 @@ solver_impl::solver_impl(function<void(string)> logout) {
 	solver_impl::logout = logout;
 	solver_impl::logout(format("\n\t\telectron flow ver{} + SPICE\n", EF_VERSION));
 
-	if (!solver_impl::nglspice.initNGLinkFull(solver_impl::logout, [](){}, [this](spice_pvecvaluesall d) { solver_impl::dataReceive(d); }, [](spice_pvecinfoall){})) {
+	if (!solver_impl::nglspice.initNGLinkFull([this](string s) { solver_impl::logout(s); }, [](){}, [this](spice_pvecvaluesall d) { solver_impl::dataReceive(d); }, [](spice_pvecinfoall){})) {
 		logout("\tfailed to initialize nglink");
 	}
 }

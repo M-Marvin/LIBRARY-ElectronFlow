@@ -1,0 +1,49 @@
+
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+group = 'com.github.M-Marvin'
+version = '1.5'
+
+tasks.register('copyNatives', Copy) {
+	group = 'build'
+	description = 'Copy natives from Bin and External folder'
+	
+	from '../Bin/nglink_jni_x64.dll', '../External/ngspice42_x64.dll'
+	into 'src/main/resources/natives'
+}
+
+// Add additional content to the manifest
+tasks.named('jar') {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                   'Implementation-Version': version,
+                   'Author': 'M_Marvin')
+    }
+}
+
+java {
+	sourceCompatibility = "1.17"
+	targetCompatibility = "1.17"
+    withSourcesJar()
+}
+
+processResources.dependsOn('copyNatives')
+sourcesJar.dependsOn('copyNatives')
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'de.m_marvin.nglink'
+        
+			from components.java
+        }
+    }
+}
+
+// Specify gradle version to use for jitpack
+wrapper {
+    gradleVersion = "7.4.2"
+    distributionType = Wrapper.DistributionType.ALL
+}
+

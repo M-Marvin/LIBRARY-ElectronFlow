@@ -2,7 +2,7 @@ PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 BINDIR = $(PROJECT_ROOT)/../Bin
 OBJS = nglink.o nglinkimpl.o
-INCL = -I$(PROJECT_ROOT)/../External
+INCL = -I$(PROJECT_ROOT)/../External -I$(PROJECT_ROOT)/../JNGLink/build/generated/sources/headers/java/main -I"$(JAVA_HOME)/include" -I"$(JAVA_HOME)/include/win32"
 LIBS = -lstdc++exp
 CFLAGS = -std=c++23
 LDFLAGS = -shared
@@ -13,9 +13,13 @@ else
 	CFLAGS += -O2
 endif
 
-all:	nglink_x64.dll
+all:	nglink_x64.dll nglink_jni_x64.dll
 
 nglink_x64.dll:	$(OBJS)
+	$(CXX) $(LDFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
+	$(EXTRA_CMDS)
+
+nglink_jni_x64.dll:	$(OBJS) jni.o
 	$(CXX) $(LDFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 	$(EXTRA_CMDS)
 
@@ -23,4 +27,4 @@ nglink_x64.dll:	$(OBJS)
 	$(CXX) -c $(CFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(INCL) -o $@ $<
 
 clean:
-	rm -fr $(BINDIR)/nglink_x64.dll $(OBJS) $(EXTRA_CLEAN)
+	rm -fr $(BINDIR)/nglink_x64.dll $(BINDIR)/nglink_jni_x64.dll $(OBJS) $(EXTRA_CLEAN)
