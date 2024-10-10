@@ -1,7 +1,8 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 BINDIR = $(PROJECT_ROOT)/../Bin
-OBJS = cli.o electronflow.o netparser.o dataparser.o ngspice.o zweitor.o
+OBJS = electronflow.o netparser.o dataparser.o ngspice.o zweitor.o
+OBJS_CLI = cli.o $(OBJS)
 INCL = -I$(PROJECT_ROOT)/../NGLink
 LIBS = -L$(BINDIR) -lstdc++exp -lnglink_x64
 CFLAGS = -std=c++23
@@ -13,9 +14,13 @@ else
 	CFLAGS += -O2
 endif
 
-all:	electronflow.exe
+all:	electronflow.exe electronflow_x64.dll
 
-electronflow.exe:	$(OBJS)
+electronflow_x64.dll:	$(OBJS)
+	$(CXX) $(LDFLAGS) -o $(BINDIR)/$@ $^ $(LIBS) -shared
+	$(EXTRA_CMDS)
+
+electronflow.exe:	$(OBJS_CLI)
 	$(CXX) $(LDFLAGS) -o $(BINDIR)/$@ $^ $(LIBS)
 	$(EXTRA_CMDS)
 
@@ -23,4 +28,4 @@ electronflow.exe:	$(OBJS)
 	$(CXX) -c $(CFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(INCL) -o $@ $<
 
 clean:
-	rm -fr $(BINDIR)/electronflow.exe $(OBJS) $(EXTRA_CLEAN)
+	rm -fr $(BINDIR)/electronflow.exe $(BINDIR)/electronflow_x64.dll $(OBJS) $(EXTRA_CLEAN)
