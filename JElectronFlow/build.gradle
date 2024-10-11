@@ -2,8 +2,7 @@
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
-group = 'com.github.M-Marvin'
-version = '1.0'
+version = '0.1'
 
 tasks.register('copyNatives', Copy) {
 	group = 'build'

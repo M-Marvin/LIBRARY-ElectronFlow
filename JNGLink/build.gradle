@@ -2,6 +2,8 @@
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
+version = '0.1'
+
 tasks.register('copyNatives', Copy) {
 	group = 'build'
 	description = 'Copy natives from Bin and External folder'
