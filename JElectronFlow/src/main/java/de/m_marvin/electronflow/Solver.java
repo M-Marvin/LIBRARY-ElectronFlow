@@ -5,29 +5,28 @@ import java.util.function.Consumer;
 public class Solver {
 
 	private static String ngspiceNativeAutodetect;
+	private static Error loadException;
 	
 	static {
-		NativeLoader.setTempLibFolder(System.getProperty("java.io.tmpdir") + "/jelectronflow");
-		NativeLoader.setLibLoadConfig("/libload_electronflow.cfg");
-		NativeLoader.loadNative("nglink");
-		NativeLoader.loadNative("electronflow");
-		ngspiceNativeAutodetect = NativeLoader.getNative("ngspice");
+		try {
+			NativeLoader.setTempLibFolder(System.getProperty("java.io.tmpdir") + "/jelectronflow");
+			NativeLoader.setLibLoadConfig("/libload_electronflow.cfg");
+			NativeLoader.loadNative("nglink");
+			NativeLoader.loadNative("electronflow");
+			ngspiceNativeAutodetect = NativeLoader.getNative("ngspice");
+		} catch (Error e) {
+			loadException = e;
+		}
 	}
 	
 	private final long classid;
 	private Consumer<String> logfunc;
 	
 	public Solver() {
-		this(System.err::println);
+		if (loadException != null) throw loadException;
+		this.classid = this.hashCode();
 	}
 	
-	public Solver(Consumer<String> logout) {
-		this.classid = this.hashCode();
-		this.logfunc = logout;
-		initElectronFlow(this.classid, logout);
-		setLibName(ngspiceNativeAutodetect);
-	}
-
 	protected boolean classidErrorCodes(int code) {
 		switch (code) {
 		case 1:
@@ -44,6 +43,18 @@ public class Solver {
 	}
 	
 	private native int initElectronFlow(long classid, Consumer<String> logout);
+	public boolean attachElectronFlow() {
+		return attachElectronFlow(System.err::println);
+	}
+	public boolean attachElectronFlow(Consumer<String> logout) {
+		this.logfunc = logout;
+		if (!classidErrorCodes(initElectronFlow(this.classid, logout))) {
+			setLibName(ngspiceNativeAutodetect);
+			return true;
+		}
+		return false;
+	}
+	
 	private native int detachElectronFlow(long classid);
 	public void detachElectronFlow() {
 		classidErrorCodes(detachElectronFlow(this.classid));

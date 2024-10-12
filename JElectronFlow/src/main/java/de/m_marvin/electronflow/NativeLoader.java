@@ -121,7 +121,6 @@ public class NativeLoader {
 			libMap.put(nativeName, tempLocation);
 			
 			extractNative(nativeFilePath, tempLibFolder, fileName);
-						
 		}
 		
 		return libMap.get(nativeName).toString();
@@ -130,7 +129,7 @@ public class NativeLoader {
 	public static void loadNative(String nativeName) {
 		String filePath = getNative(nativeName);
 		if (filePath == null) {
-			System.err.println("NativeLoader: Could not load the native " + nativeName + "!");
+			throw new UnsatisfiedLinkError("NativeLoader: Could not load the native " + nativeName + "!");
 		} else {
 			System.load(filePath);
 		}

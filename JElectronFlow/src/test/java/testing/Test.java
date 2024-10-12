@@ -6,7 +6,8 @@ public class Test {
 	
 	public static void main(String[] args) throws InterruptedException {
 		
-		Solver solver = new Solver(System.err::println);
+		Solver solver = new Solver();
+		solver.attachElectronFlow();
 		
 		Thread.sleep(1000);
 		

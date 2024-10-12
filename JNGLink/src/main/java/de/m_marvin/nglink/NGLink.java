@@ -3,12 +3,17 @@ package de.m_marvin.nglink;
 public class NGLink {
 
 	private static String ngspiceNativeAutodetect;
+	private static Error loadException;
 	
 	static {
-		NativeLoader.setTempLibFolder(System.getProperty("java.io.tmpdir") + "/jnglink");
-		NativeLoader.setLibLoadConfig("/libload_nglink.cfg");
-		NativeLoader.loadNative("nglink");
-		ngspiceNativeAutodetect = NativeLoader.getNative("ngspice");
+		try {
+			NativeLoader.setTempLibFolder(System.getProperty("java.io.tmpdir") + "/jnglink");
+			NativeLoader.setLibLoadConfig("/libload_nglink.cfg");
+			NativeLoader.loadNative("nglink");
+			ngspiceNativeAutodetect = NativeLoader.getNative("ngspice");
+		} catch (Error e) {
+			loadException = e;
+		}
 	}
 	
 	// Complete vector info, description and values
@@ -35,6 +40,7 @@ public class NGLink {
 	private INGCallback callbacks;
 	
 	public NGLink(String spiceLib) {
+		if (loadException != null) throw loadException;
 		this.spiceLib = spiceLib;
 		this.classid = this.hashCode();
 	}

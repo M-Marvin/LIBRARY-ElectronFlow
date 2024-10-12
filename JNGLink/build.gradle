@@ -2,13 +2,13 @@
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
-version = '0.1'
+version = '0.3'
 
 tasks.register('copyNatives', Copy) {
 	group = 'build'
 	description = 'Copy natives from Bin and External folder'
 	
-	from '../Bin/nglink_jni_x64.dll', '../External/ngspice42_x64.dll'
+	from '../Binaries/nglink_jni_x64.dll', '../External/ngspice42_x64.dll'
 	into 'src/main/resources/natives'
 }
 

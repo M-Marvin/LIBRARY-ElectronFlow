@@ -68,7 +68,7 @@ JNIEXPORT jint JNICALL Java_de_m_1marvin_electronflow_Solver_setLibName(JNIEnv *
 
 	solver* slv = (solver*) jclass2cclass[classid];
     if (slv == NULL) return -3;
-    std::string libnameNative = std::string(env->GetStringUTFChars(libname, 0));
+    std::string libnameNative = libname == NULL ? "" : std::string(env->GetStringUTFChars(libname, 0));
     slv->setlibname(libnameNative);
     return 0;
 }
@@ -108,7 +108,7 @@ JNIEXPORT jboolean JNICALL Java_de_m_1marvin_electronflow_Solver_upload(JNIEnv *
 
 	solver* slv = (solver*) jclass2cclass[classid];
     if (slv == NULL) return -3;
-    std::string netlistNative = std::string(env->GetStringUTFChars(netlist, 0));
+    std::string netlistNative = netlist == NULL ? "" : std::string(env->GetStringUTFChars(netlist, 0));
     std::stringstream netlistStream(netlistNative);
     return slv->upload(&netlistStream) ? 0 : 1;
 }
@@ -128,7 +128,7 @@ JNIEXPORT jboolean JNICALL Java_de_m_1marvin_electronflow_Solver_execute(JNIEnv 
 
 	solver* slv = (solver*) jclass2cclass[classid];
     if (slv == NULL) return -3;
-    std::string commandNative = std::string(env->GetStringUTFChars(command, 0));
+    std::string commandNative = command == NULL ? "" : std::string(env->GetStringUTFChars(command, 0));
     return slv->execute(commandNative) ? 0 : 1;
 }
 
