@@ -6,10 +6,24 @@ public class Test {
 	
 	public static void main(String[] args) throws InterruptedException {
 		
+		for (int i = 0; i < 1; i++) {
+			
+			new Thread(Test::test).start();
+			
+		}
+		
+	}
+	
+	static void test() {
+
 		Solver solver = new Solver();
 		solver.attachElectronFlow();
 		
-		Thread.sleep(1000);
+		try {
+
+			Thread.sleep(1000);
+			
+		} catch (InterruptedException e) {}
 		
 		String list = "gen_test\r\n"
 				+ "\r\n"
@@ -24,9 +38,24 @@ public class Test {
 				+ "* Last\r\n"
 				+ "R4 VT1 0T1 1\r\n"
 				+ "";
-		
-		solver.upload(list);
+
+		if (!solver.upload(list)) {
+			System.err.println("XXXX1");
+		}
 		solver.execute("op");
+		
+		
+		String list2 = "ingame-level-circuit\r\n"
+				+ "\r\n"
+				+ "* Component Block{industriacore:wire_holder} BlockPos{x=16, y=-60, z=8}\r\n"
+				+ "\r\n"
+				+ "\r\n"
+				+ "R0GND null 0 1";
+		
+		if (!solver.upload(list2)) {
+			System.err.println("XXXX2");
+		}
+		
 		System.out.println(solver.printData());
 		
 		solver.detachElectronFlow();
