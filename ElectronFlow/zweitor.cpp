@@ -11,7 +11,7 @@
 using namespace std;
 using namespace electronflow;
 
-regex const pattern("(ZT[0-9a-zA-Z_]+) ([0-9a-zA-Z_]+) ([0-9a-zA-Z_]+) ([0-9a-zA-Z_]+) ([0-9a-zA-Z_]+) ([ZYHPAB])\\[ ([0-9a-zA-Z\\/_\\-+\\*\\(\\)\\.]+) ([0-9a-zA-Z\\/_\\-+\\*\\(\\)\\.,]+) ([0-9a-zA-Z\\/_\\-+\\*\\(\\)\\.,]+) ([0-9a-zA-Z\\/_\\-+\\*\\(\\)\\.,]+) \\]\r*");
+regex const pattern("(ZT[^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([ZYHPAB])\\[ ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) \\]\\r*");
 
 map<string, pair<string, string>> equations = {
 		{"Z", make_pair(
