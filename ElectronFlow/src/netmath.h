@@ -14,13 +14,15 @@
 #include <vector>
 
 using namespace std;
+using namespace equations;
 
 class matrixset {
 
 public:
-	vector<vector<equation>> g_mat;
-	vector<equation> p_vec;
-	vector<equation> i_vec;
+	vector<vector<equation>> E_mat;
+	vector<vector<equation>> A_mat;
+	vector<equation> f_vec;
+	vector<equation> x_vec;
 
 };
 

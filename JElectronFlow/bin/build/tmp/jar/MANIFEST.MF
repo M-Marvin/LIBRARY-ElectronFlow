@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Implementation-Title: JElectronFlow
+Implementation-Version: 0.5
+Author: M_Marvin
+

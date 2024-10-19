@@ -17,41 +17,40 @@
 
 using namespace std;
 
+namespace netanalysis {
+
 typedef unsigned int index_t;
 
 class element;
 class node {
+
 public:
-	equation name;
+	string name;
 	vector<index_t> elements;
+
+	node(string name) {
+		node::name = name;
+	}
+
 };
 
 enum etype {
-	VSOURCE,ISOURCE,GATE
+	VSOURCE,ISOURCE,RESISTOR,CAPACITOR
 };
 
+class network;
 class element {
 
 public:
 	etype type;
+	string name;
 	index_t node_a;
 	index_t node_b;
+	map<char, equations::equation> parameters;
 
-	virtual equation g_val();
-	virtual equation i_val();
-	virtual equation v_val();
-
-};
-
-class vsource : element {
-
-};
-
-class isource : element {
-
-};
-
-class gate : element {
+	element(etype type, string name, index_t nodeA, index_t nodeB);
+	bool insert_bce(vector<equations::equation> &eqsys, network &network);
+//	bool substitute_bce(equations::equation &eq, network &network);
 
 };
 
@@ -60,10 +59,14 @@ class network {
 public:
 	vector<node> nodes;
 	vector<element> elements;
+	map<string, index_t> name2node;
+	map<string, index_t> name2element;
 
-	bool parse(istream netlist);
-	bool matrix(matrixset* matrixset);
+	bool parse(istream &netlist);
+	bool eqsys(vector<equations::equation> &eqsys);
 
 };
+
+}
 
 #endif /* NETANALYSIS_H_ */

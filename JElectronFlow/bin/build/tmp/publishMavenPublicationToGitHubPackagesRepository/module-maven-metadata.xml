@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>de.m_marvin.electronflow</groupId>
+  <artifactId>jelectronflow</artifactId>
+  <versioning>
+    <latest>0.5</latest>
+    <release>0.5</release>
+    <versions>
+      <version>1.0</version>
+      <version>0.1</version>
+      <version>0.3</version>
+      <version>0.4</version>
+      <version>0.5</version>
+    </versions>
+    <lastUpdated>20241012202403</lastUpdated>
+  </versioning>
+</metadata>

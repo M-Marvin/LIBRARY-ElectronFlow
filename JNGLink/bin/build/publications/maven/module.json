@@ -1,0 +1,80 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "de.m_marvin.nglink",
+    "module": "jnglink",
+    "version": "0.3",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "jnglink-0.3.jar",
+          "url": "jnglink-0.3.jar",
+          "size": 4046004,
+          "sha512": "0676dd13894dc125941e98d26e3176a85ebd58fd2f5bb6e499e6b461cfdd209c6e6c60e1352b974d6a926ee10292cef804f1ea66007e63772daa39c49bc80d5a",
+          "sha256": "1133194712eba45a0c57b9159cb30519fa08795e0983d23338ab523b3ea86e01",
+          "sha1": "00484f2f18611d6ee1815cd6895e078fecb242a4",
+          "md5": "2365eb8d669665455eeba6d2a9a6b8a1"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "jnglink-0.3.jar",
+          "url": "jnglink-0.3.jar",
+          "size": 4046004,
+          "sha512": "0676dd13894dc125941e98d26e3176a85ebd58fd2f5bb6e499e6b461cfdd209c6e6c60e1352b974d6a926ee10292cef804f1ea66007e63772daa39c49bc80d5a",
+          "sha256": "1133194712eba45a0c57b9159cb30519fa08795e0983d23338ab523b3ea86e01",
+          "sha1": "00484f2f18611d6ee1815cd6895e078fecb242a4",
+          "md5": "2365eb8d669665455eeba6d2a9a6b8a1"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "jnglink-0.3-sources.jar",
+          "url": "jnglink-0.3-sources.jar",
+          "size": 4038147,
+          "sha512": "ceed77152ebc27f022ee9d9460a97fdea6da252838b514d49831f9dde8b4c5854255982439b139338b1a010d7262af25ba5bb96ee3a20b6839263371eda0a3c2",
+          "sha256": "11fa573207d3f50835e0aecb1bf57300237b2636a5cc7ad305ccb7ee63147d85",
+          "sha1": "abcf0ac1358918413db01dc885b0fd670ba2ce62",
+          "md5": "2ac6d2112cfe0366d0a577d5b1c358c7"
+        }
+      ]
+    }
+  ]
+}

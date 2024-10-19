@@ -9,51 +9,92 @@
 #include "equations.h"
 #include <algorithm>
 
-bool network::matrix(matrixset* matrixset) {
+using namespace netanalysis;
 
-	int nNodes = network::nodes.size();
+bool network::eqsys(vector<equations::equation> &eqsys) {
 
-	matrixset->g_mat.reserve(nNodes);
-	for (int i = 0; i < nNodes; i++)
-		matrixset->g_mat[i].reserve(nNodes);
-
-	matrixset->i_vec.reserve(nNodes);
-	matrixset->p_vec.reserve(nNodes);
-
-	for (int n = 0; n < nNodes; n++) {
-		vector<index_t>* iev1 = &network::nodes[n].elements;
-
-		for (int m = 0; m < nNodes; m++) {
-			equation* eq = &matrixset->g_mat[n][m];
-			*eq = "-"_f;
-
-			if (n == m) {
-				for (index_t ie : network::nodes[n].elements) {
-					element* e = &network::elements[ie];
-					if (e->type == GATE)
-						*eq += "+"_f + e->g_val();
-				}
-			} else {
-				vector<index_t>* iev2 = &network::nodes[m].elements;
-				for (index_t ie : *iev1) {
-					element* e = &network::elements[ie];
-					if (find(iev2->begin(), iev2->end(), ie) != iev2->end())
-						*eq += "+"_f + e->g_val();
-				}
-
-			}
+	for (index_t ni = 0; ni < network::nodes.size(); ni++) {
+		eqsys.push_back("=0"_f);
+		for (index_t ei : network::nodes[ni].elements) {
+			element* e = &network::elements[ei];
+			equation sign = ni == e->node_b ? "+"_f : "-"_f;
+			eqsys.back().insert(0, sign + equation("i_" + e->name));
 		}
+	}
 
-		equation* eq = &matrixset->i_vec[n];
-		for (int ie : network::nodes[n].elements) {
-			element* e = &network::elements[ie];
-			if (e->type == ISOURCE)
-				eq += "+"_f + e->i_val();
+	// DEBUG print
+	cout << "equation system: stage 1\n";
+	for (equations::equation eq : eqsys) {
+		cout << eq.str() << "\n";
+	}
+
+	for (element &e : network::elements) {
+		if (!e.insert_bce(eqsys, *this)) {
+			cout << "failed to insert component bce: " << e.name << ", most likely a missing parameter!\n";
+			return false;
 		}
 
 	}
 
-	return false;
+	// DEBUG print
+	cout << "equation system: stage 2\n";
+	for (equations::equation eq : eqsys) {
+		cout << eq.str() << "\n";
+	}
+
+	for (equations::equation &eq : eqsys) {
+		eq.substitute_func("V", 2, [this](vector<equations::equation> params) {
+			string nodeA = params[0].str();
+			string nodeB = params[1].str();
+			if (!network::name2node.contains(nodeA)) {
+				cout << "unknown node in equation: " << nodeA << "\n";
+				return "0"_f;
+			}
+			if (!network::name2node.contains(nodeB)) {
+				cout << "unknown node in equation: " << nodeB << "\n";
+				return "0"_f;
+			}
+			return equation("(p_" + nodeA + "-p_" + nodeB + ")");
+		});
+		eq.substitute_func("V", 1, [this](vector<equations::equation> params) {
+			string ename = params[0].str();
+			if (!network::name2element.contains(ename)) {
+				cout << "unknown element in equation: " << ename << "\n";
+				return "0"_f;
+			}
+			index_t ei = network::name2element[ename];
+			element* e = &network::elements[ei];
+			string nodeA = network::nodes[e->node_a].name;
+			string nodeB = network::nodes[e->node_b].name;
+			return equation("(p_" + nodeA + "-p_" + nodeB + ")");
+		});
+		eq.substitute_func("I", 1, [this](vector<equations::equation> params) {
+			string ename = params[0].str();
+			if (!network::name2element.contains(ename)) {
+				cout << "unknown element in equation: " << ename << "\n";
+				return "0"_f;
+			}
+			return equation("i_" + ename);
+		});
+	}
+
+	// DEBUG print
+	cout << "equation system: stage 3\n";
+	for (equations::equation eq : eqsys) {
+		cout << eq.str() << "\n";
+	}
+
+	for (equations::equation &eq : eqsys) {
+		eq.expand();
+	}
+
+	// DEBUG print
+	cout << "equation system: stage 3\n";
+	for (equations::equation eq : eqsys) {
+		cout << eq.str() << "\n";
+	}
+
+	return true;
 
 }
 
