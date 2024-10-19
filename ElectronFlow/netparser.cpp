@@ -23,7 +23,7 @@ bool solver_impl::upload(istream* in) {
 	solver_impl::netname.clear();
 	solver_impl::timepoint.clear();
 	solver_impl::nodes.clear();
-//	solver::components.clear();
+	solver_impl::components = 0;
 
 	stringstream netout;
 	string line;
@@ -56,10 +56,12 @@ bool solver_impl::upload(istream* in) {
 			logout(format("zweitor component: {}", line));
 			if (!formatZweitor(&line, &netout))
 				return false;
+			solver_impl::components++;
 			continue;
 		}
 
 		logout(format("network component: {}", line));
+		solver_impl::components++;
 		netout << line << "\n";
 
 	}

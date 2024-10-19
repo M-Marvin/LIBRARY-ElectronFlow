@@ -53,5 +53,9 @@ bool solver_impl::executeList() {
 
 bool solver_impl::execute(string command) {
 	logout(format("\t{} > run {}", solver_impl::netname, command));
+	if (solver_impl::components == 0 && command != "quit") {
+		logout(format("\t{} > no components, skip command", solver_impl::netname));
+		return true;
+	}
 	return solver_impl::nglspice.execCommand(command);
 }

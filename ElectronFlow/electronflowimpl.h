@@ -28,6 +28,7 @@ private:
 	function<void(string)> logout;
 	string netname;
 	string filtered;
+	unsigned int components;
 	vector<string> commands;
 	vector<double> timepoint;
 	map<string, vector<double>> nodes;
