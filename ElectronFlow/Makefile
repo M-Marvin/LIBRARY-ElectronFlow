@@ -1,12 +1,15 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
+EF_VERSION = "1.0_beta"
+DEF_NGSPICE = "ngspice42_x64.dll"
+
 BINDIR = $(PROJECT_ROOT)/../Binaries
 OBJS = electronflow.o netparser.o dataparser.o ngspice.o zweitor.o
 OBJS_CLI = cli.o $(OBJS)
 OBJS_JNI = jni.o $(OBJS)
 INCL = -I$(PROJECT_ROOT)/../NGLink -I$(PROJECT_ROOT)/../JElectronFlow/build/generated/sources/headers/java/main -I"$(JAVA_HOME)/include" -I"$(JAVA_HOME)/include/win32"
 LIBS = -L$(BINDIR) -lstdc++exp -l:nglink_x64.dll
-CFLAGS = -std=c++23
+CFLAGS = -std=c++23 -DEF_VERSION=\"$(EF_VERSION)\" -DDEF_NGSPICE=\"$(DEF_NGSPICE)\"
 
 BUILD_MODE = prod
 

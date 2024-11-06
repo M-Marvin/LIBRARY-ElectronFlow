@@ -15,9 +15,13 @@ using namespace std;
 #define EF_VERSION "[test-build]"
 #endif
 
+#ifndef DEF_NGSPICE
+#define DEF_NGSPICE "undefined.lib"
+#endif
+
 solver_impl::solver_impl(function<void(string)> logout) {
 	solver_impl::logout = logout;
-	solver_impl::logout(format("\n\t\telectron flow ver{} + SPICE\n", EF_VERSION));
+	solver_impl::setlibname(DEF_NGSPICE);
 
 	if (!solver_impl::nglspice.initNGLinkFull([this](string s) { solver_impl::logout(s); }, [](){}, [this](spice_pvecvaluesall d) { solver_impl::dataReceive(d); }, [](spice_pvecinfoall){})) {
 		logout("\tfailed to initialize nglink");
@@ -30,6 +34,11 @@ void solver_impl::setlogger(function<void(string)> logout) {
 
 void solver_impl::setlibname(string libname) {
 	solver_impl::spicelibname = libname;
+
+	// print version info
+	string spiceName = solver_impl::spicelibname.substr(solver_impl::spicelibname.find_last_of("\\/") + 1);
+	spiceName = spiceName.substr(0, spiceName.rfind("."));
+	solver_impl::logout(format("######################################################################\n\telectron flow ver{} + SPICE {}\n######################################################################", EF_VERSION, spiceName));
 }
 
 solver_impl::~solver_impl() {

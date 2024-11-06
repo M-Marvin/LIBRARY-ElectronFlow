@@ -32,7 +32,7 @@ private:
 	vector<string> commands;
 	vector<double> timepoint;
 	map<string, vector<double>> nodes;
-	string spicelibname = "ngspice42_x64.dll";
+	string spicelibname;
 	nglink nglspice;
 
 	bool formatZweitor(string* line, ostream* out);

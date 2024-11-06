@@ -44,8 +44,13 @@ bool solver_impl::upload(istream* in) {
 
 		if (line[0] == '.') {
 			logout(format("control command: {}", line));
-			line.erase(line.begin());
-			if (line.rfind("end", 0) != 0) solver_impl::commands.push_back(line);
+			if (line.rfind(".model") != 0) {
+				line.erase(line.begin());
+				if (line.rfind("end", 0) != 0) solver_impl::commands.push_back(line);
+			} else {
+				logout(format("model line: {}", line));
+				netout << line << "\n";
+			}
 			continue;
 		}
 
