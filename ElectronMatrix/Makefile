@@ -1,6 +1,6 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-OBJS = equations.o netparsing.o netmeshing.o ElectronMatrix.o
+OBJS = equations.o netparsing.o netmeshing.o ElectronMatrix.o netmath.o
 INCLUDES = -I../../../External
 CFLAGS = $(INCLUDES)
 

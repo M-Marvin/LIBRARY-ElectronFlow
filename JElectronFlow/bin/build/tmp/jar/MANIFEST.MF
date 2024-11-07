@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 Implementation-Title: JElectronFlow
-Implementation-Version: 0.5
+Implementation-Version: 0.6
 Author: M_Marvin
 

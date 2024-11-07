@@ -3,7 +3,7 @@
   "component": {
     "group": "de.m_marvin.electronflow",
     "module": "jelectronflow",
-    "version": "0.5",
+    "version": "0.6",
     "attributes": {
       "org.gradle.status": "release"
     }
@@ -25,13 +25,13 @@
       },
       "files": [
         {
-          "name": "jelectronflow-0.5.jar",
-          "url": "jelectronflow-0.5.jar",
-          "size": 4843929,
-          "sha512": "6eeff82fc70cd9fe1964ad8f40767b2f0d3ec60eb7d4f6ed0b222d2b16ae80695fcdf5576462ef3199b97cea04ca6264ce564deab7c615f71ee43245bcca9490",
-          "sha256": "0a86218953c9781cc383d2376c6ed672962d505ba45518e24f2a9c37b9e698be",
-          "sha1": "254ff4d24dda52d117ed046b105b1a460b99a441",
-          "md5": "8d311b4bb58e0ac6edec96339a4bbb5c"
+          "name": "jelectronflow-0.6.jar",
+          "url": "jelectronflow-0.6.jar",
+          "size": 4844070,
+          "sha512": "d21c5b1f7c676f20ef40b9dc685401c47a655e8885e065b52dd5a0fba67b0653af8aa6e9e6fdf2787c370a99395d8fa2c81946cb356d2f9d6ee97ab41592f7d5",
+          "sha256": "ed6eda1fcd1dea165d6f2816303ba8301113dcc1fca0222b2cd0bea590fd614c",
+          "sha1": "919f66ed0653ffc6542bf377fb78c50ab954b285",
+          "md5": "9d7e0d53c0662d6fcef228645096fc0d"
         }
       ]
     },
@@ -46,13 +46,13 @@
       },
       "files": [
         {
-          "name": "jelectronflow-0.5.jar",
-          "url": "jelectronflow-0.5.jar",
-          "size": 4843929,
-          "sha512": "6eeff82fc70cd9fe1964ad8f40767b2f0d3ec60eb7d4f6ed0b222d2b16ae80695fcdf5576462ef3199b97cea04ca6264ce564deab7c615f71ee43245bcca9490",
-          "sha256": "0a86218953c9781cc383d2376c6ed672962d505ba45518e24f2a9c37b9e698be",
-          "sha1": "254ff4d24dda52d117ed046b105b1a460b99a441",
-          "md5": "8d311b4bb58e0ac6edec96339a4bbb5c"
+          "name": "jelectronflow-0.6.jar",
+          "url": "jelectronflow-0.6.jar",
+          "size": 4844070,
+          "sha512": "d21c5b1f7c676f20ef40b9dc685401c47a655e8885e065b52dd5a0fba67b0653af8aa6e9e6fdf2787c370a99395d8fa2c81946cb356d2f9d6ee97ab41592f7d5",
+          "sha256": "ed6eda1fcd1dea165d6f2816303ba8301113dcc1fca0222b2cd0bea590fd614c",
+          "sha1": "919f66ed0653ffc6542bf377fb78c50ab954b285",
+          "md5": "9d7e0d53c0662d6fcef228645096fc0d"
         }
       ]
     },
@@ -66,13 +66,13 @@
       },
       "files": [
         {
-          "name": "jelectronflow-0.5-sources.jar",
-          "url": "jelectronflow-0.5-sources.jar",
-          "size": 4841162,
-          "sha512": "ee20a8dfa99e5d688fa276083514a522c036a19f22a868683e38718d43b60d3fc29e69cbc62cdfddb9f8187af8b77129d50552321093eeba067286b1897fdae6",
-          "sha256": "29b5f8245fd9f6b789fcd7dc269bd29f863b1c67f0d9e743fe1aa181cccd3bf5",
-          "sha1": "3dbcb14329957f3795deba8ab3a7daa4b56efec5",
-          "md5": "cb3196dbf64bebfb212f1bc26d70fca2"
+          "name": "jelectronflow-0.6-sources.jar",
+          "url": "jelectronflow-0.6-sources.jar",
+          "size": 4841279,
+          "sha512": "7bf4cd002c29ee43be7b248e7ca77ac3e841fcc3afdfa476901f20dac238173d5eca107f032c9eb2078ef598295961c1337129825c319e1e7cd6467c574b1d72",
+          "sha256": "e754cad3e44a3906826fc4f2d6d466f6d31230aa2c959f9c5ffcc67015cfea0c",
+          "sha1": "4503a9ddb55dec19f5f9386028802c4b9cc2eef5",
+          "md5": "c5f5167fc52458cea21a7e9ce817a638"
         }
       ]
     }

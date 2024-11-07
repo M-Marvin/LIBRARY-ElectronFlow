@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Implementation-Title: JNGLink
-Implementation-Version: 0.3
-Author: M_Marvin
-
