@@ -38,7 +38,9 @@ void solver_impl::setlibname(string libname) {
 	// print version info
 	string spiceName = solver_impl::spicelibname.substr(solver_impl::spicelibname.find_last_of("\\/") + 1);
 	spiceName = spiceName.substr(0, spiceName.rfind("."));
-	solver_impl::logout(format("######################################################################\n\telectron flow ver{} + SPICE {}\n######################################################################", EF_VERSION, spiceName));
+	solver_impl::logout(format("######################################################################"));
+	solver_impl::logout(format("\telectron flow ver{} + SPICE {}", EF_VERSION, spiceName));
+	solver_impl::logout(format("######################################################################"));
 }
 
 solver_impl::~solver_impl() {
