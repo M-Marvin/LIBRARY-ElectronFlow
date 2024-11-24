@@ -13,6 +13,7 @@ public class Solver {
 			NativeLoader.setLibLoadConfig("/libload_electronflow.cfg");
 			NativeLoader.loadNative("nglink");
 			NativeLoader.loadNative("electronflow");
+			NativeLoader.loadNative("libomp");
 			ngspiceNativeAutodetect = NativeLoader.getNative("ngspice");
 		} catch (Error e) {
 			loadException = e;

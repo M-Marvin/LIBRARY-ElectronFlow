@@ -10,6 +10,7 @@ public class NGLink {
 			NativeLoader.setTempLibFolder(System.getProperty("java.io.tmpdir") + "/jnglink");
 			NativeLoader.setLibLoadConfig("/libload_nglink.cfg");
 			NativeLoader.loadNative("nglink");
+			NativeLoader.loadNative("libomp");
 			ngspiceNativeAutodetect = NativeLoader.getNative("ngspice");
 		} catch (Error e) {
 			loadException = e;
