@@ -1,0 +1,13 @@
+
+VIUG Vdiv GND Vin GND 100
+*UG1 Vdiv GND 0
+*IG2 Vin GND -0.01
+R1 Vin Va 1000
+R2 Va GND 1000
+R3 Vin Vb 1000
+R4 Vb GND 1000
+RM Va Vb 1000
+
+UG V GND 1
+Rdiv1 V Vdiv 20
+*Rdiv2 Vdiv GND 1000

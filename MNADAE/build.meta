@@ -1,0 +1,40 @@
+import de.m_marvin.metabuild.java.script.JavaBuildScript;
+import de.m_marvin.metabuild.maven.Maven;
+import de.m_marvin.metabuild.maven.types.Repository;
+import de.m_marvin.metabuild.maven.types.Repository.Credentials;
+
+public class Buildfile extends JavaBuildScript {
+	
+	@Override
+	public void init() {
+		
+		projectName = "electronflow";
+		
+		super.init();
+		
+	}
+	
+	@Override
+	public void repositories() {
+		
+		dependencies.repository(new Repository(
+				"[GHP] UniVec", 
+				"https://maven.pkg.github.com/m-marvin/library-unifiedvectors", 
+				new Credentials(
+						() -> System.getenv("GITHUB_ACTOR"), 
+						() -> System.getenv("GITHUB_TOKEN")
+				)
+		));
+		
+		dependencies.repository(Maven.mavenLocal());
+		
+	}
+	
+	@Override
+	public void dependencies() {
+		
+		dependencies.implementation("de.m_marvin.univec:univec:1.7.1");
+		
+	}
+	
+}

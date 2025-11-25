@@ -2,3 +2,4 @@
 .gradle
 *.log
 /Binaries
+/MNADAE/build
