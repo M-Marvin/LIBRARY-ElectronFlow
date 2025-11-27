@@ -25,9 +25,11 @@ public class Test {
 		System.out.println(network);
 		System.out.println("- - - - - - - - -");
 		
-		network.fillMatrices();
+		Solver solver = new Solver();
 		
-		network.solveLinear();
+		network.stampMatrices();
+		solver.initialize(network);
+		solver.solve();
 		
 		parser.printNetResult(network, System.out::println);
 		

@@ -26,6 +26,8 @@ public class Buildfile extends JavaBuildScript {
 				)
 		));
 		
+		dependencies.repository(Maven.mavenCentral());
+		
 		dependencies.repository(Maven.mavenLocal());
 		
 	}
@@ -33,7 +35,9 @@ public class Buildfile extends JavaBuildScript {
 	@Override
 	public void dependencies() {
 		
-		dependencies.implementation("de.m_marvin.univec:univec:1.7.1");
+		dependencies.implementation("de.m_marvin.univec:univec:1.7.3");
+		
+		dependencies.implementation("org.ejml:ejml-dsparse:0.44.0");
 		
 	}
 	

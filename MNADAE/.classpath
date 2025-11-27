@@ -7,6 +7,9 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/marvi/.meta/files/rrp_cbf2121a7940579828308e5b8003467d/de/m_marvin/univec/univec/1.7.1/univec-1.7.1.jar" sourcepath="C:/Users/marvi/.meta/files/rrp_cbf2121a7940579828308e5b8003467d/de/m_marvin/univec/univec/1.7.1/univec-1.7.1-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/marvi/.meta/files/rrp_e90dc4d7f843e0a3487618be8a2a3713/org/ejml/ejml-dsparse/0.44.0/ejml-dsparse-0.44.0.jar" sourcepath="C:/Users/marvi/.meta/files/rrp_e90dc4d7f843e0a3487618be8a2a3713/org/ejml/ejml-dsparse/0.44.0/ejml-dsparse-0.44.0-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/marvi/.meta/files/rrp_e90dc4d7f843e0a3487618be8a2a3713/org/ejml/ejml-core/0.44.0/ejml-core-0.44.0.jar" sourcepath="C:/Users/marvi/.meta/files/rrp_e90dc4d7f843e0a3487618be8a2a3713/org/ejml/ejml-core/0.44.0/ejml-core-0.44.0-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/marvi/.meta/files/rrp_cbf2121a7940579828308e5b8003467d/de/m_marvin/univec/univec/1.7.3/univec-1.7.3.jar" sourcepath="C:/Users/marvi/.meta/files/rrp_cbf2121a7940579828308e5b8003467d/de/m_marvin/univec/univec/1.7.3/univec-1.7.3-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/marvi/.meta/files/rrp_e90dc4d7f843e0a3487618be8a2a3713/org/ejml/ejml-ddense/0.44.0/ejml-ddense-0.44.0.jar" sourcepath="C:/Users/marvi/.meta/files/rrp_e90dc4d7f843e0a3487618be8a2a3713/org/ejml/ejml-ddense/0.44.0/ejml-ddense-0.44.0-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

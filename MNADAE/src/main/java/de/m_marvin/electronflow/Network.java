@@ -9,14 +9,15 @@ import de.m_marvin.unimat.impl.MatrixNd;
 
 public class Network {
 	
-	protected final Map<String, Component> components = new HashMap<>();
-	protected final int nNodes;
-	protected final int nVSources;
+	private final Map<String, Component> components = new HashMap<>();
+	private final int nNodes;
+	private final int nVSources;
 	
-	protected MatrixNd systemMatrix_A;
-	protected MatrixNd systemMatrix_E;
-	protected MatrixNd systemMatrix_x;
-	protected MatrixNd systemMatrix_z;
+	// E*x' + A*x = z
+	private MatrixNd systemMatrix_A;
+	private MatrixNd systemMatrix_E;
+	private MatrixNd systemMatrix_x;
+	private MatrixNd systemMatrix_z;
 	
 	public Network(Collection<Component> components) {
 		if (components.isEmpty())
@@ -33,6 +34,22 @@ public class Network {
 	
 	public Collection<Component> getComponents() {
 		return components.values();
+	}
+	
+	public MatrixNd getSystemMatrix_A() {
+		return systemMatrix_A;
+	}
+	
+	public MatrixNd getSystemMatrix_E() {
+		return systemMatrix_E;
+	}
+	
+	public MatrixNd getSystemMatrix_z() {
+		return systemMatrix_z;
+	}
+	
+	public void setSystemMatrix_x(MatrixNd systemMatrix_x) {
+		this.systemMatrix_x = systemMatrix_x;
 	}
 	
 	public class Context {
@@ -80,12 +97,13 @@ public class Network {
 		return IntStream.of(vids).mapToDouble(this::getVSourceCurrent).toArray();
 	}
 	
-	protected void fillMatrices() {
+	public void stampMatrices() {
 		
 		int matrixSize = this.nNodes + this.nVSources;
-		this.systemMatrix_A = new MatrixNd(matrixSize);
-		this.systemMatrix_E = new MatrixNd(matrixSize);
-		this.systemMatrix_z = new MatrixNd(1, matrixSize);
+		boolean makeSparse = matrixSize > 6;
+		this.systemMatrix_A = new MatrixNd(matrixSize, makeSparse);
+		this.systemMatrix_E = new MatrixNd(matrixSize, makeSparse);
+		this.systemMatrix_z = new MatrixNd(1, matrixSize, makeSparse);
 		
 		Context ctx = new Context();
 		
@@ -95,27 +113,6 @@ public class Network {
 					this.systemMatrix_E,
 					this.systemMatrix_z
 				);
-		
-	}
-	
-	protected void solveLinear() {
-
-		// TODO debugging
-		
-		System.out.println("= Matrix A =");
-		System.out.println(this.systemMatrix_A);
-		System.out.println("= Source Vector z =");
-		System.out.println(this.systemMatrix_z);
-		
-		System.out.println("- - - - - - -");
-		
-		System.out.println("det(A) = " + this.systemMatrix_A.determinant());
-		
-		MatrixNd invA = this.systemMatrix_A.invert();
-		this.systemMatrix_x = invA.mul(this.systemMatrix_z);
-
-		System.out.println("= Solution Vector x =");
-		System.out.println(this.systemMatrix_x);
 		
 	}
 	
