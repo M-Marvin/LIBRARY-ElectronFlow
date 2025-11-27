@@ -1,0 +1,8 @@
+Vdiv	0,000 V
+V	1,000 V
+Vin	5,000 V
+Va	2,500 V
+GND	-0,000 V
+Vb	2,500 V
+UG	-0,050 A
+VIUG	-0,005 A	0,050 A

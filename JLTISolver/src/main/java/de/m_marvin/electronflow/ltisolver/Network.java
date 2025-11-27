@@ -1,4 +1,4 @@
-package de.m_marvin.electronflow;
+package de.m_marvin.electronflow.ltisolver;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,7 +15,6 @@ public class Network {
 	
 	// E*x' + A*x = z
 	private MatrixNd systemMatrix_A;
-	private MatrixNd systemMatrix_E;
 	private MatrixNd systemMatrix_x;
 	private MatrixNd systemMatrix_z;
 	
@@ -40,10 +39,6 @@ public class Network {
 		return systemMatrix_A;
 	}
 	
-	public MatrixNd getSystemMatrix_E() {
-		return systemMatrix_E;
-	}
-	
 	public MatrixNd getSystemMatrix_z() {
 		return systemMatrix_z;
 	}
@@ -52,9 +47,18 @@ public class Network {
 		this.systemMatrix_x = systemMatrix_x;
 	}
 	
-	public class Context {
+	public class StampingContext {
 		
+		private boolean onlyZ;
 		private int voltageSourceId = 0;
+		
+		public StampingContext(boolean onlyZ) {
+			this.onlyZ = onlyZ;
+		}
+		
+		public boolean stampOnlyZ() {
+			return this.onlyZ;
+		}
 		
 		public int nodeCount() {
 			return Network.this.nNodes;
@@ -71,6 +75,8 @@ public class Network {
 	}
 	
 	public double getNodePotential(int nodeId) {
+		if (this.systemMatrix_x == null)
+			throw new IllegalStateException("solution matrix has net yet been computed");
 		if (nodeId > this.nNodes)
 			throw new IndexOutOfBoundsException("node id does not exist: " + nodeId);
 		
@@ -79,6 +85,8 @@ public class Network {
 	}
 	
 	public double getVSourceCurrent(int vsourceId) {
+		if (this.systemMatrix_x == null)
+			throw new IllegalStateException("solution matrix has net yet been computed");
 		if (vsourceId >= this.nVSources)
 			throw new IndexOutOfBoundsException("voltage source id does not exist: " + vsourceId);
 		
@@ -86,6 +94,8 @@ public class Network {
 	}
 	
 	public double[] getVSourceCurrent(String vsourceName) {
+		if (this.systemMatrix_x == null)
+			throw new IllegalStateException("solution matrix has net yet been computed");
 		Component comp = this.components.get(vsourceName);
 		if (comp == null)
 			throw new IllegalArgumentException("component does not exist: " + vsourceName);
@@ -97,22 +107,23 @@ public class Network {
 		return IntStream.of(vids).mapToDouble(this::getVSourceCurrent).toArray();
 	}
 	
-	public void stampMatrices() {
+	public void stampMatrices(boolean onlyZ) {
 		
 		int matrixSize = this.nNodes + this.nVSources;
 		boolean makeSparse = matrixSize > 6;
-		this.systemMatrix_A = new MatrixNd(matrixSize, makeSparse);
-		this.systemMatrix_E = new MatrixNd(matrixSize, makeSparse);
+		if (!onlyZ)
+			this.systemMatrix_A = new MatrixNd(matrixSize, makeSparse);
 		this.systemMatrix_z = new MatrixNd(1, matrixSize, makeSparse);
 		
-		Context ctx = new Context();
+		StampingContext ctx = new StampingContext(onlyZ);
 		
 		for (var comp : this.components.values())
 			comp.stampMatricies(ctx, 
-					this.systemMatrix_A, 
-					this.systemMatrix_E,
+					this.systemMatrix_A,
 					this.systemMatrix_z
 				);
+		
+		this.systemMatrix_x = null;
 		
 	}
 	

@@ -1,10 +1,10 @@
-package de.m_marvin.electronflow.components;
+package de.m_marvin.electronflow.ltisolver.components;
 
 import java.util.Optional;
 import java.util.function.Function;
 
-import de.m_marvin.electronflow.Component;
-import de.m_marvin.electronflow.Network.Context;
+import de.m_marvin.electronflow.ltisolver.Component;
+import de.m_marvin.electronflow.ltisolver.Network.StampingContext;
 import de.m_marvin.unimat.impl.MatrixNd;
 
 public class Current2Current extends FourPort {
@@ -53,22 +53,24 @@ public class Current2Current extends FourPort {
 	}
 	
 	@Override
-	public void stampMatricies(Context ctx, MatrixNd A, MatrixNd E, MatrixNd z) {
+	public void stampMatricies(StampingContext ctx, MatrixNd A, MatrixNd z) {
 			
 		this.vid = ctx.nextVoltageSourceId();
-		int mid = this.vid + ctx.nodeCount();
-		if (this.nodeA != 0) {
-			A.addM(mid, this.nodeA - 1, +1.0);
-			A.addM(this.nodeA - 1, mid, +1.0);
+		if (!ctx.stampOnlyZ()) {
+			int mid = this.vid + ctx.nodeCount();
+			if (this.nodeA != 0) {
+				A.addM(mid, this.nodeA - 1, +1.0);
+				A.addM(this.nodeA - 1, mid, +1.0);
+			}
+			if (this.nodeB != 0) {
+				A.addM(mid, this.nodeB - 1, -1.0);
+				A.addM(this.nodeB - 1, mid, -1.0);
+			}
+			if (this.nodeC != 0)
+				A.addM(mid, this.nodeC - 1, -this.factor);
+			if (this.nodeD != 0)
+				A.addM(mid, this.nodeD - 1, +this.factor);
 		}
-		if (this.nodeB != 0) {
-			A.addM(mid, this.nodeB - 1, -1.0);
-			A.addM(this.nodeB - 1, mid, -1.0);
-		}
-		if (this.nodeC != 0)
-			A.addM(mid, this.nodeC - 1, -this.factor);
-		if (this.nodeD != 0)
-			A.addM(mid, this.nodeD - 1, +this.factor);
 		
 	}
 	

@@ -1,4 +1,4 @@
-package de.m_marvin.electronflow;
+package de.m_marvin.electronflow.ltisolver;
 
 import java.util.regex.Pattern;
 
@@ -30,7 +30,7 @@ public abstract class Component {
 		return new int[0];
 	}
 	
-	public abstract void stampMatricies(Network.Context ctx, MatrixNd A, MatrixNd E, MatrixNd z);
+	public abstract void stampMatricies(Network.StampingContext ctx, MatrixNd A, MatrixNd z);
 	
 	@Override
 	public String toString() {

@@ -1,10 +1,10 @@
-package de.m_marvin.electronflow.components;
+package de.m_marvin.electronflow.ltisolver.components;
 
 import java.util.Optional;
 import java.util.function.Function;
 
-import de.m_marvin.electronflow.Component;
-import de.m_marvin.electronflow.Network.Context;
+import de.m_marvin.electronflow.ltisolver.Component;
+import de.m_marvin.electronflow.ltisolver.Network.StampingContext;
 import de.m_marvin.unimat.impl.MatrixNd;
 
 public class Current extends TwoPort {
@@ -45,12 +45,14 @@ public class Current extends TwoPort {
 	}
 	
 	@Override
-	public void stampMatricies(Context ctx, MatrixNd A, MatrixNd E, MatrixNd z) {
+	public void stampMatricies(StampingContext ctx, MatrixNd A, MatrixNd z) {
 		
 		if (this.nodeA != 0)
 			z.addM(0, this.nodeA - 1, -this.current);
-		if (this.nodeB != 0)
-			z.addM(0, this.nodeB - 1, +this.current);
+		if (!ctx.stampOnlyZ()) {
+			if (this.nodeB != 0)
+				z.addM(0, this.nodeB - 1, +this.current);
+		}
 		
 	}
 

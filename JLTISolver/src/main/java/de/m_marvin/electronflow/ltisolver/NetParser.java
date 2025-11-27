@@ -1,11 +1,15 @@
-package de.m_marvin.electronflow;
+package de.m_marvin.electronflow.ltisolver;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,14 +20,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import de.m_marvin.electronflow.components.Capacitor;
-import de.m_marvin.electronflow.components.Current;
-import de.m_marvin.electronflow.components.Current2Current;
-import de.m_marvin.electronflow.components.Current2Voltage;
-import de.m_marvin.electronflow.components.Resistor;
-import de.m_marvin.electronflow.components.Voltage;
-import de.m_marvin.electronflow.components.Voltage2Current;
-import de.m_marvin.electronflow.components.Voltage2Voltage;
+import de.m_marvin.electronflow.ltisolver.components.Current;
+import de.m_marvin.electronflow.ltisolver.components.Current2Current;
+import de.m_marvin.electronflow.ltisolver.components.Current2Voltage;
+import de.m_marvin.electronflow.ltisolver.components.Resistor;
+import de.m_marvin.electronflow.ltisolver.components.Voltage;
+import de.m_marvin.electronflow.ltisolver.components.Voltage2Current;
+import de.m_marvin.electronflow.ltisolver.components.Voltage2Voltage;
 
 public class NetParser {
 	
@@ -44,14 +47,13 @@ public class NetParser {
 				Voltage::tryParse,
 				Current::tryParse,
 				Resistor::tryParse,
-				Capacitor::tryParse,
 				Voltage2Current::tryParse,
 				Current2Current::tryParse,
 				Voltage2Voltage::tryParse,
 				Current2Voltage::tryParse
 		));
 	}
-	 
+	
 	public int getNodeId(String nodeName) {
 		return this.nodeMap.get(nodeName);
 	}
@@ -86,10 +88,8 @@ public class NetParser {
 			String[] args = line.split(" ");
 			Optional<Component> component = parseComponent(args);
 			
-			if (!component.isPresent()) {
-				System.err.println("unknown component: " + line);
+			if (!component.isPresent())
 				return Optional.empty();
-			}
 			
 			components.add(component.get());
 			
@@ -124,10 +124,11 @@ public class NetParser {
 		return parseNet(new FileInputStream(netlistFile));
 	}
 	
-	public void printNetResult(Network network, Consumer<String> lineConsumer) {
+	protected void printNetResult(Network network, Function<String, Boolean> lineConsumer) {
 		for (var node : this.nodeMap.entrySet()) {
 			double potential = network.getNodePotential(node.getValue());
-			lineConsumer.accept(String.format("%s\t%.03f V", node.getKey(), potential));
+			if (!lineConsumer.apply(String.format("%s\t%.03f V", node.getKey(), potential)))
+				return;
 		}
 		for (var comp : network.getComponents()) {
 			if (comp.vsourceIds().length == 0) continue;
@@ -136,8 +137,42 @@ public class NetParser {
 			lineBuffer.append(comp.name());
 			for (double current : currents)
 				lineBuffer.append(String.format("\t%.03f A", current));
-			lineConsumer.accept(lineBuffer.toString());
+			if (!lineConsumer.apply(lineBuffer.toString()))
+				return;
 		}
+	}
+	
+	public void printNetResult(Network network, Consumer<String> lineConsumer) {
+		printNetResult(network, line -> {
+			lineConsumer.accept(line);
+			return true;
+		});
+	}
+	
+	public void printNetResult(Network network, BufferedWriter writer) throws IOException {
+		IOException[] ex = new IOException[1];
+		printNetResult(network, line -> {
+			try {
+				writer.append(line);
+				writer.newLine();
+				return true;
+			} catch (IOException e) {
+				ex[0] = e;
+				return false;
+			}
+		});
+		writer.close();
+		if (ex[0] != null) {
+			throw ex[0];
+		}
+	}
+	
+	public void printNetResult(Network network, OutputStream stream) throws IOException {
+		printNetResult(network, new BufferedWriter(new OutputStreamWriter(stream)));
+	}
+	
+	public void printNetResult(Network network, File out) throws IOException {
+		printNetResult(network, new FileOutputStream(out));
 	}
 	
 }

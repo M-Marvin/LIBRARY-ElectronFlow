@@ -1,4 +1,4 @@
-package de.m_marvin.electronflow;
+package de.m_marvin.electronflow.ltisolver;
 
 import java.util.Map;
 
@@ -18,10 +18,9 @@ public class Solver {
 	
 	public Solver() {
 		this.linearSolver = LinearSolverFactory_DSCC.lu(FillReducing.NONE);
-		
 	}
 	
-	protected void initialize(Network network) {
+	public void initialize(Network network) {
 		this.network = network;
 		
 		MatrixNd Amat = network.getSystemMatrix_A();
@@ -30,16 +29,12 @@ public class Solver {
 		entries.forEach((pos, val) -> Asol.set(pos.y, pos.x, val));
 		
 		if (!this.linearSolver.setA(Asol))
-			throw new IllegalStateException("unabel to initialize linear solver: system matrix is singular");
+			throw new IllegalArgumentException("unabel to initialize linear solver: system matrix is singular");
 		if (this.linearSolver.quality() < 1E-8)
-			throw new IllegalStateException("unabel to initialize linear solver: system matrix nearly singular");
-		
-		
-		network.getSystemMatrix_E();
-		
+			throw new IllegalArgumentException("unabel to initialize linear solver: system matrix nearly singular");
 	}
 	
-	protected void solve() {
+	public void solve() {
 		DMatrixRMaj x = new DMatrixRMaj(network.getSystemMatrix_A().height(), 1);
 		this.linearSolver.solve(new DMatrixRMaj(network.getSystemMatrix_z().get2DArray()), x);
 		network.setSystemMatrix_x(new MatrixNd(x.get2DData()));

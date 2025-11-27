@@ -1,6 +1,6 @@
-package de.m_marvin.electronflow.components;
+package de.m_marvin.electronflow.ltisolver.components;
 
-import de.m_marvin.electronflow.Component;
+import de.m_marvin.electronflow.ltisolver.Component;
 
 public abstract class FourPort extends Component {
 	
