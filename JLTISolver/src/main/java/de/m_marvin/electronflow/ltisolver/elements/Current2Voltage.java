@@ -1,10 +1,9 @@
-package de.m_marvin.electronflow.ltisolver.components;
+package de.m_marvin.electronflow.ltisolver.elements;
 
 import java.util.Optional;
 import java.util.function.Function;
 
-import de.m_marvin.electronflow.ltisolver.Component;
-import de.m_marvin.electronflow.ltisolver.Network.StampingContext;
+import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork.StampingContext;
 import de.m_marvin.unimat.impl.MatrixNd;
 
 public class Current2Voltage extends FourPort {
@@ -18,7 +17,7 @@ public class Current2Voltage extends FourPort {
 		this.factor = factor;
 	}
 	
-	public static Optional<Component> tryParse(String[] args, Function<String, Integer> nodeIdProvider) {
+	public static Optional<Element> tryParse(String[] args, Function<String, Integer> nodeIdProvider) {
 		if (args[0].startsWith("VIU") && args.length == 6) {
 			double value = Double.parseDouble(args[5]);
 			int nodeA = nodeIdProvider.apply(args[1]);
@@ -61,7 +60,7 @@ public class Current2Voltage extends FourPort {
 
 		this.vidSource = ctx.nextVoltageSourceId();
 		this.vidMeter = ctx.nextVoltageSourceId();
-		if (!ctx.stampOnlyZ()) {
+		if (ctx.stampsA()) {
 			int midSource = this.vidSource + ctx.nodeCount();
 			int midMeter = this.vidMeter + ctx.nodeCount();
 			if (this.nodeA != 0) {

@@ -20,29 +20,31 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import de.m_marvin.electronflow.ltisolver.components.Current;
-import de.m_marvin.electronflow.ltisolver.components.Current2Current;
-import de.m_marvin.electronflow.ltisolver.components.Current2Voltage;
-import de.m_marvin.electronflow.ltisolver.components.Resistor;
-import de.m_marvin.electronflow.ltisolver.components.Voltage;
-import de.m_marvin.electronflow.ltisolver.components.Voltage2Current;
-import de.m_marvin.electronflow.ltisolver.components.Voltage2Voltage;
+import de.m_marvin.electronflow.ltisolver.elements.Current;
+import de.m_marvin.electronflow.ltisolver.elements.Current2Current;
+import de.m_marvin.electronflow.ltisolver.elements.Current2Voltage;
+import de.m_marvin.electronflow.ltisolver.elements.Element;
+import de.m_marvin.electronflow.ltisolver.elements.Resistor;
+import de.m_marvin.electronflow.ltisolver.elements.Voltage;
+import de.m_marvin.electronflow.ltisolver.elements.Voltage2Current;
+import de.m_marvin.electronflow.ltisolver.elements.Voltage2Voltage;
+import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork;
 
-public class NetParser {
+public class NetlistParser {
 	
 	@FunctionalInterface
 	public static interface IComponentParser {
-		public Optional<Component> tryParse(String[] args, Function<String, Integer> nodeIdProvider);
+		public Optional<Element> tryParse(String[] args, Function<String, Integer> nodeIdProvider);
 	}
 	
 	private final Set<IComponentParser> knownComponents;
 	private Map<String, Integer> nodeMap = new HashMap<>();
 	
-	public NetParser(Set<IComponentParser> knownComponents) {
+	public NetlistParser(Set<IComponentParser> knownComponents) {
 		this.knownComponents = knownComponents;
 	}
 	
-	public NetParser() {
+	public NetlistParser() {
 		this(Set.of(
 				Voltage::tryParse,
 				Current::tryParse,
@@ -58,25 +60,25 @@ public class NetParser {
 		return this.nodeMap.get(nodeName);
 	}
 	
-	public Optional<Component> parseComponent(String[] args) {
+	public Optional<Element> parseComponent(String[] args) {
 		
 		for (var comp : this.knownComponents) {
-			Optional<Component> component = comp.tryParse(args, nodeName -> {
+			Optional<Element> element = comp.tryParse(args, nodeName -> {
 				Integer id = this.nodeMap.getOrDefault(nodeName, this.nodeMap.size());
 				if (!this.nodeMap.containsKey(nodeName))
 					this.nodeMap.put(nodeName, id);
 				return id;
 			});
-			if (component.isPresent())
-				return component;
+			if (element.isPresent())
+				return element;
 		}
 		return Optional.empty();
 		
 	}
 	
-	public Optional<Network> parseNet(Supplier<String> lineSupplier) {
+	public Optional<IndexedNetwork> parseNet(Supplier<String> lineSupplier) {
 		
-		List<Component> components = new ArrayList<>();
+		List<Element> elements = new ArrayList<>();
 		
 		String line;
 		while ((line = lineSupplier.get()) != null) {
@@ -86,22 +88,22 @@ public class NetParser {
 			if (line.startsWith("*") || line.startsWith("#") || line.startsWith("/")) continue;
 			
 			String[] args = line.split(" ");
-			Optional<Component> component = parseComponent(args);
+			Optional<Element> element = parseComponent(args);
 			
-			if (!component.isPresent())
+			if (!element.isPresent())
 				return Optional.empty();
 			
-			components.add(component.get());
+			elements.add(element.get());
 			
 		}
 		
-		return Optional.of(new Network(components));
+		return Optional.of(new IndexedNetwork(elements));
 		
 	}
 	
-	public Optional<Network> parseNet(BufferedReader reader) throws IOException {
+	public Optional<IndexedNetwork> parseNet(BufferedReader reader) throws IOException {
 		IOException[] ex = new IOException[1];
-		Optional<Network> network = parseNet(() -> {
+		Optional<IndexedNetwork> network = parseNet(() -> {
 			try {
 				return reader.readLine();
 			} catch (IOException e) {
@@ -116,15 +118,15 @@ public class NetParser {
 		return network;
 	}
 	
-	public Optional<Network> parseNet(InputStream stream) throws IOException {
+	public Optional<IndexedNetwork> parseNet(InputStream stream) throws IOException {
 		return parseNet(new BufferedReader(new InputStreamReader(stream)));
 	}
 	
-	public Optional<Network> parseNet(File netlistFile) throws IOException {
+	public Optional<IndexedNetwork> parseNet(File netlistFile) throws IOException {
 		return parseNet(new FileInputStream(netlistFile));
 	}
 	
-	protected void printNetResult(Network network, Function<String, Boolean> lineConsumer) {
+	protected void printNetResult(IndexedNetwork network, Function<String, Boolean> lineConsumer) {
 		for (var node : this.nodeMap.entrySet()) {
 			double potential = network.getNodePotential(node.getValue());
 			if (!lineConsumer.apply(String.format("%s\t%.03f V", node.getKey(), potential)))
@@ -142,14 +144,14 @@ public class NetParser {
 		}
 	}
 	
-	public void printNetResult(Network network, Consumer<String> lineConsumer) {
+	public void printNetResult(IndexedNetwork network, Consumer<String> lineConsumer) {
 		printNetResult(network, line -> {
 			lineConsumer.accept(line);
 			return true;
 		});
 	}
 	
-	public void printNetResult(Network network, BufferedWriter writer) throws IOException {
+	public void printNetResult(IndexedNetwork network, BufferedWriter writer) throws IOException {
 		IOException[] ex = new IOException[1];
 		printNetResult(network, line -> {
 			try {
@@ -167,11 +169,11 @@ public class NetParser {
 		}
 	}
 	
-	public void printNetResult(Network network, OutputStream stream) throws IOException {
+	public void printNetResult(IndexedNetwork network, OutputStream stream) throws IOException {
 		printNetResult(network, new BufferedWriter(new OutputStreamWriter(stream)));
 	}
 	
-	public void printNetResult(Network network, File out) throws IOException {
+	public void printNetResult(IndexedNetwork network, File out) throws IOException {
 		printNetResult(network, new FileOutputStream(out));
 	}
 	

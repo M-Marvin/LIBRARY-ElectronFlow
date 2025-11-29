@@ -1,10 +1,9 @@
-package de.m_marvin.electronflow.ltisolver.components;
+package de.m_marvin.electronflow.ltisolver.elements;
 
 import java.util.Optional;
 import java.util.function.Function;
 
-import de.m_marvin.electronflow.ltisolver.Component;
-import de.m_marvin.electronflow.ltisolver.Network.StampingContext;
+import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork.StampingContext;
 import de.m_marvin.unimat.impl.MatrixNd;
 
 public class Voltage2Current extends FourPort {
@@ -16,7 +15,7 @@ public class Voltage2Current extends FourPort {
 		this.factor = factor;
 	}
 	
-	public static Optional<Component> tryParse(String[] args, Function<String, Integer> nodeIdProvider) {
+	public static Optional<Element> tryParse(String[] args, Function<String, Integer> nodeIdProvider) {
 		if (args[0].startsWith("VUI") && args.length == 6) {
 			double value = Double.parseDouble(args[5]);
 			int nodeA = nodeIdProvider.apply(args[1]);
@@ -49,8 +48,8 @@ public class Voltage2Current extends FourPort {
 	
 	@Override
 	public void stampMatricies(StampingContext ctx, MatrixNd A, MatrixNd z) {
-		
-		if (!ctx.stampOnlyZ()) {
+
+		if (ctx.stampsA()) {
 			if (this.nodeA != 0 && this.nodeC != 0)
 				A.addM(this.nodeA - 1, this.nodeC - 1, +this.factor);
 			if (this.nodeB != 0 && this.nodeD != 0)

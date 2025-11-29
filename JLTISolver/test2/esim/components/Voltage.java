@@ -1,4 +1,4 @@
-package test.esim.components;
+package test.esim.elements;
 
 import java.util.Optional;
 import java.util.function.Function;

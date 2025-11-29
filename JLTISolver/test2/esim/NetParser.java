@@ -16,12 +16,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import test.esim.components.Capacitor;
-import test.esim.components.Current;
-import test.esim.components.Current2Current;
-import test.esim.components.Resistor;
-import test.esim.components.Voltage;
-import test.esim.components.Voltage2Current;
+import test.esim.elements.Capacitor;
+import test.esim.elements.Current;
+import test.esim.elements.Current2Current;
+import test.esim.elements.Resistor;
+import test.esim.elements.Voltage;
+import test.esim.elements.Voltage2Current;
 
 public class NetParser {
 	
@@ -55,14 +55,14 @@ public class NetParser {
 	public Optional<Component> parseComponent(String[] args) {
 		
 		for (var comp : this.knownComponents) {
-			Optional<Component> component = comp.tryParse(args, nodeName -> {
+			Optional<Component> element = comp.tryParse(args, nodeName -> {
 				Integer id = this.nodeMap.getOrDefault(nodeName, this.nodeMap.size());
 				if (!this.nodeMap.containsKey(nodeName))
 					this.nodeMap.put(nodeName, id);
 				return id;
 			});
-			if (component.isPresent())
-				return component;
+			if (element.isPresent())
+				return element;
 		}
 		return Optional.empty();
 		
@@ -70,7 +70,7 @@ public class NetParser {
 	
 	public Optional<Network> parseNet(Supplier<String> lineSupplier) {
 		
-		List<Component> components = new ArrayList<>();
+		List<Component> elements = new ArrayList<>();
 		
 		String line;
 		while ((line = lineSupplier.get()) != null) {
@@ -80,18 +80,18 @@ public class NetParser {
 			if (line.startsWith("*") || line.startsWith("#") || line.startsWith("/")) continue;
 			
 			String[] args = line.split(" ");
-			Optional<Component> component = parseComponent(args);
+			Optional<Component> element = parseComponent(args);
 			
-			if (!component.isPresent()) {
-				System.err.println("unknown component: " + line);
+			if (!element.isPresent()) {
+				System.err.println("unknown element: " + line);
 				return Optional.empty();
 			}
 			
-			components.add(component.get());
+			elements.add(element.get());
 			
 		}
 		
-		return Optional.of(new Network(components));
+		return Optional.of(new Network(elements));
 		
 	}
 	

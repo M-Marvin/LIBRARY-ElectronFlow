@@ -12,9 +12,9 @@ public abstract class Component {
 	
 	public Component(String name) {
 		if (!name.startsWith(type()))
-			throw new IllegalArgumentException("component id must start with type string: " + type());
+			throw new IllegalArgumentException("element id must start with type string: " + type());
 		if (!ID_FILTER.matcher(name).find())
-			throw new IllegalArgumentException("component id must match the filter: " + ID_FILTER.pattern());
+			throw new IllegalArgumentException("element id must match the filter: " + ID_FILTER.pattern());
 		this.name = name;
 	}
 

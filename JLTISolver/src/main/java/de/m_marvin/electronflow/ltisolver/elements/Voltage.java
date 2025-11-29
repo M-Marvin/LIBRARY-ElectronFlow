@@ -1,10 +1,9 @@
-package de.m_marvin.electronflow.ltisolver.components;
+package de.m_marvin.electronflow.ltisolver.elements;
 
 import java.util.Optional;
 import java.util.function.Function;
 
-import de.m_marvin.electronflow.ltisolver.Component;
-import de.m_marvin.electronflow.ltisolver.Network;
+import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork;
 import de.m_marvin.unimat.impl.MatrixNd;
 
 public class Voltage extends TwoPort {
@@ -17,7 +16,7 @@ public class Voltage extends TwoPort {
 		this.voltage = voltage;
 	}
 
-	public static Optional<Component> tryParse(String[] args, Function<String, Integer> nodeIdProvider) {
+	public static Optional<Element> tryParse(String[] args, Function<String, Integer> nodeIdProvider) {
 		if (args[0].startsWith("U") && args.length == 4) {
 			double value = Double.parseDouble(args[3]);
 			int nodeA = nodeIdProvider.apply(args[1]);
@@ -51,12 +50,14 @@ public class Voltage extends TwoPort {
 	}
 
 	@Override
-	public void stampMatricies(Network.StampingContext ctx, MatrixNd A, MatrixNd z) {
+	public void stampMatricies(IndexedNetwork.StampingContext ctx, MatrixNd A, MatrixNd z) {
 		
 		this.vid = ctx.nextVoltageSourceId();
 		int mid = vid + ctx.nodeCount();
-		z.addM(0, mid, this.voltage);
-		if (!ctx.stampOnlyZ()) {
+		if (ctx.stampsZ()) {
+			z.addM(0, mid, this.voltage);
+		}
+		if (ctx.stampsA()) {
 			if (this.nodeA != 0) {
 				A.addM(mid, this.nodeA - 1, +1.0);
 				A.addM(this.nodeA - 1, mid, +1.0);

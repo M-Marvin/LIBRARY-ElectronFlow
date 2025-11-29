@@ -1,8 +1,6 @@
-package de.m_marvin.electronflow.ltisolver.components;
+package de.m_marvin.electronflow.ltisolver.elements;
 
-import de.m_marvin.electronflow.ltisolver.Component;
-
-public abstract class FourPort extends Component {
+public abstract class FourPort extends Element {
 	
 	protected final int nodeA;
 	protected final int nodeB;

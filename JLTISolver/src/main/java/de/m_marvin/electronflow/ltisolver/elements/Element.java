@@ -1,16 +1,17 @@
-package de.m_marvin.electronflow.ltisolver;
+package de.m_marvin.electronflow.ltisolver.elements;
 
 import java.util.regex.Pattern;
 
+import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork;
 import de.m_marvin.unimat.impl.MatrixNd;
 
-public abstract class Component {
+public abstract class Element {
 
 	public static final Pattern ID_FILTER = Pattern.compile("[\\w\\d]");
 	
 	protected final String name;
 	
-	public Component(String name) {
+	public Element(String name) {
 		if (!name.startsWith(type()))
 			throw new IllegalArgumentException("component id must start with type string: " + type());
 		if (!ID_FILTER.matcher(name).find())
@@ -30,7 +31,7 @@ public abstract class Component {
 		return new int[0];
 	}
 	
-	public abstract void stampMatricies(Network.StampingContext ctx, MatrixNd A, MatrixNd z);
+	public abstract void stampMatricies(IndexedNetwork.StampingContext ctx, MatrixNd A, MatrixNd z);
 	
 	@Override
 	public String toString() {

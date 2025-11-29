@@ -1,4 +1,4 @@
-package de.m_marvin.electronflow.ltisolver;
+package de.m_marvin.electronflow.ltisolver.network;
 
 import java.util.Map;
 
@@ -11,16 +11,16 @@ import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
 import de.m_marvin.unimat.impl.MatrixNd;
 import de.m_marvin.univec.impl.Vec2i;
 
-public class Solver {
+public class NetworkSolver {
 	
 	private final LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj> linearSolver;
-	private Network network;
+	private IndexedNetwork network;
 	
-	public Solver() {
+	public NetworkSolver() {
 		this.linearSolver = LinearSolverFactory_DSCC.lu(FillReducing.NONE);
 	}
 	
-	public void initialize(Network network) {
+	public void initialize(IndexedNetwork network) {
 		this.network = network;
 		
 		MatrixNd Amat = network.getSystemMatrix_A();

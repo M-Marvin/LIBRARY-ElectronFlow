@@ -1,4 +1,4 @@
-package test.esim.components;
+package test.esim.elements;
 
 import test.esim.Component;
 

@@ -9,7 +9,7 @@ import de.m_marvin.unimat.impl.MatrixNd;
 
 public class Network {
 	
-	protected final Map<String, Component> components = new HashMap<>();
+	protected final Map<String, Component> elements = new HashMap<>();
 	protected final int nNodes;
 	protected final int nVSources;
 	
@@ -18,21 +18,21 @@ public class Network {
 	protected MatrixNd systemMatrix_x;
 	protected MatrixNd systemMatrix_z;
 	
-	public Network(Collection<Component> components) {
-		if (components.isEmpty())
-			throw new IllegalArgumentException("components list can not be empty");
-		components.forEach(c -> this.components.put(c.name(), c));
+	public Network(Collection<Component> elements) {
+		if (elements.isEmpty())
+			throw new IllegalArgumentException("elements list can not be empty");
+		elements.forEach(c -> this.elements.put(c.name(), c));
 		
-		this.nVSources = this.components.values().stream()
+		this.nVSources = this.elements.values().stream()
 				.mapToInt(c -> c.vsourceIds().length)
 				.sum();
-		this.nNodes = this.components.values().stream()
+		this.nNodes = this.elements.values().stream()
 				.flatMapToInt(c -> IntStream.of(c.nodes()))
 				.max().orElseGet(() -> 0) + 1;
 	}
 	
 	public Collection<Component> getComponents() {
-		return components.values();
+		return elements.values();
 	}
 	
 	public class Context {
@@ -68,15 +68,15 @@ public class Network {
 	}
 	
 	public double getVSourceCurrent(String vsourceName) {
-		Component comp = this.components.get(vsourceName);
+		Component comp = this.elements.get(vsourceName);
 		if (comp == null)
-			throw new IllegalArgumentException("component does not exist: " + vsourceName);
+			throw new IllegalArgumentException("element does not exist: " + vsourceName);
 		
 		int[] vids = comp.vsourceIds();
 		if (vids.length == 0)
-			throw new IllegalArgumentException("component does not define a voltage source: " + vsourceName);
+			throw new IllegalArgumentException("element does not define a voltage source: " + vsourceName);
 		if (vids.length > 1)
-			throw new IllegalArgumentException("component does defnie more than one voltage sources: " + vsourceName);
+			throw new IllegalArgumentException("element does defnie more than one voltage sources: " + vsourceName);
 		return getVSourceCurrent(vids[0]);
 	}
 	
@@ -89,7 +89,7 @@ public class Network {
 		
 		Context ctx = new Context();
 		
-		for (var comp : this.components.values())
+		for (var comp : this.elements.values())
 			comp.stampMatricies(ctx, 
 					this.systemMatrix_A, 
 					this.systemMatrix_E,
@@ -122,7 +122,7 @@ public class Network {
 	@Override
 	public String toString() {
 		StringBuffer buff = new StringBuffer();
-		for (var comp : this.components.values())
+		for (var comp : this.elements.values())
 			buff.append(comp.toString()).append('\n');
 		return buff.toString();
 	}
