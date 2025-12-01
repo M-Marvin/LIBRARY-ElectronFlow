@@ -92,7 +92,8 @@ public class IndexedNetwork {
 	}
 
 	public double getNodePotential(String name) {
-		return getNodePotential(this.nodes.get(name));
+		Integer nodeId = this.nodes.get(name);
+		return nodeId == null ? 0.0 : getNodePotential(nodeId);
 	}
 	
 	public double getVSourceCurrent(int vsourceId) {
@@ -105,6 +106,8 @@ public class IndexedNetwork {
 	}
 	
 	public double[] getElementCurrents(String name) {
+		if (this.systemMatrix_x == null)
+			throw new IllegalStateException("solution matrix has net yet been computed");
 		Element element = this.elements.get(name);
 		if (element != null)
 			return element.currents();
