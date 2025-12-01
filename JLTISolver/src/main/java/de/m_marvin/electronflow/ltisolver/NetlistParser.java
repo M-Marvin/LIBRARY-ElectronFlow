@@ -11,9 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -34,11 +32,10 @@ public class NetlistParser {
 	
 	@FunctionalInterface
 	public static interface IComponentParser {
-		public Optional<Element> tryParse(String[] args, Function<String, Integer> nodeIdProvider);
+		public Optional<Element> tryParse(String[] args);
 	}
 	
 	private final Set<IComponentParser> knownComponents;
-	private Map<String, Integer> nodeMap = new HashMap<>();
 	
 	public NetlistParser(Set<IComponentParser> knownComponents) {
 		this.knownComponents = knownComponents;
@@ -56,19 +53,10 @@ public class NetlistParser {
 		));
 	}
 	
-	public int getNodeId(String nodeName) {
-		return this.nodeMap.get(nodeName);
-	}
-	
 	public Optional<Element> parseComponent(String[] args) {
 		
 		for (var comp : this.knownComponents) {
-			Optional<Element> element = comp.tryParse(args, nodeName -> {
-				Integer id = this.nodeMap.getOrDefault(nodeName, this.nodeMap.size());
-				if (!this.nodeMap.containsKey(nodeName))
-					this.nodeMap.put(nodeName, id);
-				return id;
-			});
+			Optional<Element> element = comp.tryParse(args);
 			if (element.isPresent())
 				return element;
 		}
@@ -127,14 +115,14 @@ public class NetlistParser {
 	}
 	
 	protected void printNetResult(IndexedNetwork network, Function<String, Boolean> lineConsumer) {
-		for (var node : this.nodeMap.entrySet()) {
-			double potential = network.getNodePotential(node.getValue());
-			if (!lineConsumer.apply(String.format("%s\t%.03f V", node.getKey(), potential)))
+		for (var node : network.getNodes()) {
+			double potential = network.getNodePotential(node);
+			if (!lineConsumer.apply(String.format("%s\t%.03f V", node, potential)))
 				return;
 		}
-		for (var comp : network.getComponents()) {
-			if (comp.vsourceIds().length == 0) continue;
-			double[] currents = network.getVSourceCurrent(comp.name());
+		for (var comp : network.getElements()) {
+			double[] currents = comp.currents();
+			if (currents.length == 0) continue;
 			StringBuffer lineBuffer = new StringBuffer();
 			lineBuffer.append(comp.name());
 			for (double current : currents)

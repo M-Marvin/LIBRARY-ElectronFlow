@@ -1,9 +1,9 @@
 package de.m_marvin.electronflow.ltisolver.elements;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork;
+import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork.StampingContext;
 import de.m_marvin.unimat.impl.MatrixNd;
 
 public class Voltage extends TwoPort {
@@ -11,17 +11,15 @@ public class Voltage extends TwoPort {
 	protected double voltage;
 	protected int vid;
 	
-	public Voltage(String name, int nodeA, int nodeB, double voltage) {
+	public Voltage(String name, String nodeA, String nodeB, double voltage) {
 		super(name, nodeA, nodeB);
 		this.voltage = voltage;
 	}
 
-	public static Optional<Element> tryParse(String[] args, Function<String, Integer> nodeIdProvider) {
+	public static Optional<Element> tryParse(String[] args) {
 		if (args[0].startsWith("U") && args.length == 4) {
 			double value = Double.parseDouble(args[3]);
-			int nodeA = nodeIdProvider.apply(args[1]);
-			int nodeB = nodeIdProvider.apply(args[2]);
-			return Optional.of(new Voltage(args[0], nodeA, nodeB, value));
+			return Optional.of(new Voltage(args[0], args[1], args[2], value));
 		}
 		return Optional.empty();
 	}
@@ -46,25 +44,39 @@ public class Voltage extends TwoPort {
 
 	@Override
 	public int[] vsourceIds() {
-		return new int[] { this.vid };
+		return new int[] {
+				this.vid
+		};
+	}
+	
+	@Override
+	public double[] currents() {
+		return new double[] {
+				this.network.getVSourceCurrent(this.vid)
+		};
 	}
 
 	@Override
+	public void index(StampingContext ctx) {
+		super.index(ctx);
+		this.vid = ctx.nextVoltageSourceId();
+	}
+	
+	@Override
 	public void stampMatricies(IndexedNetwork.StampingContext ctx, MatrixNd A, MatrixNd z) {
 		
-		this.vid = ctx.nextVoltageSourceId();
 		int mid = vid + ctx.nodeCount();
 		if (ctx.stampsZ()) {
 			z.addM(0, mid, this.voltage);
 		}
 		if (ctx.stampsA()) {
-			if (this.nodeA != 0) {
-				A.addM(mid, this.nodeA - 1, +1.0);
-				A.addM(this.nodeA - 1, mid, +1.0);
+			if (this.nodeAid != 0) {
+				A.addM(mid, this.nodeAid - 1, +1.0);
+				A.addM(this.nodeAid - 1, mid, +1.0);
 			}
-			if (this.nodeB != 0) {
-				A.addM(mid, this.nodeB - 1, -1.0);
-				A.addM(this.nodeB - 1, mid, -1.0);
+			if (this.nodeBid != 0) {
+				A.addM(mid, this.nodeBid - 1, -1.0);
+				A.addM(this.nodeBid - 1, mid, -1.0);
 			}
 		}
 		

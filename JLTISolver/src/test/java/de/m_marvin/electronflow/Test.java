@@ -40,7 +40,7 @@ public class Test {
 		
 		parser.printNetResult(network, System.out::println);
 		
-		for (var c : network.getComponents()) {
+		for (var c : network.getElements()) {
 			if (c instanceof Voltage v) {
 				v.setVoltage(120);
 				System.out.println("changed voltage");
@@ -49,6 +49,11 @@ public class Test {
 		}
 		
 		network.stampMatrices(StampingMode.FORCING_VECTOR);
+
+		System.out.println("= Test Network =");
+		System.out.println(network);
+		System.out.println("- - - - - - - - -");
+		
 		solver.solve();
 
 		parser.printNetResult(network, System.out::println);

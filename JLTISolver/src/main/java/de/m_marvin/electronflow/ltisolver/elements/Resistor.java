@@ -1,7 +1,6 @@
 package de.m_marvin.electronflow.ltisolver.elements;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork;
 import de.m_marvin.unimat.impl.MatrixNd;
@@ -10,17 +9,15 @@ public class Resistor extends TwoPort {
 	
 	protected double resistance;
 	
-	public Resistor(String name, int nodeA, int nodeB, double resistance) {
+	public Resistor(String name, String nodeA, String nodeB, double resistance) {
 		super(name, nodeA, nodeB);
 		this.resistance = resistance;
 	}
 
-	public static Optional<Element> tryParse(String[] args, Function<String, Integer> nodeIdProvider) {
+	public static Optional<Element> tryParse(String[] args) {
 		if (args[0].startsWith("R") && args.length == 4) {
 			double value = Double.parseDouble(args[3]);
-			int nodeA = nodeIdProvider.apply(args[1]);
-			int nodeB = nodeIdProvider.apply(args[2]);
-			return Optional.of(new Resistor(args[0], nodeA, nodeB, value));
+			return Optional.of(new Resistor(args[0], args[1], args[2], value));
 		}
 		return Optional.empty();
 	}
@@ -44,17 +41,26 @@ public class Resistor extends TwoPort {
 	}
 	
 	@Override
+	public double[] currents() {
+		double p0 = this.network.getNodePotential(this.nodeAid);
+		double p1 = this.network.getNodePotential(this.nodeBid);
+		return new double[] {
+				(p1 - p0) / this.resistance
+		};
+	}
+	
+	@Override
 	public void stampMatricies(IndexedNetwork.StampingContext ctx, MatrixNd A, MatrixNd z) {
-
+		
 		if (ctx.stampsA()) {
 			double conductance = 1.0 / this.resistance;
-			if (this.nodeA != 0)
-				A.addM(this.nodeA - 1, this.nodeA - 1, +conductance);
-			if (this.nodeB != 0)
-				A.addM(this.nodeB - 1, this.nodeB - 1, +conductance);
-			if (this.nodeA != 0 && this.nodeB != 0) {
-				A.addM(this.nodeA - 1, this.nodeB - 1, -conductance);
-				A.addM(this.nodeB - 1, this.nodeA - 1, -conductance);
+			if (this.nodeAid != 0)
+				A.addM(this.nodeAid - 1, this.nodeAid - 1, +conductance);
+			if (this.nodeBid != 0)
+				A.addM(this.nodeBid - 1, this.nodeBid - 1, +conductance);
+			if (this.nodeAid != 0 && this.nodeBid != 0) {
+				A.addM(this.nodeAid - 1, this.nodeBid - 1, -conductance);
+				A.addM(this.nodeBid - 1, this.nodeAid - 1, -conductance);
 			}
 		}
 		

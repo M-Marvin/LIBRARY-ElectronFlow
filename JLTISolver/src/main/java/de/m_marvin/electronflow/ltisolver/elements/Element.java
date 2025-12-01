@@ -9,6 +9,7 @@ public abstract class Element {
 
 	public static final Pattern ID_FILTER = Pattern.compile("[\\w\\d]");
 	
+	protected IndexedNetwork network;
 	protected final String name;
 	
 	public Element(String name) {
@@ -18,19 +19,26 @@ public abstract class Element {
 			throw new IllegalArgumentException("component id must match the filter: " + ID_FILTER.pattern());
 		this.name = name;
 	}
+	
+	public void setNetwork(IndexedNetwork network) {
+		this.network = network;
+	}
 
 	public String name() {
 		return this.name;
 	}
 	
 	public abstract String type();
-	public abstract int[] nodes();
 	public abstract String configInfo();
 
+	public abstract String[] nodeNames();
+	public abstract int[] nodes();
 	public int[] vsourceIds() {
 		return new int[0];
 	}
+	public abstract double[] currents();
 	
+	public abstract void index(IndexedNetwork.StampingContext ctx);
 	public abstract void stampMatricies(IndexedNetwork.StampingContext ctx, MatrixNd A, MatrixNd z);
 	
 	@Override
