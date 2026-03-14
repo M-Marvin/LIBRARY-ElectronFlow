@@ -2,6 +2,7 @@ package de.m_marvin.electronflow.ltisolver.elements;
 
 import java.util.Optional;
 
+import de.m_marvin.electronflow.ltisolver.DecimalPrefixFormater;
 import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork.StampingContext;
 import de.m_marvin.unimat.impl.MatrixNd;
 
@@ -17,7 +18,7 @@ public class Current2Current extends FourPort {
 	
 	public static Optional<Element> tryParse(String[] args) {
 		if (args[0].startsWith("VII") && args.length == 6) {
-			double value = Double.parseDouble(args[5]);
+			double value = DecimalPrefixFormater.parseDouble(args[5]);
 			return Optional.of(new Current2Current(args[0], args[1], args[2], args[3], args[4], value));
 		}
 		return Optional.empty();
@@ -30,7 +31,7 @@ public class Current2Current extends FourPort {
 	
 	@Override
 	public String configInfo() {
-		return String.format("%.03f A/A", this.factor);
+		return DecimalPrefixFormater.format("%s A/A", this.factor);
 	}
 	
 	public void setFactor(double factor) {

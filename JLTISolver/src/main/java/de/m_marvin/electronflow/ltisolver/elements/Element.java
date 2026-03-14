@@ -30,7 +30,10 @@ public abstract class Element {
 	
 	public abstract String type();
 	public abstract String configInfo();
-
+	public boolean isNonLinear() {
+		return false;
+	}
+	
 	public abstract String[] nodeNames();
 	public abstract int[] nodes();
 	public int[] vsourceIds() {

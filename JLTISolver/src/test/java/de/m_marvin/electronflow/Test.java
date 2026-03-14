@@ -4,20 +4,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
-import de.m_marvin.electronflow.ltisolver.NetlistParser;
-import de.m_marvin.electronflow.ltisolver.elements.Voltage;
+import de.m_marvin.electronflow.ltisolver.SimpleNetlistParser;
 import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork;
-import de.m_marvin.electronflow.ltisolver.network.NetworkSolver;
 import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork.StampingContext.StampingMode;
+import de.m_marvin.electronflow.ltisolver.solver.NetworkSolver;
+import de.m_marvin.electronflow.ltisolver.solver.NetworkSolverException;
 
 public class Test {
 	
-	public static void main(String... args) throws IOException {
+	public static void main(String... args) throws IOException, NetworkSolverException {
 		
 		File netlist = new File("./run/netlist.txt");
 		File out = new File("./run/out.txt");
 		
-		NetlistParser parser = new NetlistParser();
+		SimpleNetlistParser parser = new SimpleNetlistParser();
 		
 		Optional<IndexedNetwork> parsed = parser.parseNet(netlist);
 		
@@ -32,33 +32,13 @@ public class Test {
 		System.out.println(network);
 		System.out.println("- - - - - - - - -");
 		
-		NetworkSolver solver = new NetworkSolver();
-		
-		network.stampMatrices(StampingMode.FULL_MATRICES);
-		solver.initialize(network);
-		solver.solve();
-		
-		parser.printNetResult(network, System.out::println);
-		
-		for (var c : network.getElements()) {
-			if (c instanceof Voltage v) {
-				v.setVoltage(120);
-				System.out.println("changed voltage");
-				break;
-			}
+		try {
+			NetworkSolver.standard().debug(System.out::println).limSingular(1E-20).iterLim(500).solve(network);
+		} catch (Exception e) {e
+			.printStackTrace();
 		}
-		
-		network.stampMatrices(StampingMode.FORCING_VECTOR);
-
-		System.out.println("= Test Network =");
-		System.out.println(network);
-		System.out.println("- - - - - - - - -");
-		
-		solver.solve();
-
+			
 		parser.printNetResult(network, System.out::println);
-		
-		parser.printNetResult(network, out);
 		
 	}
 	

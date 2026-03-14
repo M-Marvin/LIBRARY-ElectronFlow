@@ -2,6 +2,7 @@ package de.m_marvin.electronflow.ltisolver.elements;
 
 import java.util.Optional;
 
+import de.m_marvin.electronflow.ltisolver.DecimalPrefixFormater;
 import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork;
 import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork.StampingContext;
 import de.m_marvin.unimat.impl.MatrixNd;
@@ -18,7 +19,7 @@ public class Voltage extends TwoPort {
 
 	public static Optional<Element> tryParse(String[] args) {
 		if (args[0].startsWith("U") && args.length == 4) {
-			double value = Double.parseDouble(args[3]);
+			double value = DecimalPrefixFormater.parseDouble(args[3]);
 			return Optional.of(new Voltage(args[0], args[1], args[2], value));
 		}
 		return Optional.empty();
@@ -31,7 +32,7 @@ public class Voltage extends TwoPort {
 
 	@Override
 	public String configInfo() {
-		return String.format("%.03f V", this.voltage);
+		return DecimalPrefixFormater.format("%s V", this.voltage);
 	}
 	
 	public void setVoltage(double voltage) {

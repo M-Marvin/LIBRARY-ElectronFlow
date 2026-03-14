@@ -2,6 +2,7 @@ package de.m_marvin.electronflow.ltisolver.elements;
 
 import java.util.Optional;
 
+import de.m_marvin.electronflow.ltisolver.DecimalPrefixFormater;
 import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork;
 import de.m_marvin.unimat.impl.MatrixNd;
 
@@ -16,7 +17,7 @@ public class Resistor extends TwoPort {
 
 	public static Optional<Element> tryParse(String[] args) {
 		if (args[0].startsWith("R") && args.length == 4) {
-			double value = Double.parseDouble(args[3]);
+			double value = DecimalPrefixFormater.parseDouble(args[3]);
 			return Optional.of(new Resistor(args[0], args[1], args[2], value));
 		}
 		return Optional.empty();
@@ -29,7 +30,7 @@ public class Resistor extends TwoPort {
 
 	@Override
 	public String configInfo() {
-		return String.format("%.03f R", this.resistance);
+		return DecimalPrefixFormater.format("%s R", this.resistance);
 	}
 	
 	public void setResistance(double resistance) {
@@ -45,7 +46,7 @@ public class Resistor extends TwoPort {
 		double p0 = this.network.getNodePotential(this.nodeAid);
 		double p1 = this.network.getNodePotential(this.nodeBid);
 		return new double[] {
-				(p1 - p0) / this.resistance
+				(p0 - p1) / this.resistance
 		};
 	}
 	

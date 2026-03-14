@@ -51,7 +51,7 @@ public class Buildfile extends JavaBuildScript {
 	@Override
 	public void dependencies() {
 		
-		dependencies.implementation("de.m_marvin.univec:univec:1.7.3");
+		dependencies.implementation("de.m_marvin.univec:univec:1.7.5");
 		
 		dependencies.implementation("org.ejml:ejml-dsparse:0.44.0");
 		

@@ -1,4 +1,4 @@
-package de.m_marvin.electronflow.ltisolver;
+package de.m_marvin.electronflow.nltisolver;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,17 +18,18 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import de.m_marvin.electronflow.ltisolver.elements.Current;
-import de.m_marvin.electronflow.ltisolver.elements.Current2Current;
-import de.m_marvin.electronflow.ltisolver.elements.Current2Voltage;
-import de.m_marvin.electronflow.ltisolver.elements.Element;
-import de.m_marvin.electronflow.ltisolver.elements.Resistor;
-import de.m_marvin.electronflow.ltisolver.elements.Voltage;
-import de.m_marvin.electronflow.ltisolver.elements.Voltage2Current;
-import de.m_marvin.electronflow.ltisolver.elements.Voltage2Voltage;
-import de.m_marvin.electronflow.ltisolver.network.IndexedNetwork;
+import de.m_marvin.electronflow.nltisolver.elements.Current;
+import de.m_marvin.electronflow.nltisolver.elements.Current2Current;
+import de.m_marvin.electronflow.nltisolver.elements.Current2Voltage;
+import de.m_marvin.electronflow.nltisolver.elements.Diode;
+import de.m_marvin.electronflow.nltisolver.elements.Element;
+import de.m_marvin.electronflow.nltisolver.elements.Resistor;
+import de.m_marvin.electronflow.nltisolver.elements.Voltage;
+import de.m_marvin.electronflow.nltisolver.elements.Voltage2Current;
+import de.m_marvin.electronflow.nltisolver.elements.Voltage2Voltage;
+import de.m_marvin.electronflow.nltisolver.network.IndexedNetwork;
 
-public class NetlistParser {
+public class SimpleNetlistParser {
 	
 	@FunctionalInterface
 	public static interface IComponentParser {
@@ -37,11 +38,11 @@ public class NetlistParser {
 	
 	private final Set<IComponentParser> knownComponents;
 	
-	public NetlistParser(Set<IComponentParser> knownComponents) {
+	public SimpleNetlistParser(Set<IComponentParser> knownComponents) {
 		this.knownComponents = knownComponents;
 	}
 	
-	public NetlistParser() {
+	public SimpleNetlistParser() {
 		this(Set.of(
 				Voltage::tryParse,
 				Current::tryParse,
@@ -49,7 +50,8 @@ public class NetlistParser {
 				Voltage2Current::tryParse,
 				Current2Current::tryParse,
 				Voltage2Voltage::tryParse,
-				Current2Voltage::tryParse
+				Current2Voltage::tryParse,
+				Diode::tryParse
 		));
 	}
 	
@@ -75,7 +77,7 @@ public class NetlistParser {
 			line = line.strip();
 			if (line.startsWith("*") || line.startsWith("#") || line.startsWith("/")) continue;
 			
-			String[] args = line.split(" ");
+			String[] args = line.replace('\t', ' ').split(" ");
 			Optional<Element> element = parseComponent(args);
 			
 			if (!element.isPresent())
@@ -117,7 +119,7 @@ public class NetlistParser {
 	protected void printNetResult(IndexedNetwork network, Function<String, Boolean> lineConsumer) {
 		for (var node : network.getNodes()) {
 			double potential = network.getNodePotential(node);
-			if (!lineConsumer.apply(String.format("%s\t%.03f V", node, potential)))
+			if (!lineConsumer.apply(String.format("%s\t%s V", node, DecimalPrefixFormater.formatDouble(potential))))
 				return;
 		}
 		for (var comp : network.getElements()) {
@@ -126,7 +128,7 @@ public class NetlistParser {
 			StringBuffer lineBuffer = new StringBuffer();
 			lineBuffer.append(comp.name());
 			for (double current : currents)
-				lineBuffer.append(String.format("\t%.03f A", current));
+				lineBuffer.append(String.format("\t%s A", DecimalPrefixFormater.formatDouble(current)));
 			if (!lineConsumer.apply(lineBuffer.toString()))
 				return;
 		}

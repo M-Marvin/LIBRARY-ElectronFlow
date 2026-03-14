@@ -16,6 +16,7 @@ public class IndexedNetwork {
 	private Map<String, Integer> nodes = new HashMap<String, Integer>();
 	private int nNodes;
 	private int nVSources;
+	private int nonLinear;
 	
 	// E*x' + A*x = z
 	private MatrixNd systemMatrix_A;
@@ -25,10 +26,7 @@ public class IndexedNetwork {
 	public IndexedNetwork(Collection<Element> elements) {
 		if (elements.isEmpty())
 			throw new IllegalArgumentException("element list can not be empty");
-		elements.forEach(c -> {
-			this.elements.put(c.name(), c);
-			c.setNetwork(this);
-		});
+		elements.forEach(this::addElement);
 	}
 	
 	public IndexedNetwork() {}
@@ -36,17 +34,26 @@ public class IndexedNetwork {
 	public Element addElement(Element element) {
 		this.nVSources = this.nNodes = 0;
 		element.setNetwork(this);
-		return this.elements.put(element.name(), element);
+		Element replaced = this.elements.put(element.name(), element);
+		if ((replaced != null && replaced.isNonLinear()) != element.isNonLinear())
+			this.nonLinear += element.isNonLinear() ? +1 : -1;
+		return replaced;
 	}
 	
 	public Element removeElement(String name) {
 		this.nVSources = this.nNodes = 0;
-		return this.elements.remove(name);
+		Element removed = this.elements.remove(name);
+		if ((removed != null && removed.isNonLinear()))
+			this.nonLinear -= 1;
+		return removed;
 	}
 	
 	public boolean removeElement(Element element) {
 		this.nVSources = this.nNodes = 0;
-		return this.elements.remove(element.name(), element);
+		boolean removed = this.elements.remove(element.name(), element);
+		if ((removed && element.isNonLinear()))
+			this.nonLinear -= 1;
+		return removed;
 	}
 	
 	public Collection<Element> getElements() {
@@ -65,6 +72,14 @@ public class IndexedNetwork {
 		return nNodes;
 	}
 	
+	public int getnNonLinear() {
+		return nonLinear;
+	}
+	
+	public boolean isNonLinear() {
+		return nonLinear > 0;
+	}
+	
 	public int getNVSources() {
 		return nVSources;
 	}
@@ -75,6 +90,10 @@ public class IndexedNetwork {
 	
 	public MatrixNd getSystemMatrix_z() {
 		return this.systemMatrix_z;
+	}
+	
+	public MatrixNd getSystemMatrix_x() {
+		return systemMatrix_x;
 	}
 	
 	public void setSystemMatrix_x(MatrixNd systemMatrix_x) {
@@ -138,15 +157,25 @@ public class IndexedNetwork {
 			
 		}
 		
-		private StampingMode mode;
+		private final StampingMode mode;
+		private final int iter;
 		private int voltageSourceId = 0;
 		
-		public StampingContext(StampingMode mode) {
+		public StampingContext(StampingMode mode, int iter) {
 			this.mode = mode;
+			this.iter = iter;
 		}
 		
 		public StampingMode mode() {
 			return mode;
+		}
+		
+		public int iter() {
+			return this.iter;
+		}
+		
+		public boolean nlInit() {
+			return iter() == 0;
 		}
 		
 		public boolean stampsA() {
@@ -178,8 +207,18 @@ public class IndexedNetwork {
 	}
 	
 	public void stampMatrices(StampingMode mode) {
+		if (isNonLinear() && mode != StampingMode.FULL_MATRICES)
+			throw new IllegalStateException("can't partialy stamp matrix of non-linear network");
+		stampMatrices(mode, 0);
+	}
 
-		StampingContext ctx = new StampingContext(mode);
+	public void stampMatrices(int iter) {
+		stampMatrices(StampingMode.FULL_MATRICES, iter);
+	}
+	
+	private void stampMatrices(StampingMode mode, int iter) {
+		
+		StampingContext ctx = new StampingContext(mode, iter);
 		
 		if (nVSources == 0 || nNodes == 0) {
 			this.elements.values().forEach(c -> c.index(ctx));
@@ -203,8 +242,6 @@ public class IndexedNetwork {
 					this.systemMatrix_A,
 					this.systemMatrix_z
 				);
-		
-		this.systemMatrix_x = null;
 		
 	}
 	
