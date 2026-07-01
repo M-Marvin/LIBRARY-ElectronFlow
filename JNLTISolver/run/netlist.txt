@@ -1,10 +1,4 @@
-Rwire_1_conduit_npos_79_-54_24_0_npos_79_-54_23_0	0000	0001	100.000m
-Rwire_0_conduit_npos_79_-54_24_0_npos_79_-54_23_0	0002	0003	100.000m
-Ugen_block_76_-53_28	0004	0005	229.000 
-Rwire_1_conduit_npos_79_-51_21_0_npos_76_-53_28_0	0006	0007	1.300 
-Rwire_0_conduit_npos_79_-51_21_0_npos_76_-53_28_0	0008	0004	1.300 
-Rwire_1_conduit_npos_80_-52_21_0_npos_79_-51_21_0	0009	0006	200.000m
-Dbackflow_block_76_-53_28	0005	0007	Vfwd=0.000  Ron=100.000m Roff=1.000G Eps=0.000  Vrev=-Infinity  Rrev=100.000m EpsRev=0.000 
-Rwire_0_conduit_npos_80_-52_21_0_npos_79_-54_23_0	0010	0003	300.000m
-Rwire_1_conduit_npos_80_-52_21_0_npos_79_-54_23_0	0009	0001	300.000m
-Rwire_0_conduit_npos_80_-52_21_0_npos_79_-51_21_0	0010	0008	200.000m
+
+PVgen 001 002 100 200
+
+Rload 001 002 50

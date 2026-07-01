@@ -34,7 +34,7 @@ public class Test {
 		System.out.println("- - - - - - - - -");
 		
 		try {
-			NetworkSolver.standard().debug(System.out::println).limSingular(1E-20).iterLim(500).solve(network);
+			NetworkSolver.standard().debug(System.out::println).limSingular(1E-20).iterLim(10).solve(network);
 		} catch (Exception e) {e
 			.printStackTrace();
 		}

@@ -1,7 +1,7 @@
 # Electron Flow and NGLink
 
 **Electron Flow**
-*ElectronFlow* is (currently) a colletion of different projets.
+*ElectronFlow* is (currently) a colletion of different projects.
 Endgoal is to create an stand alone solver for electric networks, with some additional features.
 Right now it its more of an wrapper around the *NG-SPICE* solver, adding some additional features using an preprocessor for the netlists.
 

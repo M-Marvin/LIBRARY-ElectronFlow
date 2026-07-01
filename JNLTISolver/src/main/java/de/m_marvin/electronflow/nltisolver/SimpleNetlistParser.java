@@ -27,6 +27,7 @@ import de.m_marvin.electronflow.nltisolver.elements.Resistor;
 import de.m_marvin.electronflow.nltisolver.elements.Voltage;
 import de.m_marvin.electronflow.nltisolver.elements.Voltage2Current;
 import de.m_marvin.electronflow.nltisolver.elements.Voltage2Voltage;
+import de.m_marvin.electronflow.nltisolver.elements.VoltagePower;
 import de.m_marvin.electronflow.nltisolver.network.IndexedNetwork;
 
 public class SimpleNetlistParser {
@@ -51,7 +52,8 @@ public class SimpleNetlistParser {
 				Current2Current::tryParse,
 				Voltage2Voltage::tryParse,
 				Current2Voltage::tryParse,
-				Diode::tryParse
+				Diode::tryParse,
+				VoltagePower::tryParse
 		));
 	}
 	

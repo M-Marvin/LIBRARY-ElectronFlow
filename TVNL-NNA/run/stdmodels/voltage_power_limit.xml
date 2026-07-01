@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodalElement name="UP" nonLinear="true" timeVariant="false">
+	<node name="p_A" constant="i_A"/>
+	<node name="p_B" constant="i_B"/>
+	<local name="i_src" constant="u_src"/>
+	<variable name="U" default="1.0"/>
+	<variable name="P" default="1.0"/>
+	<variable name="eps" default="0.1"/>
+	<functions>
+		I_lim(U,P):=P/U;
+		U_src(U,P,i_src):=I_lim(U,P)&lt;i_src?U:P/i_src;
+	</functions>
+	<stampA>
+		<derive dU_src="U_src(U,P,i_src)" var="i_src"/>
+				p_A		p_B		i_src
+		i_A		0.0		0.0		1.0
+		i_B		0.0		0.0		-1.0
+		u_src	1.0		-1.0	dU_src
+	</stampA>
+	<stampZ>
+		<compute dU_src="U_src(U,P,i_src)"/>
+		i_A		0.0
+		i_B		0.0
+		u_src	U_src
+	</stampZ>
+</nodalElement>
