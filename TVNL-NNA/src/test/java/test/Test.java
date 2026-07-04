@@ -80,7 +80,7 @@ public class Test {
 		
 		{
 			NodalElementState element = resistor.newInstance("load");
-			element.setParameter("R", 4000);
+			element.setParameter("R", 200);
 			element.setNode("p_A", "VDD");
 			element.setNode("p_B", "OUT");
 			network.addElement(element);
