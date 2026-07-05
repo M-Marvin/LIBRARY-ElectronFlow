@@ -18,7 +18,7 @@
 		u_src	1.0		-1.0	dU_src
 	</stampA>
 	<stampZ>
-		<compute dU_src="U_src(U,P,i_src)"/>
+		<compute U_src="U_src(U,P,i_src)"/>
 		i_A		0.0
 		i_B		0.0
 		u_src	U_src

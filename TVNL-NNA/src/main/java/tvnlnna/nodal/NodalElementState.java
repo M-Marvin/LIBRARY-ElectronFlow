@@ -1,12 +1,15 @@
 package tvnlnna.nodal;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import de.m_marvin.unimat.impl.MatrixNd;
 import tvnlnna.NodalMatrixStampException;
 import tvnlnna.nodal.NodalElement.ElementVariable;
+import tvnlnna.nodal.NodalElement.SystemVariablePair;
 import tvnlnna.nodal.NodalNetwork.StampingContext;
 
 /**
@@ -111,6 +114,7 @@ public class NodalElementState {
 	 * @param value The value to assign
 	 */
 	public void setParameter(String name, double value) {
+		Objects.requireNonNull(name);
 		this.parameters.put(name, value);
 	}
 	
@@ -120,6 +124,7 @@ public class NodalElementState {
 	 * @return The value assigned to the variable
 	 */
 	public double getParamter(String name) {
+		Objects.requireNonNull(name);
 		return this.parameters.getOrDefault(name, 0.0);
 	}
 	
@@ -139,6 +144,7 @@ public class NodalElementState {
 	 * 
 	 */
 	public void setNode(int indx, String nodeName) {
+		Objects.requireNonNull(nodeName);
 		if (nodeName.isBlank() || !NAME_FILTER.matcher(nodeName).matches())
 			throw new IllegalArgumentException("node name is blank or contains and/or starts with an white space character");
 		this.nodes[indx] = nodeName;
@@ -147,11 +153,25 @@ public class NodalElementState {
 	}
 	
 	/**
+	 * Checks weather this element state defined the node variable with the given name.
+	 * @param nodeVariable The node variable name to check for
+	 * @return true if the node variable is defined by this element, false otherwise
+	 */
+	public boolean hasNode(String nodeVariable) {
+		Objects.requireNonNull(nodeVariable);
+		for (SystemVariablePair e : this.element.nodes())
+			if (nodeVariable.equals(e.name)) return true;
+		return false;
+	}
+	
+	/**
 	 * Sets the node name assigned to an single node variable.
 	 * @param nodeVariable The node variable name to assign a node name to
 	 * @param nodeName The node name to assign
 	 */
 	public void setNode(String nodeVariable, String nodeName) {
+		Objects.requireNonNull(nodeVariable);
+		Objects.requireNonNull(nodeName);
 		setNode(this.element.getNodeVariableIndex(nodeVariable), nodeName);
 	}
 
@@ -161,6 +181,7 @@ public class NodalElementState {
 	 * @Throws {@link IllegalArgumentException} if the node name list does not match the node variable count or contains invalid node names
 	 */
 	public void setNodes(String... nodeNames) {
+		Objects.requireNonNull(nodeNames);
 		if (nodeNames.length != this.nodes.length)
 			throw new IllegalArgumentException("number of node names does not match number of nodes for this element");
 		if (this.network != null)
@@ -190,6 +211,7 @@ public class NodalElementState {
 	 * @return the name of the node assigned to the node variable or null if none is assigned
 	 */
 	public String getNode(String nodeVariable) {
+		Objects.requireNonNull(nodeVariable);
 		return getNode(this.element.getNodeVariableIndex(nodeVariable));
 	}
 	
@@ -267,7 +289,7 @@ public class NodalElementState {
 		for (var e : this.element.locals())
 			setParameter(e.name, x.m(0, this.localIds[this.element.getLocalVariableIndex(e.name)] + ctx.nodeCount()));
 		for (var e : this.element.nodes()) {
-			int i = this.nodeIds[this.element.getNodeVariableIndex(e.name)];
+			int i = this.nodeIds[this.element.getNodeVariableIndex(e.name)] - 1;
 			if (i >= 0)
 				setParameter(e.name, x.m(0, i));
 		}
@@ -288,6 +310,24 @@ public class NodalElementState {
 	@Override
 	public String toString() {
 		return "NodalElementState{ name = " + this.name + ", element = " + this.element.toString() + ", disabled = " + this.disabled + " }";
+	}
+	
+	@Override
+	public int hashCode() {
+		double[] param = this.element.variables().stream().map(v -> v.name).mapToDouble(this.parameters::get).toArray();
+		return Objects.hash(this.element, this.name, Arrays.hashCode(param));
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof NodalElementState other) {
+			double[] param1 = this.element.variables().stream().map(v -> v.name).mapToDouble(this.parameters::get).toArray();
+			double[] param2 = other.element.variables().stream().map(v -> v.name).mapToDouble(other.parameters::get).toArray();
+			return	Objects.equals(this.element, other.element) &&
+					Objects.equals(this.name, other.name) &&
+					Arrays.compare(param1, param2) == 0;
+		}
+		return false;
 	}
 	
 }

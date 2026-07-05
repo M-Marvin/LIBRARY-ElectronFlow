@@ -14,11 +14,14 @@ import de.m_marvin.basicxml.marshaling.XMLMarshaler;
 import de.m_marvin.basicxml.marshaling.XMLMarshalingException;
 import de.m_marvin.basicxml.marshaling.XMLUnmarshaler;
 import de.m_marvin.unimat.impl.MatrixNd;
+import tvnlnna.NetworkSolverException;
 import tvnlnna.NodalMatrixStampException;
 import tvnlnna.nodal.NodalElement;
 import tvnlnna.nodal.NodalElementState;
 import tvnlnna.nodal.NodalNetwork;
 import tvnlnna.nodal.NodalNetwork.StampingContext.StampingMode;
+import tvnlnna.parser.NodalNetlistParser;
+import tvnlnna.solver.NodalNetworkSolver;
 
 public class Test {
 	
@@ -63,53 +66,102 @@ public class Test {
 		
 		
 		File modelPath = new File(Test.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath(), "../run/stdmodels");
-		
-		NodalElement voltageSource = loadModel(modelPath, "voltage_independent");
-		NodalElement resistor = loadModel(modelPath, "resistor");
-		NodalElement capacitor = loadModel(modelPath, "capacitor");
-		
-		NodalNetwork network = new NodalNetwork();
-		
-		{
-			NodalElementState element = voltageSource.newInstance("source");
-			element.setParameter("U", 5);
-			element.setNode("p_A", "VDD");
-			element.setNode("p_B", "GND");
-			network.addElement(element);
-		}
-		
-		{
-			NodalElementState element = resistor.newInstance("load");
-			element.setParameter("R", 200);
-			element.setNode("p_A", "VDD");
-			element.setNode("p_B", "OUT");
-			network.addElement(element);
-		}
+//		
+//		NodalElement voltageSource = loadModel(modelPath, "voltage_independent");
+//		NodalElement currentSource = loadModel(modelPath, "current_independent");
+//		NodalElement resistor = loadModel(modelPath, "resistor");
+//		NodalElement capacitor = loadModel(modelPath, "capacitor");
+//		
+//		NodalNetwork network = new NodalNetwork();
+//		
+//		{
+//			NodalElementState element = voltageSource.newInstance("source");
+//			element.setParameter("U", 5);
+//			element.setNode("p_A", "VDD");
+//			element.setNode("p_B", "GND");
+//			network.addElement(element);
+//		}
+//
+////		{
+////			NodalElementState element = voltageSource.newInstance("source2");
+////			element.setParameter("U", 6);
+////			element.setNode("p_A", "VDD");
+////			element.setNode("p_B", "GND");
+////			network.addElement(element);
+////		}
+////		
+//		{
+//			NodalElementState element = resistor.newInstance("load");
+//			element.setParameter("R", 20);
+//			element.setNode("p_A", "VDD");
+//			element.setNode("p_B", "OUT");
+//			network.addElement(element);
+//		}
+//
+//		{
+//			NodalElementState element = capacitor.newInstance("load");
+//			element.setParameter("C", 0.04700);
+//			element.setNode("p_A", "OUT");
+//			element.setNode("p_B", "GND");
+//			network.addElement(element);
+//		}
+//
+////		{
+////			NodalElementState element = currentSource.newInstance("test");
+////			element.setParameter("I", 2.0);
+////			element.setNode("p_A", "X1");
+////			element.setNode("p_B", "X2");
+////			network.addElement(element);
+////		}
+//		
+//		network.setZeroNode("GND");
+//		
+//		System.out.println(	network.toString());	
+//		
+////		network.stampMatrices(StampingMode.FULL_MATRICES, 0);
+////		
+////		System.out.println("A");
+////		System.out.println(network.getSystemMatrix_A());
+////		System.out.println(network.getSystemMatrix_A().determinant());
+////		System.out.println("E");
+////		System.out.println(network.getSystemMatrix_E());
+////		System.out.println(network.getSystemMatrix_E().determinant());
+////		System.out.println("z");
+////		System.out.println(network.getSystemMatrix_z());
+//		
 
-		{
-			NodalElementState element = capacitor.newInstance("load");
-			element.setParameter("C", 0.004700);
-			element.setNode("p_A", "OUT");
-			element.setNode("p_B", "GND");
-			network.addElement(element);
+		NodalNetlistParser parser = NodalNetlistParser.empty().loadElements(modelPath);
+		
+		NodalNetwork network = parser.parseNetlist(new File(modelPath, "../testnets/capacitor_charge.efn"));
+		
+		NodalNetworkSolver solver = NodalNetworkSolver.standard();
+//		solver.debug(System.out::println);
+		
+		solver.setNetwork(network);
+		solver.setSimulationTime(-2.0);
+		
+		System.out.println("--");
+		
+		double timestep = 1.0;
+		for (double t = 0; t < 30; t+= timestep) {
+			
+			try {
+				
+				boolean steady = solver.step(timestep);
+				
+				System.out.println(network.getSystemMatrix_x());
+
+				if (steady) {
+					System.out.println("steady state network, stop itteration");
+					break;
+				}
+				
+			} catch (NetworkSolverException e) {
+				e.printStackTrace();
+				break;
+			}
+			
 		}
-		
-		network.setZeroNode("GND");
-		
-		System.out.println(	network.toString());	
-		
-		network.stampMatrices(StampingMode.FULL_MATRICES);
-		
-		System.out.println("A");
-		System.out.println(network.getSystemMatrix_A());
-		System.out.println(network.getSystemMatrix_A().determinant());
-		System.out.println("E");
-		System.out.println(network.getSystemMatrix_E());
-		System.out.println(network.getSystemMatrix_E().determinant());
-		System.out.println("x");
-		System.out.println(network.getSystemMatrix_x());
-		System.out.println("z");
-		System.out.println(network.getSystemMatrix_z());
 		
 		
 	}

@@ -11,8 +11,9 @@
 		u_src	1.0		-1.0	0.0
 	</stampA>
 	<stampZ>
+		<compute U_src="SIMTIME&lt;0?1:U"/>
 		i_A		0.0
 		i_B		0.0
-		u_src	U
+		u_src	U_src
 	</stampZ>
 </nodalElement>

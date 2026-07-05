@@ -3,6 +3,7 @@ package tvnlnna.nodal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 
@@ -204,6 +205,12 @@ public class NodalNetwork {
 		return systemMatrix_x;
 	}
 	
+	public boolean hasValidSolutionVector() {
+		if (this.systemMatrix_x == null || this.systemMatrix_A == null)
+			return false;
+		return this.systemMatrix_x.height() == this.systemMatrix_A.height() && this.systemMatrix_x.width() == 1;
+	}
+	
 	/**
 	 * Sets the name of the zero node, can be set to null to disable the zero node.
 	 * @param zeroNode The name of the zero node or null to disable it
@@ -296,12 +303,14 @@ public class NodalNetwork {
 		}
 		
 		private final StampingMode mode;
+		private final double simtime;
 		private final int iter;
 		private int nextLocalId = 0;
 		private int nextNodeId = 0;
 		
-		public StampingContext(StampingMode mode, int iter) {
+		public StampingContext(StampingMode mode, double simtime, int iter) {
 			this.mode = mode;
+			this.simtime = simtime;
 			this.iter = iter;
 		}
 		
@@ -309,21 +318,29 @@ public class NodalNetwork {
 			return mode;
 		}
 		
-//		/**
-//		 * The current iteration number during non linear network solving
-//		 * @return the number of the current iteration, starting with zero
-//		 */
-//		public int iter() {
-//			return this.iter;
-//		}
-//		
-//		/**
-//		 * Checks if this is the first iteration in non linear networks during solving.
-//		 * @return true if this is the first iteration
-//		 */
-//		public boolean nlInit() {
-//			return iter() == 0; // TODO still required ?
-//		}
+		/**
+		 * The current simulation time.
+		 * @return the current simulation time, the unit will be defined by the application, tough it should usually be in seconds
+		 */
+		public double simtime() {
+			return this.simtime;
+		}
+		
+		/**
+		 * The current iteration number during non linear network solving
+		 * @return the number of the current iteration, starting with zero
+		 */
+		public int iter() {
+			return this.iter;
+		}
+		
+		/**
+		 * Checks if this is the first iteration in non linear networks during solving.
+		 * @return true if this is the first iteration
+		 */
+		public boolean nlInit() {
+			return iter() == 0;
+		}
 		
 		/**
 		 * Checks weather the A matrix should be generated during this iteration.
@@ -388,39 +405,16 @@ public class NodalNetwork {
 	
 	/**
 	 * Invoking this function will generate the system matrices representing the DAE-system.
-	 * This method is intended for linear networks, and allows to only generate specific matrices.
-	 * This can be used to only re-compute what is neccessary for some changes to the network, and keep what did not change.
-	 * @param mode The stamping mode, allows to apply a filter, which determines what matrices are generated
-	 * @throws NodalMatrixStampException
-	 */
-	public void stampMatrices(StampingMode mode) throws NodalMatrixStampException {
-		if (isNonLinear() && mode != StampingMode.FULL_MATRICES)
-			throw new IllegalStateException("can't partialy stamp matrix of non-linear network");
-		stampMatrices(mode, 0);
-	}
-
-	/**
-	 * Invoking this function will generate the system matrices representing the DAE-system.
-	 * This method is intended for non-linear networks, and allows to supply an iteration number, which will be passed to the individual elements and is used for iteration zero initialization and potential measures for better convergence.
-	 * The basis for non-linear element's linearization will be the working point computed using the x vector, which will be set to zero for the first iteration, or contain the values of the previous iteration.
-	 * @param iter The iteration number
-	 * @throws NodalMatrixStampException
-	 */
-	public void stampMatrices(int iter) throws NodalMatrixStampException {
-		stampMatrices(StampingMode.FULL_MATRICES, iter);
-	}
-	
-	/**
-	 * Invoking this function will generate the system matrices representing the DAE-system.
 	 * This method is the base method called by {@link NodalNetwork#stampMatrices(StampingMode)} and {@link NodalNetwork#stampMatrices(int)}
 	 * The basis for non-linear element's linearization will be the working point computed using the x vector, which will be set to zero for the first iteration, or contain the values of the previous iteration.
 	 * @param mode The stamping mode, allows to apply a filter, which determines what matrices are generated
+	 * @param time The simulation time, this will be passed to the element definitions and may be used there
 	 * @param iter The iteration number
 	 * @throws NodalMatrixStampException
 	 */
-	private void stampMatrices(StampingMode mode, int iter) throws NodalMatrixStampException {
+	public void stampMatrices(StampingMode mode, double time, int iter) throws NodalMatrixStampException {
 		
-		StampingContext ctx = new StampingContext(mode, iter);
+		StampingContext ctx = new StampingContext(mode, time, iter);
 		
 		if (nLocal == 0 || nNodes == 0) {
 			this.nodes.clear();
@@ -435,7 +429,7 @@ public class NodalNetwork {
 		}
 		
 		int matrixSize = this.nNodes + this.nLocal;
-		boolean makeSparse = matrixSize > 6;
+		boolean makeSparse = matrixSize > 100;
 		if (mode.stampsA())
 			this.systemMatrix_A = new MatrixNd(matrixSize, makeSparse);
 		if (mode.stampsE())
@@ -465,6 +459,21 @@ public class NodalNetwork {
 		for (var element : this.elements.values())
 			buff.append(element.shortString()).append('\n');
 		return buff.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.elements, this.nodes, this.zeroNode);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof NodalNetwork other) {
+			return	Objects.equals(this.elements, other.elements) &&
+					Objects.equals(this.nodes, other.nodes) &&
+					Objects.equals(this.zeroNode, other.zeroNode);
+		}
+		return false;
 	}
 	
 }

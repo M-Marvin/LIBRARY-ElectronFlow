@@ -251,7 +251,7 @@ public class NodalElement {
 			try {
 				return this.stamp[i][j].evaluate(parameters);
 			} catch (MathematicalEvaluationException e) {
-				throw new NodalMatrixStampException("unable to evaluate stamp expression: " + this.stamp[j][i].str(), e);
+				throw new NodalMatrixStampException("unable to evaluate stamp expression: " + this.stamp[i][j].str(), e);
 			}
 		}
 		
@@ -286,7 +286,7 @@ public class NodalElement {
 					} catch (MathematicalEvaluationException e) {
 						throw new NodalMatrixStampException("unable to evalueate stamp computation: " + entry.getKey() + "' := d/d" + derive.variable + "[ " + entry.getValue().str() + " ]", e);
 					}
-				}	
+				}
 		}
 		
 		public double evaluateStampEntry(int i, int j, NodalElementState state) throws NodalMatrixStampException {
@@ -451,13 +451,14 @@ public class NodalElement {
 		
 		try {
 
+			state.setParameter("SIMTIME", ctx.simtime());
 			if (ctx.stampsA() && this.stampA != null)
 				this.stampA.updateParameters(state);
 			if (ctx.stampsE() && this.stampE != null)
 				this.stampE.updateParameters(state);
 			if (ctx.stampsZ() && this.stampZ != null)
 				this.stampZ.updateParameters(state);
-
+			
 			int s = nodes().size() + locals().size();
 			for (int j = 0; j < s; j++) {
 				int n = j < nodes().size() ? state.nodes()[j] - 1 : state.localIds()[j - nodes().size()] + ctx.nodeCount();

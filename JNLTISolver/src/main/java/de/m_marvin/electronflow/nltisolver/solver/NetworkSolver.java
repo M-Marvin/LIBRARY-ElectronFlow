@@ -131,7 +131,7 @@ public class NetworkSolver {
 		this.network = network;
 		log("start non linear solver ...");
 		for (int i = 0; i < this.limIter; i++) {
-			log("iteration: %d / %d", i + 1, this.limIter);
+//			log("iteration: %d / %d", i + 1, this.limIter);
 			try {
 				this.network.stampMatrices(i);
 				initializeA();
