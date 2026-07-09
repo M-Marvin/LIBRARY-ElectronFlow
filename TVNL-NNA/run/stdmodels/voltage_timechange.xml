@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<nodalElement name="U" nonLinear="false" timeVariant="false">
+<nodalElement name="UT" nonLinear="true" timeVariant="true">
 	<node name="p_A" constant="i_A"/>
 	<node name="p_B" constant="i_B"/>
 	<local name="i_src" constant="u_src"/>
@@ -11,8 +11,9 @@
 		u_src	1.0		-1.0	0.0
 	</stampA>
 	<stampZ>
+		<compute U_src="SIMTIME&lt;8?1:U"/>
 		i_A		0.0
 		i_B		0.0
-		u_src	U
+		u_src	U_src
 	</stampZ>
 </nodalElement>

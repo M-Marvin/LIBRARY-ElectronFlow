@@ -1,25 +1,14 @@
 package test;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import de.m_marvin.basicxml.XMLException;
-import de.m_marvin.basicxml.XMLInputStream;
-import de.m_marvin.basicxml.XMLOutputStream;
-import de.m_marvin.basicxml.marshaling.XMLMarshaler;
 import de.m_marvin.basicxml.marshaling.XMLMarshalingException;
-import de.m_marvin.basicxml.marshaling.XMLUnmarshaler;
-import de.m_marvin.unimat.impl.MatrixNd;
 import tvnlnna.NetworkSolverException;
 import tvnlnna.NodalMatrixStampException;
-import tvnlnna.nodal.NodalElement;
-import tvnlnna.nodal.NodalElementState;
 import tvnlnna.nodal.NodalNetwork;
-import tvnlnna.nodal.NodalNetwork.StampingContext.StampingMode;
 import tvnlnna.parser.NodalNetlistParser;
 import tvnlnna.solver.NodalNetworkSolver;
 
@@ -132,23 +121,25 @@ public class Test {
 
 		NodalNetlistParser parser = NodalNetlistParser.empty().loadElements(modelPath);
 		
-		NodalNetwork network = parser.parseNetlist(new File(modelPath, "../testnets/capacitor_charge.efn"));
+		NodalNetwork network = parser.parseNetlist(new File(modelPath, "../testnets/source_change.efn"));
 		
 		NodalNetworkSolver solver = NodalNetworkSolver.standard();
 //		solver.debug(System.out::println);
 		
 		solver.setNetwork(network);
-		solver.setSimulationTime(-2.0);
+		solver.setSimulationTime(0.0);
 		
 		System.out.println("--");
 		
 		double timestep = 1.0;
-		for (double t = 0; t < 30; t+= timestep) {
+		for (double t = 0; t < 20; t+= timestep) {
 			
 			try {
 				
 				boolean steady = solver.step(timestep);
 				
+				System.out.println("STEP: " + t);
+				System.out.println(network.getSystemMatrix_z());
 				System.out.println(network.getSystemMatrix_x());
 
 				if (steady) {
@@ -166,10 +157,10 @@ public class Test {
 		
 	}
 	
-	public static final XMLUnmarshaler LOADER = new XMLUnmarshaler(true, NodalElement.class);
-	
-	public static NodalElement loadModel(File modelPath, String name) throws FileNotFoundException, IOException, XMLException, XMLMarshalingException {
-		return LOADER.unmarshall(new XMLInputStream(new FileInputStream(new File(modelPath, name + ".xml"))), NodalElement.class);
-	}
+//	public static final XMLUnmarshaler LOADER = new XMLUnmarshaler(true, NodalElement.class);
+//	
+//	public static NodalElement loadModel(File modelPath, String name) throws FileNotFoundException, IOException, XMLException, XMLMarshalingException {
+//		return LOADER.unmarshall(new XMLInputStream(new FileInputStream(new File(modelPath, name + ".xml"))), NodalElement.class);
+//	}
 	
 }
