@@ -1,8 +1,0 @@
-resistor chain
-V1 vcc gnd 100
-R1 vcc n01 1k
-R2 n01 n02 1k
-R3 n02 out 1k
-R4 out n03 1k
-R5 n03 n04 1k
-R6 n04 gnd 1k
