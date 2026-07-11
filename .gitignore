@@ -1,9 +1,8 @@
 /.metadata/
 .gradle
 *.log
-/Binaries
-/MNADAE/build
-/JLTISolver/build
+/Binaries/*
+*/build
 *.classpath
 ~$*
 *.asv
