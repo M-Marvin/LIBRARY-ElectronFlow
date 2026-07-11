@@ -5,6 +5,8 @@ import de.m_marvin.metabuild.maven.types.Repository.Credentials;
 
 public class Buildfile extends JavaBuildScript {
 	
+	String version = "0.1-alpha-SNAPSHOT";
+	
 	@Override
 	public void init() {
 		
@@ -37,13 +39,36 @@ public class Buildfile extends JavaBuildScript {
 		dependencies.implementation("de.m_marvin.basicxml:basicxml:1.1.6");
 
 		// UniVec
-		dependencies.implementation("de.m_marvin.univec:univec:1.8.0-SNAPSHOT");
+		dependencies.implementation("de.m_marvin.univec:univec:1.8.0");
 		
 		// NetLib
-		dependencies.implementation("com.github.fommil.netlib:all:1.1.2::pom");
+		dependencies.implementation("net.sourceforge.f2j:arpack_combined_all:0.1");
+		dependencies.implementation("com.github.fommil.netlib:core:1.1.2");
+		
+		// NetLib natives (testing only)
+		//dependencies.test("com.github.fommil.netlib:all:1.1.2::pom");
 		
 		// JFreeChart (testing only)
 		dependencies.test("org.jfree:jfreechart:1.5.6");
+		
+	}
+	
+	@Override
+	public void publishing() {
+		
+		super.publishing();
+		
+		publishMavenLocal.coordinates("de.m_marvin.electronflow:tvnl-nna:" + version);
+		
+		publishMaven.coordinates("de.m_marvin.electronflow:tvnl-nna:" + version);
+		publishMaven.repository(new Repository(
+				"GHP [ElectronFlow]",
+				"https://maven.pkg.github.com/m-marvin/library-electronflow",
+				new Credentials(
+						() -> System.getenv("GITHUB_ACTOR"), 
+						() -> System.getenv("GITHUB_TOKEN")
+				)
+		));
 		
 	}
 	

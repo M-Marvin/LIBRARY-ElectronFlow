@@ -1,11 +1,8 @@
 package tvnlnna.solver;
 
 import java.util.function.Consumer;
-
 import org.netlib.util.intW;
-
 import com.github.fommil.netlib.LAPACK;
-
 import de.m_marvin.unimat.impl.MatrixNd;
 import tvnlnna.NetworkSolverException;
 import tvnlnna.NodalMatrixStampException;
