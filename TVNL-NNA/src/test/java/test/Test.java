@@ -4,163 +4,112 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import javax.swing.JFrame;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
 import de.m_marvin.basicxml.XMLException;
 import de.m_marvin.basicxml.marshaling.XMLMarshalingException;
 import tvnlnna.NetworkSolverException;
 import tvnlnna.NodalMatrixStampException;
 import tvnlnna.nodal.NodalNetwork;
+import tvnlnna.nodal.NodalNetwork.StampingContext.StampingMode;
 import tvnlnna.parser.NodalNetlistParser;
 import tvnlnna.solver.NodalNetworkSolver;
+import tvnlnna.solver.NodalNetworkSolver_LAPACK;
 
 public class Test {
 	
-	public static void main(String[] args) throws URISyntaxException, XMLMarshalingException, IOException, XMLException, NodalMatrixStampException {
+	public static void simulationTest(File netlist, NodalNetlistParser parser, double t0, double t1, double ts) {
 		
-//		String s = "f(x,y):=x*(x+y)+y*y;\n"
-//				 + "g(A):=f(2.0,A);";
-//		
-//		System.out.println(s);
-//		
-////		MathParsingContext ctx = MathParsingContext.standard();
-////		MathFunction f = MathFunction.parseInfix(s, ctx);
-////		
-////		System.out.println("solve for f(x,y) = f(2, 3)");
-////		
-////		ValueAndDerivative res1 = f.evaluateAndDerive("x", 2.0, 3.0);
-////		ValueAndDerivative res2 = f.evaluateAndDerive("y", 2.0, 3.0);
-////		
-////		System.out.println("f(x) = " + res1.value());
-////		System.out.println("∂f/∂x = " + res1.derivative());
-////		System.out.println("∂f/∂y = " + res2.derivative());
-////		
-////		String s2 = "g(A):=f(2.0,A)";
-////
-////		System.out.println(s2);
-////		
-////		MathFunction f2 = MathFunction.parseInfix(s2, ctx);
-////
-////		System.out.println("solve for g(A) = g(3)");
-////		
-////		ValueAndDerivative res3 = f2.evaluateAndDerive("A", 3.0);
-////		System.out.println("g(A) = " + res3.value());
-////		System.out.println("∂f/∂A = " + res3.derivative());
-//		
-//		MathFunction f2 = MathFunction.parseInfixList(s, MathParsingContext.standard());
-//
-//		System.out.println("solve for g(A) = g(3)");
-//		
-//		ValueAndDerivative res3 = f2.evaluateAndDerive("A", 3.0);
-//		System.out.println("g(A) = " + res3.value());
-//		System.out.println("∂f/∂A = " + res3.derivative());
-		
-		
-		File modelPath = new File(Test.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath(), "../run/stdmodels");
-//		
-//		NodalElement voltageSource = loadModel(modelPath, "voltage_independent");
-//		NodalElement currentSource = loadModel(modelPath, "current_independent");
-//		NodalElement resistor = loadModel(modelPath, "resistor");
-//		NodalElement capacitor = loadModel(modelPath, "capacitor");
-//		
-//		NodalNetwork network = new NodalNetwork();
-//		
-//		{
-//			NodalElementState element = voltageSource.newInstance("source");
-//			element.setParameter("U", 5);
-//			element.setNode("p_A", "VDD");
-//			element.setNode("p_B", "GND");
-//			network.addElement(element);
-//		}
-//
-////		{
-////			NodalElementState element = voltageSource.newInstance("source2");
-////			element.setParameter("U", 6);
-////			element.setNode("p_A", "VDD");
-////			element.setNode("p_B", "GND");
-////			network.addElement(element);
-////		}
-////		
-//		{
-//			NodalElementState element = resistor.newInstance("load");
-//			element.setParameter("R", 20);
-//			element.setNode("p_A", "VDD");
-//			element.setNode("p_B", "OUT");
-//			network.addElement(element);
-//		}
-//
-//		{
-//			NodalElementState element = capacitor.newInstance("load");
-//			element.setParameter("C", 0.04700);
-//			element.setNode("p_A", "OUT");
-//			element.setNode("p_B", "GND");
-//			network.addElement(element);
-//		}
-//
-////		{
-////			NodalElementState element = currentSource.newInstance("test");
-////			element.setParameter("I", 2.0);
-////			element.setNode("p_A", "X1");
-////			element.setNode("p_B", "X2");
-////			network.addElement(element);
-////		}
-//		
-//		network.setZeroNode("GND");
-//		
-//		System.out.println(	network.toString());	
-//		
-////		network.stampMatrices(StampingMode.FULL_MATRICES, 0);
-////		
-////		System.out.println("A");
-////		System.out.println(network.getSystemMatrix_A());
-////		System.out.println(network.getSystemMatrix_A().determinant());
-////		System.out.println("E");
-////		System.out.println(network.getSystemMatrix_E());
-////		System.out.println(network.getSystemMatrix_E().determinant());
-////		System.out.println("z");
-////		System.out.println(network.getSystemMatrix_z());
-//		
+		try {
 
-		NodalNetlistParser parser = NodalNetlistParser.empty().loadElements(modelPath);
-		
-		NodalNetwork network = parser.parseNetlist(new File(modelPath, "../testnets/source_change.efn"));
-		
-		NodalNetworkSolver solver = NodalNetworkSolver.standard();
-//		solver.debug(System.out::println);
-		
-		solver.setNetwork(network);
-		solver.setSimulationTime(0.0);
-		
-		System.out.println("--");
-		
-		double timestep = 1.0;
-		for (double t = 0; t < 20; t+= timestep) {
+			NodalNetwork network = parser.parseNetlist(netlist);
+
+			System.out.println("Network:\n" + network);
 			
-			try {
-				
-				boolean steady = solver.step(timestep);
-				
-				System.out.println("STEP: " + t);
-				System.out.println(network.getSystemMatrix_z());
-				System.out.println(network.getSystemMatrix_x());
+			System.out.println("System Matrices:");
+			network.stampMatrices(StampingMode.FULL_MATRICES, 0, 0);
+			System.out.println(network.getSystemMatrix_A());
+			System.out.println(network.getSystemMatrix_E());
+			System.out.println(network.getSystemMatrix_z());
+			
+			NodalNetworkSolver solver = NodalNetworkSolver_LAPACK.standard();
 
-				if (steady) {
-					System.out.println("steady state network, stop itteration");
+			System.out.println("Solver:\n" + solver);
+			
+			solver.setNetwork(network);
+			solver.setSimulationTime(0.0);
+			solver.resetAndInitSimulation();
+			
+			System.out.println("-- SIMULATION START --");
+			
+			XYSeries[] plotdata = new XYSeries[network.nodeCount() + network.localCount()];
+			for (var element : network.getElements()) {
+				for (int i = 0; i < element.type().locals().size(); i++) {
+					plotdata[i + network.nodeCount()] = new XYSeries(element.type().locals().get(i).name);
+				}
+			}
+			for (int i = 1; i < network.getNodeNames().size(); i++) {
+				plotdata[i - 1] = new XYSeries(network.getNodeNames().get(i));
+			}
+			
+			for (double t = 0; t < 20; t+= ts) {
+				
+				try {
+					
+					solver.step(ts);
+					
+					System.out.println("STEP: " + t);
+					System.out.println(network.getSystemMatrix_x());
+					
+					for (int i = 0; i < plotdata.length; i++) {
+						plotdata[i].add(t, network.getSystemMatrix_x().m(0, i));
+					}
+					
+				} catch (NetworkSolverException e) {
+					e.printStackTrace();
 					break;
 				}
 				
-			} catch (NetworkSolverException e) {
-				e.printStackTrace();
-				break;
 			}
 			
+			System.out.println("-- SIMULATION END --");
+			
+			XYSeriesCollection dataset = new XYSeriesCollection();
+			for (var data : plotdata)
+				dataset.addSeries(data);
+			
+			JFreeChart chart = ChartFactory.createXYLineChart("Simulation: " + netlist.getName(), "Time", "Value", dataset, PlotOrientation.VERTICAL, true, true, false);
+			ChartPanel panel = new ChartPanel(chart);
+			JFrame frame = new JFrame();
+			frame.setContentPane(panel);
+			frame.setSize(800, 600);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setVisible(true);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		
 		
 	}
 	
-//	public static final XMLUnmarshaler LOADER = new XMLUnmarshaler(true, NodalElement.class);
-//	
-//	public static NodalElement loadModel(File modelPath, String name) throws FileNotFoundException, IOException, XMLException, XMLMarshalingException {
-//		return LOADER.unmarshall(new XMLInputStream(new FileInputStream(new File(modelPath, name + ".xml"))), NodalElement.class);
-//	}
+	public static void main(String[] args) throws URISyntaxException, XMLMarshalingException, IOException, XMLException, NodalMatrixStampException {
+		
+		File modelPath = new File(Test.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath(), "../run/stdmodels");
+		File netlistPath = new File(Test.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath(), "../run/testnets");
+		
+		NodalNetlistParser parser = NodalNetlistParser.empty().loadElements(modelPath);
+		
+		simulationTest(new File(netlistPath, "capacitor_charge.efn"), parser, 0, 20, 1);
+
+		simulationTest(new File(netlistPath, "source_change.efn"), parser, 0, 20, 1);
+		
+	}
 	
 }

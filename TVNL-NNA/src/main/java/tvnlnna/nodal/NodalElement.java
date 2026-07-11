@@ -58,6 +58,11 @@ public class NodalElement {
 		@XMLField(FieldType.ATTRIBUTE)
 		public String constant;
 		
+		@Override
+		public String toString() {
+			return "SystemVariable{ name = " + this.name + ", constant = " + this.constant + "}";
+		}
+		
 	}
 	
 	@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "node", type = SystemVariablePair.class)
@@ -70,6 +75,11 @@ public class NodalElement {
 		
 		@XMLField(FieldType.ATTRIBUTE)
 		public String name;
+		
+		@Override
+		public String toString() {
+			return "ElementVariable{ name = " + this.name + " }";
+		}
 		
 	}
 	
@@ -101,6 +111,11 @@ public class NodalElement {
 		@XMLTypeAdapter(value = ElementFunctionSetAdapter.class, parent = NodalElement.class)
 		public MathParsingContext context;
 		
+		@Override
+		public String toString() {
+			return "FunctionSet{}";
+		}
+		
 	}
 
 	@XMLField(value = FieldType.ELEMENT)
@@ -128,6 +143,11 @@ public class NodalElement {
 		@XMLField(value = FieldType.REMAINING_ATTRIBUTE_MAP, type = MathExpression.class)
 		@XMLTypeAdapter(value = StampFunctionAdapter.class, parent = NodalElement.class)
 		public Map<String, MathExpression> computations = new HashMap<String, MathExpression>();
+
+		@Override
+		public String toString() {
+			return "StampComputation{ " + this.computations + "}";
+		}
 		
 	}
 	
@@ -136,6 +156,11 @@ public class NodalElement {
 		
 		@XMLField(value = FieldType.ATTRIBUTE, name = "var")
 		public String variable;
+
+		@Override
+		public String toString() {
+			return "StampDerivation{ variable = " + this.variable + ", " + this.computations + "}";
+		}
 		
 	}
 	
@@ -255,6 +280,21 @@ public class NodalElement {
 			}
 		}
 		
+		@Override
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			sb.append("StampPattern\n");
+			if (this.stamp != null && this.stamp.length > 0) {
+				for (int j = 0; j < this.stamp[0].length; j++) {
+					for (int i = 0; i < this.stamp.length; i++) {
+						sb.append(this.stamp[i][j].str() + "\t");
+					}
+					sb.append("\n");
+				}
+			}
+			return sb.toString();
+		}
+		
 	}
 	
 	@XMLType
@@ -291,6 +331,11 @@ public class NodalElement {
 		
 		public double evaluateStampEntry(int i, int j, NodalElementState state) throws NodalMatrixStampException {
 			return this.pattern.evaluateStampEntry(i, j, state.parameters());
+		}
+		
+		@Override
+		public String toString() {
+			return "ElementStamp{ computes = " + this.computations + ", derivates = " + this.derivatives + " }\n" + this.pattern;
 		}
 		
 	}
@@ -447,11 +492,13 @@ public class NodalElement {
 	 * @param state The element instance/state
 	 * @throws NodalMatrixStampException 
 	 */
-	public void stampMatricies(NodalNetwork.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, NodalElementState state) throws NodalMatrixStampException {
+	public void stampMatricies(NodalNetwork.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, MatrixNd x, NodalElementState state) throws NodalMatrixStampException {
 		
 		try {
-
+			
+			// update SIMTIME variable
 			state.setParameter("SIMTIME", ctx.simtime());
+			// execute stamp computations and update parameters with results
 			if (ctx.stampsA() && this.stampA != null)
 				this.stampA.updateParameters(state);
 			if (ctx.stampsE() && this.stampE != null)
@@ -459,6 +506,7 @@ public class NodalElement {
 			if (ctx.stampsZ() && this.stampZ != null)
 				this.stampZ.updateParameters(state);
 			
+			// iterate over all possible stamp entries and insert in corresponding matrices if requested
 			int s = nodes().size() + locals().size();
 			for (int j = 0; j < s; j++) {
 				int n = j < nodes().size() ? state.nodes()[j] - 1 : state.localIds()[j - nodes().size()] + ctx.nodeCount();
@@ -481,6 +529,16 @@ public class NodalElement {
 				
 				if (ctx.stampsZ() && this.stampZ != null)
 					z.addM(0, n, stampZ.evaluateStampEntry(0, j, state));
+				
+				if (ctx.stampsX()) {
+					// we assume that everything has been reset to zero before stamping the X vector
+					// we also expect that all components agree on the node values, but just in case an element was not
+					// initialized, we use the absolute maximum as the final value.
+					double v = state.getParamter(j < nodes().size() ? nodes().get(j).name : locals().get(j - nodes().size()).name);
+					if (Math.abs(v) > Math.abs(x.m(0, n)))
+						x.set(0, n, v);
+				}
+					
 			}
 			
 		} catch (Exception e) {
@@ -488,6 +546,8 @@ public class NodalElement {
 		}
 		
 	}
+	
+	
 	
 	public NodalElementState newInstance(String name) {
 		return new NodalElementState(name, this);

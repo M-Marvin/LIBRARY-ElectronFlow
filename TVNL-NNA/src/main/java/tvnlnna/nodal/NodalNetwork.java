@@ -2,9 +2,11 @@ package tvnlnna.nodal;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.IntStream;
 
 import de.m_marvin.unimat.impl.MatrixNd;
@@ -18,7 +20,7 @@ import tvnlnna.nodal.NodalNetwork.StampingContext.StampingMode;
  */
 public class NodalNetwork {
 	
-	private final Map<String, NodalElementState> elements = new HashMap<>();
+	private final Map<String, NodalElementState> elements = new LinkedHashMap<>();
 	private final Map<String, Integer> nodes = new HashMap<String, Integer>();
 	private String zeroNode;
 	private int nNodes;
@@ -118,11 +120,11 @@ public class NodalNetwork {
 	}
 	
 	/**
-	 * Returns a collection of all node names defined in the network.
-	 * @return a collection of all node names
+	 * Returns a list of all node names defined in the network.
+	 * @return a list of all node names
 	 */
-	public Set<String> getNodeNames() {
-		return nodes.keySet();
+	public List<String> getNodeNames() {
+		return nodes.entrySet().stream().sorted((a, b) -> Integer.compare(a.getValue(), b.getValue())).map(Entry::getKey).toList();
 	}
 
 	/**
@@ -247,45 +249,23 @@ public class NodalNetwork {
 		this.systemMatrix_x = systemMatrix_x;
 	}
 	
-//	public double getNodeValue(int nodeId) {
-//		if (this.systemMatrix_x == null)
-//			throw new IllegalStateException("solution vector has net yet been computed");
-//		if (nodeId < 0 || nodeId > this.nNodes)
-//			throw new IndexOutOfBoundsException("node id does not exist: " + nodeId);
-//		
-//		if (nodeId == 0)  return 0.0;
-//		return this.systemMatrix_x.m(0, nodeId - 1);
-//	}
-
-//	public double getNodeValue(String name) {
-//		Integer nodeId = this.nodes.get(name);
-//		return nodeId == null ? 0.0 : getNodeValue(nodeId);
-//	}
-	
-//	public double getUnknownValue(int unknownId) {
-//		if (this.systemMatrix_x == null)
-//			throw new IllegalStateException("solution vector has net yet been computed");
-//		if (unknownId < 0 || unknownId >= this.nLocal)
-//			throw new IndexOutOfBoundsException("unknown id does not exist: " + unknownId);
-//		
-//		return this.systemMatrix_x.m(0, this.nNodes + unknownId);
-//	}
-	
 	public class StampingContext {
 		
 		public static enum StampingMode {
-			FULL_MATRICES(true, true, true),
-			TIME_INVARIANT(true, false, true),
-			FORCING_VECTOR(false, false, true);
+			INIT_VECTOR(false, false, false, true),
+			TIME_INVARIANT(true, false, true, false),
+			FULL_MATRICES(true, true, true, false);
 			
 			private final boolean stampA;
 			private final boolean stampE;
 			private final boolean stampZ;
+			private final boolean stampX;
 			
-			private StampingMode(boolean stampA, boolean stampE, boolean stampZ) {
+			private StampingMode(boolean stampA, boolean stampE, boolean stampZ, boolean stampX) {
 				this.stampA = stampA;
 				this.stampE = stampE;
 				this.stampZ = stampZ;
+				this.stampX = stampX;
 			}
 			
 			public boolean stampsA() {
@@ -298,6 +278,10 @@ public class NodalNetwork {
 			
 			public boolean stampsZ() {
 				return stampZ;
+			}
+			
+			public boolean stampsX() {
+				return stampX;
 			}
 			
 		}
@@ -367,6 +351,18 @@ public class NodalNetwork {
 		}
 		
 		/**
+		 * Checks weather the X matrix should be generated during this iteration. <br>
+		 * NOTE: Generating the X matrix, aka the solution vector, means filling it with the 
+		 * values currently stored in the component parameters (such as node potentials).
+		 * This is not used during normal simulation, but can be used to initialize the starting 
+		 * conditions by setting the parameters in the element states, and then letting the initial vector generate during the first step.
+		 * @return true if the matrix should be generated
+		 */
+		public boolean stampsX() {
+			return mode().stampsX();
+		}
+		
+		/**
 		 * Returns the number of nodes in this network, excluding the zero node.
 		 * @return the number of nodes excluding the zero node
 		 */
@@ -429,7 +425,7 @@ public class NodalNetwork {
 		}
 		
 		int matrixSize = this.nNodes + this.nLocal;
-		boolean makeSparse = matrixSize > 100;
+		boolean makeSparse = false; // matrixSize > 100;
 		if (mode.stampsA())
 			this.systemMatrix_A = new MatrixNd(matrixSize, makeSparse);
 		if (mode.stampsE())

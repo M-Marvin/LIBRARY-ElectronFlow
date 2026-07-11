@@ -21,20 +21,21 @@ function [tv,x] = solveDAEqz(E,A,z,t0,t1,h,x0)
     x(:, 1) = x0;
     
     % Compute QZ factorization
-    [T,S,Q,Z] = qz(A,E,'real');
+    [AA,EE,Q,Z] = qz(A,E,'real');
     
     for n=2:N
         
         % Get current simtime and transform last solution vector for QZ
         t = tv(n);
+       % x_t = Z' * x(:,n-1); % optimization of Z \ x because Z is orthogonal and thus A^T = A^-1
         x_t = Z \ x(:,n-1);
-        
+
         % Solve DAE using QZ matrices
-        M = (1/h)*S+T;
-        v = (1/h)*S*x_t+Q*z(t);
+        M = (1/h)*EE+AA;
+        v = (1/h)*EE*x_t+Q*z(t);
         xn_t = M \ v;
-        
-        x(:,n) = xn_t;
+
+        x(:,n) = Z * xn_t;
 
     end
 

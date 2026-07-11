@@ -2,7 +2,7 @@
 <nodalElement name="C" nonLinear="false" timeVariant="true">
 	<node name="p_A" constant="i_A"/>
 	<node name="p_B" constant="i_B"/>
-	<variable name="C" default="1.0"/>
+	<variable name="C"/>
 	<stampE>
 				p_A		p_B
 		i_A		C		0-C

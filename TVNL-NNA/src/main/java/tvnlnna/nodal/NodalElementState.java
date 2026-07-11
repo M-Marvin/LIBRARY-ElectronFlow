@@ -66,6 +66,10 @@ public class NodalElementState {
 		this.network = network;
 	}
 	
+	public NodalElement type() {
+		return element;
+	}
+	
 	/**
 	 * The network unique name of this element with the element type prefix.
 	 * @return the unique name of this element with the element type prefix
@@ -143,7 +147,7 @@ public class NodalElementState {
 	 * @throws IndexOutOfBoundsException If the index is invalid
 	 * 
 	 */
-	public void setNode(int indx, String nodeName) {
+	public void setNodeName(int indx, String nodeName) {
 		Objects.requireNonNull(nodeName);
 		if (nodeName.isBlank() || !NAME_FILTER.matcher(nodeName).matches())
 			throw new IllegalArgumentException("node name is blank or contains and/or starts with an white space character");
@@ -151,28 +155,38 @@ public class NodalElementState {
 		if (this.network != null)
 			this.network.markElementChange();
 	}
-	
-	/**
-	 * Checks weather this element state defined the node variable with the given name.
-	 * @param nodeVariable The node variable name to check for
-	 * @return true if the node variable is defined by this element, false otherwise
-	 */
-	public boolean hasNode(String nodeVariable) {
-		Objects.requireNonNull(nodeVariable);
-		for (SystemVariablePair e : this.element.nodes())
-			if (nodeVariable.equals(e.name)) return true;
-		return false;
-	}
-	
+
 	/**
 	 * Sets the node name assigned to an single node variable.
 	 * @param nodeVariable The node variable name to assign a node name to
 	 * @param nodeName The node name to assign
 	 */
-	public void setNode(String nodeVariable, String nodeName) {
+	public void setNodeName(String nodeVariable, String nodeName) {
 		Objects.requireNonNull(nodeVariable);
 		Objects.requireNonNull(nodeName);
-		setNode(this.element.getNodeVariableIndex(nodeVariable), nodeName);
+		setNodeName(this.element.getNodeVariableIndex(nodeVariable), nodeName);
+	}
+
+	/**
+	 * Returns the name of the node assigned to the node variable.
+	 * @param nodeVariable The name of the node variable
+	 * @return the name of the node assigned to the node variable or null if none is assigned
+	 */
+	public String getNodeName(String nodeVariable) {
+		Objects.requireNonNull(nodeVariable);
+		return getNodeName(this.element.getNodeVariableIndex(nodeVariable));
+	}
+
+	/**
+	 * Returns the name of the node assigned to the node variable.
+	 * @param indx The index of the node variable
+	 * @return the name of the node assigned to the node variable or null if none is assigned
+	 * @throws IndexOutOfBoundsException If the index is invalid
+	 */
+	public String getNodeName(int indx) {
+		if (indx < 0 || indx >= this.nodes.length)
+			throw new IndexOutOfBoundsException("node index " + indx + " is out of bounds for this element: " + this.name);
+		return this.nodes[indx];
 	}
 
 	/**
@@ -180,7 +194,7 @@ public class NodalElementState {
 	 * @param nodeNames The node names to assign
 	 * @Throws {@link IllegalArgumentException} if the node name list does not match the node variable count or contains invalid node names
 	 */
-	public void setNodes(String... nodeNames) {
+	public void setNodeNames(String... nodeNames) {
 		Objects.requireNonNull(nodeNames);
 		if (nodeNames.length != this.nodes.length)
 			throw new IllegalArgumentException("number of node names does not match number of nodes for this element");
@@ -194,32 +208,10 @@ public class NodalElementState {
 	}
 	
 	/**
-	 * returns the name of the node variable with the specified index
-	 * @param indx The index of the node variable
-	 * @return The name of the node variable at the specified index
-	 * @throws IndexOutOfBoundsException If the index is invalid
-	 */
-	public String getNode(int indx) {
-		if (indx < 0 || indx >= this.localIds.length)
-			throw new IndexOutOfBoundsException("node index " + indx + " is out of bounds for this element: " + this.name);
-		return this.nodes[indx];
-	}
-
-	/**
-	 * Returns the name of the node assigned to the node variable.
-	 * @param nodeVariable The name of the node variable
-	 * @return the name of the node assigned to the node variable or null if none is assigned
-	 */
-	public String getNode(String nodeVariable) {
-		Objects.requireNonNull(nodeVariable);
-		return getNode(this.element.getNodeVariableIndex(nodeVariable));
-	}
-	
-	/**
 	 * The list of currently assigned nodes for each node variable.
 	 * @return the list of node names
 	 */
-	public String[] getNodes() {
+	public String[] getNodeNames() {
 		return this.nodes;
 	}
 
@@ -231,16 +223,6 @@ public class NodalElementState {
 		return this.nodeIds;
 	}
 	
-//	public double getNodeValue(int indx) {
-//		if (indx < 0 || indx >= this.localIds.length)
-//			throw new IndexOutOfBoundsException("node index " + indx + " is out of bounds for this element: " + this.name);
-//		return this.network.getNodeValue(this.nodeIds[indx]);
-//	}
-//
-//	public double getNodeValue(String nodeVariable) {
-//		return getNodeValue(this.element.getNodeVariableIndex(nodeVariable));
-//	}
-	
 	/**
 	 * The list of currently assigned local variable ids.
 	 * @return the list of variable ids
@@ -249,16 +231,6 @@ public class NodalElementState {
 		return this.localIds;
 	}
 
-//	public double getUnknownValue(int indx) {
-//		if (indx < 0 || indx >= this.localIds.length)
-//			throw new IndexOutOfBoundsException("unknown index " + indx + " is out of bounds for this element: " + this.name);
-//		return this.network.getUnknownValue(this.localIds[indx]);
-//	}
-//	
-//	public double getUnknownValue(String localVariable) {
-//		return getUnknownValue(this.element.getLocalVariableIndex(localVariable));
-//	}
-	
 	/**
 	 * Invoking this function will assign new node and local variable ids to this element instance, taken from the stamping context provided.
 	 * This will invalidate all parameters of this element, including element variables.
@@ -286,22 +258,27 @@ public class NodalElementState {
 	public void stampMatricies(NodalNetwork.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, MatrixNd x) throws NodalMatrixStampException {
 		if (this.disabled) return;
 		
-		for (var e : this.element.locals())
-			setParameter(e.name, x.m(0, this.localIds[this.element.getLocalVariableIndex(e.name)] + ctx.nodeCount()));
-		for (var e : this.element.nodes()) {
-			int i = this.nodeIds[this.element.getNodeVariableIndex(e.name)] - 1;
-			if (i >= 0)
-				setParameter(e.name, x.m(0, i));
+		// we don't override the parameters if stamping of the X vector is requested, as this would defeat the purpose
+		if (!ctx.stampsX()) {
+			// copy solution vector results from previous step into parameters for node potentials ...
+			for (var e : this.element.locals())
+				setParameter(e.name, x.m(0, this.localIds[this.element.getLocalVariableIndex(e.name)] + ctx.nodeCount()));
+			// ... and element variables
+			for (var e : this.element.nodes()) {
+				int i = this.nodeIds[this.element.getNodeVariableIndex(e.name)] - 1;
+				if (i >= 0)
+					setParameter(e.name, x.m(0, i));
+			}
 		}
 		
-		this.element.stampMatricies(ctx, A, E, z, this);
+		this.element.stampMatricies(ctx, A, E, z, x, this);
 	}
 	
 	public String shortString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(this.name());
-		for (String node : this.nodes)
-			sb.append(" ").append(node);
+		sb.append(this.element.name()).append(" ").append(this.name);
+		for (SystemVariablePair variable : this.element.nodes())
+			sb.append(" ").append(variable.name).append("=").append(getNodeName(variable.name));;
 		for (ElementVariable variable : this.element.variables())
 			sb.append(" ").append(variable.name).append("=").append(getParamter(variable.name));
 		return sb.toString();

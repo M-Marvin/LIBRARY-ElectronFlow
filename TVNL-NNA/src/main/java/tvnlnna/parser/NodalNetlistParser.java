@@ -138,8 +138,8 @@ public class NodalNetlistParser {
 			if (s.length != 2)
 				throw new IllegalArgumentException("illegal element parameter key-value pair: " + segments[i]);
 			
-			if (state.hasNode(s[0])) {
-				state.setNode(s[0], s[1]);
+			if (element.hasNodeVariable(s[0], false)) {
+				state.setNodeName(s[0], s[1]);
 			} else {
 				try {
 					state.setParameter(s[0], Double.parseDouble(s[1]));
