@@ -16,6 +16,10 @@ public class Buildfile extends JavaBuildScript {
 		
 		withSourcesJar();
 		
+		compileJava.sourceCompatibility = "17";
+		compileJava.targetCompatibility = "17";
+		
+
 	}
 	
 	@Override
@@ -36,7 +40,7 @@ public class Buildfile extends JavaBuildScript {
 	public void dependencies() {
 		
 		// BasicXML
-		dependencies.implementation("de.m_marvin.basicxml:basicxml:1.1.6");
+		dependencies.implementation("de.m_marvin.basicxml:basicxml:1.1.7");
 
 		// UniVec
 		dependencies.implementation("de.m_marvin.univec:univec:1.8.0");
