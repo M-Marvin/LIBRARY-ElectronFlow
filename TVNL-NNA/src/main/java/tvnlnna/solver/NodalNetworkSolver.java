@@ -84,6 +84,13 @@ public abstract class NodalNetworkSolver {
 	public abstract NodalNetworkSolver setSimulationTime(double time);
 
 	/**
+	 * Returns the current simulation time.
+	 * The simulation time is incremented with the timestep every step, and passed to the element models.
+	 * @return the current simulation time which would be applied for the next step
+	 */
+	public abstract double getSimulationTime();
+	
+	/**
 	 * Updates the simulation of the network by stepping forward in time and computing the next solution vector.
 	 * If the network is time invariant, the function will indicate a steady state by returning true, further calls will not have any effect.
 	 * If the network is time variant, the function will always return false and continue to update the simulation.

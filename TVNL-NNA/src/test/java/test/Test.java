@@ -52,14 +52,14 @@ public class Test {
 			XYSeries[] plotdata = new XYSeries[network.nodeCount() + network.localCount()];
 			for (var element : network.getElements()) {
 				for (int i = 0; i < element.type().locals().size(); i++) {
-					plotdata[i + network.nodeCount()] = new XYSeries(element.type().locals().get(i).name);
+					plotdata[element.localIds()[i] + network.nodeCount()] = new XYSeries(element.name() + "/" + element.type().locals().get(i).name);
 				}
 			}
 			for (int i = 1; i < network.getNodeNames().size(); i++) {
 				plotdata[i - 1] = new XYSeries(network.getNodeNames().get(i));
 			}
 			
-			for (double t = 0; t < 20; t+= ts) {
+			for (double t = t0; t < t1; t+= ts) {
 				
 				try {
 					
@@ -106,9 +106,11 @@ public class Test {
 		
 		NodalNetlistParser parser = NodalNetlistParser.empty().loadElements(modelPath);
 		
-		simulationTest(new File(netlistPath, "capacitor_charge.efn"), parser, 0, 20, 1);
+//		simulationTest(new File(netlistPath, "capacitor_charge.efn"), parser, 0, 20, 1);
 
-		simulationTest(new File(netlistPath, "source_change.efn"), parser, 0, 20, 1);
+//		simulationTest(new File(netlistPath, "source_change.efn"), parser, 0, 20, 1);
+
+		simulationTest(new File(netlistPath, "seperate_nets.efn"), parser, 0, 10, 1);
 		
 	}
 	

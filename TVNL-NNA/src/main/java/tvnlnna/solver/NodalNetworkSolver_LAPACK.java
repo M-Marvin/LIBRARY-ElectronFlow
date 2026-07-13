@@ -108,6 +108,11 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 		return this;
 	}
 
+	@Override
+	public double getSimulationTime() {
+		return this.simtime;
+	}
+	
 	private void log(String msg, Object... args) {
 		if (this.debugOut != null)
 			this.debugOut.accept(String.format(msg, args));
@@ -183,7 +188,7 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 		x.setArray(Barr);
 		
 		if (info.val != 0)
-			throw new NetworkSolverException("sv linear solver failed: LAPACK INFO = " + info.val);
+			throw new NetworkSolverException("sv linear solver failed: LAPACK INFO = " + info.val + (info.val > 0 ? " system singular" : ""));
 		
 	}
 	

@@ -1,0 +1,7 @@
+UT source p_A=VDD p_B=GND U=5.0
+R res p_A=VDD p_B=GND R=20.0
+
+UT source1 p_A=VDD1 p_B=GND U=10.0
+R res1 p_A=VDD1 p_B=GND R=20.0
+
+NZERO GND

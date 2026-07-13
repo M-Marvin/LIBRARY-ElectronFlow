@@ -96,6 +96,17 @@ public class NodalNetwork {
 	}
 	
 	/**
+	 * Return the potential of the node with the name.
+	 * @param nodeName The name of the node
+	 * @return the potential of the node, or 0.0 if the node does not exist
+	 */
+	public double getNodePotential(String nodeName) {
+		int nid = this.nodes.getOrDefault(nodeName, 0);
+		if (nid <= 0) return 0.0;
+		return this.systemMatrix_x.m(0, nid - 1);
+	}
+	
+	/**
 	 * Notifies the network that some elements have been changed externally, this will cause the necessary variables to be recomputed during the next iteration.
 	 */
 	public void markElementChange() {

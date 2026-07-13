@@ -14,7 +14,7 @@ public class Buildfile extends JavaBuildScript {
 		
 		super.init();
 		
-		
+		withSourcesJar();
 		
 	}
 	
