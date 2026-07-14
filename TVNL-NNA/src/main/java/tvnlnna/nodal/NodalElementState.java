@@ -257,21 +257,26 @@ public class NodalElementState {
 	 */
 	public void stampMatricies(NodalNetwork.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, MatrixNd x) throws NodalMatrixStampException {
 		if (this.disabled) return;
+		this.element.stampMatricies(ctx, A, E, z, x, this);
+	}
+	
+	/**
+	 * Invoking this function will allow the element to read back the results from the last iteration and use them for the next step.
+	 * @param ctx The stamping context, providing additional information for this step
+	 * @param x The solution vector (node and local variable values) from the previous simulation step
+	 */
+	public void updateParameters(NodalNetwork.StampingContext ctx, MatrixNd x) {
 		
-		// we don't override the parameters if stamping of the X vector is requested, as this would defeat the purpose
-		if (!ctx.stampsX()) {
-			// copy solution vector results from previous step into parameters for node potentials ...
-			for (var e : this.element.locals())
-				setParameter(e.name, x.m(0, this.localIds[this.element.getLocalVariableIndex(e.name)] + ctx.nodeCount()));
-			// ... and element variables
-			for (var e : this.element.nodes()) {
-				int i = this.nodeIds[this.element.getNodeVariableIndex(e.name)] - 1;
-				if (i >= 0)
-					setParameter(e.name, x.m(0, i));
-			}
+		// copy solution vector results from previous step into parameters for node potentials ...
+		for (var e : this.element.locals())
+			setParameter(e.name, x.m(0, this.localIds[this.element.getLocalVariableIndex(e.name)] + ctx.nodeCount()));
+		// ... and element variables
+		for (var e : this.element.nodes()) {
+			int i = this.nodeIds[this.element.getNodeVariableIndex(e.name)] - 1;
+			if (i >= 0)
+				setParameter(e.name, x.m(0, i));
 		}
 		
-		this.element.stampMatricies(ctx, A, E, z, x, this);
 	}
 	
 	public String shortString() {

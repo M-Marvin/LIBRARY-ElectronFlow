@@ -236,7 +236,7 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 				try {
 					
 					log("solve time variant / iteration: %d / %d", iter + 1, this.limIter);
-					this.network.stampMatrices(StampingMode.FULL_MATRICES, this.simtime, iter);
+					var ctx = this.network.stampMatrices(StampingMode.FULL_MATRICES, this.simtime, iter);
 					
 					qz(this.network.getSystemMatrix_A(), this.network.getSystemMatrix_E(), T, S, Q, Z);
 					MatrixNd M = S.scalarDiv(timestep).addI(T);
@@ -244,6 +244,8 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 					sv(M, x, v);
 					x.setI(Z.mul(x));
 
+					this.network.updateElementParameters(ctx);
+					
 					if (xl != null && checkConvergence(xl, x)) {
 						log("solve time variant / convergence detected, solution found");
 						this.network.setSystemMatrix_x(x);
@@ -282,14 +284,16 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 				// load last result as starting point for non linear approximation
 				MatrixNd x0 = this.network.getSystemMatrix_x();
 				
-				this.network.stampMatrices(StampingMode.FULL_MATRICES, this.simtime, 0);
+				var ctx = this.network.stampMatrices(StampingMode.FULL_MATRICES, this.simtime, 0);
 				
 				qz(this.network.getSystemMatrix_A(), this.network.getSystemMatrix_E(), T, S, Q, Z);
 				MatrixNd M = S.scalarDiv(timestep).addI(T);
 				MatrixNd v = S.scalarDiv(timestep).mul(x0).addI(Q.mul(this.network.getSystemMatrix_z()));
 				sv(M, this.network.getSystemMatrix_x(), v);
 				this.network.getSystemMatrix_x().setI(Z.mul(this.network.getSystemMatrix_x()));
-
+				
+				this.network.updateElementParameters(ctx);
+				
 				log("solve time variant / solution found");
 				
 			} catch (NetworkSolverException | NodalMatrixStampException e) {
@@ -316,9 +320,11 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 					try {
 	
 						log("solve time invariant / iteration: %d / %d", iter + 1, this.limIter);
-						this.network.stampMatrices(StampingMode.TIME_INVARIANT, this.simtime, iter);
+						var ctx = this.network.stampMatrices(StampingMode.TIME_INVARIANT, this.simtime, iter);
 						
 						sv(this.network.getSystemMatrix_A(), this.network.getSystemMatrix_x(), this.network.getSystemMatrix_z());
+						
+						this.network.updateElementParameters(ctx);
 						
 						if (xl != null && checkConvergence(xl, this.network.getSystemMatrix_x())) {
 							log("solve time invariant / convergence detected, solution found");
@@ -352,9 +358,12 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 
 				log("solve time invariant / start linear solver ...");
 				
-				this.network.stampMatrices(StampingMode.TIME_INVARIANT, this.simtime, 0);
+				var ctx =this.network.stampMatrices(StampingMode.TIME_INVARIANT, this.simtime, 0);
+				
 				sv(this.network.getSystemMatrix_A(), this.network.getSystemMatrix_x(), this.network.getSystemMatrix_z());
-
+				
+				this.network.updateElementParameters(ctx);
+				
 				log("solve time invariant / solution found");
 				
 			} catch (NodalMatrixStampException | NetworkSolverException e) {

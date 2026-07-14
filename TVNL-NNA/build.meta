@@ -43,7 +43,7 @@ public class Buildfile extends JavaBuildScript {
 		dependencies.implementation("de.m_marvin.basicxml:basicxml:1.1.7");
 
 		// UniVec
-		dependencies.implementation("de.m_marvin.univec:univec:1.8.0");
+		dependencies.implementation("de.m_marvin.univec:univec:1.8.1");
 		
 		// NetLib
 		dependencies.implementation("net.sourceforge.f2j:arpack_combined_all:0.1");

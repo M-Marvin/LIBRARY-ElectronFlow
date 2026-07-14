@@ -91,7 +91,7 @@ public class NodalNetlistParser {
 			bin.close();
 			return network;
 		} catch (IOException e) {
-			throw new IOException("io exception while reading netlist stream");
+			throw new IOException("io exception while reading netlist stream", e);
 		}
 	}
 	

@@ -417,9 +417,10 @@ public class NodalNetwork {
 	 * @param mode The stamping mode, allows to apply a filter, which determines what matrices are generated
 	 * @param time The simulation time, this will be passed to the element definitions and may be used there
 	 * @param iter The iteration number
+	 * @return 
 	 * @throws NodalMatrixStampException
 	 */
-	public void stampMatrices(StampingMode mode, double time, int iter) throws NodalMatrixStampException {
+	public StampingContext stampMatrices(StampingMode mode, double time, int iter) throws NodalMatrixStampException {
 		
 		StampingContext ctx = new StampingContext(mode, time, iter);
 		
@@ -458,6 +459,17 @@ public class NodalNetwork {
 				throw new NodalMatrixStampException("unexpected exception occured during system matrices stamping", e);
 			}
 		
+		return ctx;
+		
+	}
+	
+	/**
+	 * Lets the elements copy the results of the last step for the next iteration.
+	 * @param ctx The stamping context of the last iteration.
+	 */
+	public void updateElementParameters(StampingContext ctx) {
+		for (var comp : this.elements.values())
+			comp.updateParameters(ctx, this.systemMatrix_x);
 	}
 	
 	@Override
@@ -465,6 +477,8 @@ public class NodalNetwork {
 		StringBuffer buff = new StringBuffer();
 		for (var element : this.elements.values())
 			buff.append(element.shortString()).append('\n');
+		if (this.zeroNode != null)
+			buff.append("NZERO ").append(this.zeroNode);
 		return buff.toString();
 	}
 	
