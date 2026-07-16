@@ -75,6 +75,8 @@ public class NodalElement {
 		
 		@XMLField(FieldType.ATTRIBUTE)
 		public String name;
+		@XMLField(value = FieldType.ATTRIBUTE, name = "default")
+		public double defaultValue;
 		
 		@Override
 		public String toString() {
@@ -547,10 +549,11 @@ public class NodalElement {
 		
 	}
 	
-	
-	
 	public NodalElementState newInstance(String name) {
-		return new NodalElementState(name, this);
+		NodalElementState state = new NodalElementState(name, this);
+		for (var variable : this.variables)
+			state.setParameter(variable.name, variable.defaultValue);
+		return state;
 	}
 	
 }
