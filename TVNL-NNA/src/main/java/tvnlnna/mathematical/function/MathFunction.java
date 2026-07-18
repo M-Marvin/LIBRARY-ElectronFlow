@@ -62,7 +62,7 @@ public class MathFunction implements MathTerm {
 			return f;
 			
 		} catch (MathematicalExpressionException e) {
-			throw new MathematicalExpressionException("unable to parse function expression", e);
+			throw new MathematicalExpressionException("unable to parse function expression: " + s, e);
 		}
 		
 	}

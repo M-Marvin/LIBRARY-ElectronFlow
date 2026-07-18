@@ -98,6 +98,9 @@ public class MathExpression implements MathTerm {
 			
 			if (endOfTerm) {
 				
+				if (type == null)
+					break;
+				
 				String str = s.substring(i0, i1);
 				switch (type) {
 				

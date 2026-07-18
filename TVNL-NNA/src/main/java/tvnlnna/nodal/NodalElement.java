@@ -96,10 +96,14 @@ public class NodalElement {
 		public static class ElementFunctionSetAdapter implements XMLClassFieldAdapter<MathParsingContext, NodalElement> {
 
 			@Override
-			public MathParsingContext adaptType(String str, NodalElement parentObject) {
-				MathParsingContext ctx = MathParsingContext.standard();
-				MathFunction.parseInfixList(str, ctx);
-				return ctx;
+			public MathParsingContext adaptType(String str, NodalElement parentObject) throws XMLException {
+				try {
+					MathParsingContext ctx = MathParsingContext.standard();
+					MathFunction.parseInfixList(str, ctx);
+					return ctx;
+				} catch (MathematicalExpressionException e) {
+					throw new XMLException("unable to parse element function: " + str, e);
+				}
 			}
 
 			@Override
@@ -131,8 +135,12 @@ public class NodalElement {
 		public static class StampFunctionAdapter implements XMLClassFieldAdapter<MathExpression, NodalElement> {
 
 			@Override
-			public MathExpression adaptType(String str, NodalElement parentObject) {
-				return MathExpression.parseInfix(str, parentObject.mathContext());
+			public MathExpression adaptType(String str, NodalElement parentObject) throws XMLException {
+				try {
+					return MathExpression.parseInfix(str, parentObject.mathContext());
+				} catch (MathematicalExpressionException e) {
+					throw new XMLException("unable to parse stamp computation: " + str, e);
+				}
 			}
 
 			@Override

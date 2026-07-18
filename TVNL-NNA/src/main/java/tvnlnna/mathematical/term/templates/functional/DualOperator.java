@@ -36,8 +36,11 @@ public class DualOperator extends BaseOperator {
 			evalstack.add(this.operation.apply(B, A));
 			if (this.differentiation != null)
 				diffstack.add(this.differentiation.apply(B, diffstack.pop(), A, diffstack.pop()));
-			else
+			else {
+				diffstack.pop();
+				diffstack.pop();
 				diffstack.add(evalstack.peek());
+			}
 		} catch (EmptyStackException e) {
 			throw new MathematicalEvaluationException("lacking evalutation stack entries for operation: " + str());
 		}
