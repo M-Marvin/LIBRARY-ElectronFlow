@@ -224,10 +224,13 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 			MatrixNd S = new MatrixNd(N, N);
 			MatrixNd Q = new MatrixNd(N, N);
 			MatrixNd Z = new MatrixNd(N, N);
-			MatrixNd x = new MatrixNd(1, N);
 			
 			// load last result as starting point for non linear approximation
 			MatrixNd x0 = this.network.getSystemMatrix_x();
+			
+			// prepare next solution vector
+			MatrixNd x = new MatrixNd(1, N);
+			this.network.setSystemMatrix_x(x);
 			
 			// run iterative non linear approximation for next step
 			MatrixNd xl = null;
@@ -252,7 +255,8 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 						return;
 					}
 					
-					log("solve time variant / no convergence, continue ...");
+					if (xl != null)
+						log("solve time variant / no convergence, continue ...");
 					if (xl == null)
 						xl = x.copy();
 					else
@@ -266,7 +270,7 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 			}
 
 			log("solve time variant / error: iteration limit reached");
-			throw new NetworkSolverException("unable to solve non-linearity: no convergenze within limits: " + toString());
+			throw new NetworkSolverException("unable to solve non-linearity: no convergence within limits: " + toString());
 			
 		} else {
 			
@@ -330,8 +334,9 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 							log("solve time invariant / convergence detected, solution found");
 							return;
 						}
-	
-						log("solve time invariant / no convergence, continue ...");
+
+						if (xl != null)
+							log("solve time invariant / no convergence, continue ...");
 						if (xl == null)
 							xl = this.network.getSystemMatrix_x().copy();
 						else
@@ -345,11 +350,11 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 				}
 	
 				log("solve time invariant / error: iteration limit reached");
-				throw new NetworkSolverException("unable to solve non-linearity: no convergenze within limits: " + toString());
+				throw new NetworkSolverException("unable to solve non-linearity: no convergence within limits: " + toString());
 
 			} catch (NetworkSolverException e) {
 				log("solve time invariant / error: unable to compute non linear solution");
-				throw new NetworkSolverException("unable to solve non linear sysetem", e);
+				throw new NetworkSolverException("unable to solve non linear system", e);
 			}
 			
 		} else {
@@ -368,7 +373,7 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 				
 			} catch (NodalMatrixStampException | NetworkSolverException e) {
 				log("solve time invariant / error: unable to compute linear solution");
-				throw new NetworkSolverException("unable to solve linear sysetem", e);
+				throw new NetworkSolverException("unable to solve linear system", e);
 			}
 			
 		}
