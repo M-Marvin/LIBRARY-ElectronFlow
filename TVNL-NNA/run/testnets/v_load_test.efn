@@ -1,0 +1,4 @@
+UP2 source p_A=VDD p_B=GND U=5.0 P=10.0
+R load p_A=VDD p_B=OUT R=2
+C test p_A=OUT p_B=GND C=1
+NZERO GND
