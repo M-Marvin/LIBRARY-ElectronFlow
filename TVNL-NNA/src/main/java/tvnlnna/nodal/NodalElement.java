@@ -18,6 +18,7 @@ import tvnlnna.NodalMatrixStampException;
 import tvnlnna.mathematical.MathematicalEvaluationException;
 import tvnlnna.mathematical.MathematicalExpressionException;
 import tvnlnna.mathematical.expression.MathExpression;
+import tvnlnna.mathematical.expression.MathExpression.ValueAndDerivative;
 import tvnlnna.mathematical.function.MathFunction;
 import tvnlnna.mathematical.term.MathParsingContext;
 import tvnlnna.nodal.NodalElement.StampPattern.StampPatternAdapter;
@@ -154,25 +155,28 @@ public class NodalElement {
 		@XMLTypeAdapter(value = StampFunctionAdapter.class, parent = NodalElement.class)
 		public Map<String, MathExpression> computations = new HashMap<String, MathExpression>();
 
+		@XMLField(value = FieldType.ATTRIBUTE, name = "derive")
+		public String derive;
+		
 		@Override
 		public String toString() {
-			return "StampComputation{ " + this.computations + "}";
+			return "StampComputation{ derive = " + this.derive + ", " + this.computations + "}";
 		}
 		
 	}
 	
-	@XMLType
-	public class StampDerivation extends StampComputation {
-		
-		@XMLField(value = FieldType.ATTRIBUTE, name = "var")
-		public String variable;
-
-		@Override
-		public String toString() {
-			return "StampDerivation{ variable = " + this.variable + ", " + this.computations + "}";
-		}
-		
-	}
+//	@XMLType
+//	public class StampDerivation extends StampComputation {
+//		
+//		@XMLField(value = FieldType.ATTRIBUTE, name = "var")
+//		public String variable;
+//
+//		@Override
+//		public String toString() {
+//			return "StampDerivation{ variable = " + this.variable + ", " + this.computations + "}";
+//		}
+//		
+//	}
 	
 	@XMLType
 	public class StampPattern {
@@ -313,30 +317,43 @@ public class NodalElement {
 		@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "compute", type = StampComputation.class)
 		public List<StampComputation> computations = new ArrayList<NodalElement.StampComputation>();
 		
-		@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "derive", type = StampDerivation.class)
-		public List<StampDerivation> derivatives = new ArrayList<NodalElement.StampDerivation>();
+//		@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "derive", type = StampDerivation.class)
+//		public List<StampDerivation> derivatives = new ArrayList<NodalElement.StampDerivation>();
 		
 		@XMLField(FieldType.TEXT)
 		@XMLTypeAdapter(StampPatternAdapter.class)
 		public StampPattern pattern;
 		
 		public void updateParameters(NodalElementState state) throws NodalMatrixStampException {
-			for (var compute : this.computations)
-				for (var entry : compute.computations.entrySet()) {
-					try {
-						state.setParameter(entry.getKey(), entry.getValue().evaluate(state.parameters()));
-					} catch (MathematicalEvaluationException e) {
-						throw new NodalMatrixStampException("unable to evalueate stamp computation: " + entry.getKey() + " := " + entry.getValue().str(), e);
+			for (var compute : this.computations) {
+				if (compute.derive != null) {
+					for (var entry : compute.computations.entrySet()) {
+						try {
+							ValueAndDerivative result = entry.getValue().evaluateAndDerive(state.parameters(), compute.derive);
+							state.setParameter(entry.getKey(), result.value());
+							state.setParameter(entry.getKey() + "d", result.derivative());
+						} catch (MathematicalEvaluationException e) {
+							throw new NodalMatrixStampException("unable to evalueate stamp derivation: " + entry.getKey() + " := " + entry.getValue().str(), e);
+						}
+					}
+				} else {
+					for (var entry : compute.computations.entrySet()) {
+						try {
+							state.setParameter(entry.getKey(), entry.getValue().evaluate(state.parameters()));
+						} catch (MathematicalEvaluationException e) {
+							throw new NodalMatrixStampException("unable to evalueate stamp computation: " + entry.getKey() + " := " + entry.getValue().str(), e);
+						}
 					}
 				}
-			for (var derive : this.derivatives)
-				for (var entry : derive.computations.entrySet()) {
-					try {
-						state.setParameter(entry.getKey(), entry.getValue().evaluateAndDerive(state.parameters(), derive.variable).derivative());
-					} catch (MathematicalEvaluationException e) {
-						throw new NodalMatrixStampException("unable to evalueate stamp computation: " + entry.getKey() + "' := d/d" + derive.variable + "[ " + entry.getValue().str() + " ]", e);
-					}
-				}
+			}
+//			for (var derive : this.derivatives)
+//				for (var entry : derive.computations.entrySet()) {
+//					try {
+//						state.setParameter(entry.getKey(), entry.getValue().evaluateAndDerive(state.parameters(), derive.variable).derivative());
+//					} catch (MathematicalEvaluationException e) {
+//						throw new NodalMatrixStampException("unable to evalueate stamp computation: " + entry.getKey() + "' := d/d" + derive.variable + "[ " + entry.getValue().str() + " ]", e);
+//					}
+//				}
 		}
 		
 		public double evaluateStampEntry(int i, int j, NodalElementState state) throws NodalMatrixStampException {
@@ -345,7 +362,7 @@ public class NodalElement {
 		
 		@Override
 		public String toString() {
-			return "ElementStamp{ computes = " + this.computations + ", derivates = " + this.derivatives + " }\n" + this.pattern;
+			return "ElementStamp{ computes = " + this.computations + " }\n" + this.pattern;
 		}
 		
 	}

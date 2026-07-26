@@ -15,6 +15,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import de.m_marvin.basicxml.XMLException;
 import de.m_marvin.basicxml.marshaling.XMLMarshalingException;
+import de.m_marvin.unimat.impl.MatrixNd;
 import tvnlnna.NetworkSolverException;
 import tvnlnna.NodalMatrixStampException;
 import tvnlnna.nodal.NodalNetwork;
@@ -61,8 +62,11 @@ public class Test {
 				plotdata[i - 1] = new XYSeries(network.getNodeNames().get(i));
 			}
 			
-			double t;
-			for (t = t0; t < t1; t+= ts) {
+			int n = (int) Math.ceil((t1 - t0) / ts) + 1;
+			int i;
+			MatrixNd lx = null;
+			for (i = 0; i < n; i++) {
+				double t = t0 + ts * i;
 				
 				try {
 
@@ -72,8 +76,20 @@ public class Test {
 					
 					System.out.println(network.getSystemMatrix_x());
 					
-					for (int i = 0; i < plotdata.length; i++) {
-						plotdata[i].add(t, network.getSystemMatrix_x().m(0, i));
+					if (debugout && lx != null) {
+						
+						System.out.println("-- E*x'+A*x --");
+						MatrixNd x = network.getSystemMatrix_x();
+						MatrixNd xd = x.sub(lx);
+						MatrixNd z = network.getSystemMatrix_E().mul(xd).add(network.getSystemMatrix_A().mul(x));
+						System.out.println(z);
+						System.out.println("-- z --");
+						System.out.println(network.getSystemMatrix_z());
+						
+					}
+					
+					for (int i1 = 0; i1 < plotdata.length; i1++) {
+						plotdata[i1].add(t, network.getSystemMatrix_x().m(0, i1));
 					}
 					
 				} catch (NetworkSolverException e) {
@@ -110,7 +126,7 @@ public class Test {
 				
 			}
 			
-			if (t == t0) {
+			if (i != n) {
 				System.out.println("-- SIMULATION FAILED --");
 				System.exit(1);
 			}
@@ -152,23 +168,18 @@ public class Test {
 			String s = args[i];
 			if (s.startsWith("-")) {
 				if (i < args.length -1) {
+					i++;
 					if (s.endsWith("models")) {
-						i++;
 						modelPath = new File(args[i]);
 					} else if (s.endsWith("netlist")) {
-						i++;
 						netlistFile = new File(args[i]);
 					} else if (s.endsWith("tstart")) {
-						i++;
 						tstart = Double.parseDouble(args[i]);
 					} else if (s.endsWith("tstop")) {
-						i++;
 						tstop = Double.parseDouble(args[i]);
 					} else if (s.endsWith("tstep")) {
-						i++;
 						tstep = Double.parseDouble(args[i]);
 					} else if (s.endsWith("tdump")) {
-						i++;
 						tdump = Double.parseDouble(args[i]);
 					}
 				} else {
@@ -180,7 +191,9 @@ public class Test {
 		}
 		
 		if (netlistFile == null || !netlistFile.isFile() || !modelPath.isDirectory()) {
-			System.out.println("simtest -netlist *netlist* <-models *model dir* -tstart (default 0.0) -tstop (default 10.0) -tstep (default 0.1)>");
+			if (netlistFile != null)
+				System.out.println("file not found: " + netlistFile.getAbsoluteFile());
+			System.out.println("simtest -netlist *netlist* <-models *model dir* -tstart (default 0.0) -tstop (default 10.0) -tstep (default 0.1) -tdump (default N/A) -debug>");
 			System.exit(-1);
 		}
 		

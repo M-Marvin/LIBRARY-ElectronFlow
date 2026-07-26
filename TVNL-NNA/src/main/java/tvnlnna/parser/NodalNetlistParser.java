@@ -6,10 +6,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import de.m_marvin.basicxml.XMLException;
 import de.m_marvin.basicxml.XMLInputStream;
@@ -38,7 +38,7 @@ public class NodalNetlistParser {
 	}
 	
 	public NodalNetlistParser loadElements(File folder) throws XMLException, IOException {
-		return loadElements(Arrays.asList(folder.listFiles()));
+		return loadElements(Stream.of(folder.listFiles()).filter(f -> f.isFile()).toList());
 	}
 
 	public NodalNetlistParser loadElements(Collection<File> files) throws XMLException, IOException {
@@ -47,11 +47,13 @@ public class NodalNetlistParser {
 				FileInputStream fin = new FileInputStream(f);
 				XMLInputStream xin = new XMLInputStream(fin);
 				NodalElement element = ELEMENT_XML_PARSER.unmarshall(xin, NodalElement.class);
+				if (element == null)
+					continue;
 				this.elements.put(element.name(), element);
 			} catch (XMLException | XMLMarshalingException e) {
 				throw new XMLException("xml exception while loading: " + f.getName(), e);
 			} catch (IOException e) {
-				throw new IOException("io exception while loading: " + f.getName(), e);
+				throw new IOException("io exception while loading model file: " + f.getName(), e);
 			}
 		}
 		return this;

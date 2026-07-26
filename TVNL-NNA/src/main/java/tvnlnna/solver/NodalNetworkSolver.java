@@ -95,7 +95,6 @@ public abstract class NodalNetworkSolver {
 	 * If the network is time invariant, the function will indicate a steady state by returning true, further calls will not have any effect.
 	 * If the network is time variant, the function will always return false and continue to update the simulation.
 	 * @param timestep The timestep increment between the last step and the next one
-//	 * @return true if a time invariant network was detected and the never changing solution vector was computed
 	 * @throws NetworkSolverException
 	 */
 	public abstract void step(double timestep) throws NetworkSolverException;

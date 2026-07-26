@@ -124,8 +124,8 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 		S.setI(B);
 		
 		int N = A.height();
-		double[] Aarr = A.getArray();
-		double[] Barr = B.getArray();
+		double[] Aarr = A.getArray(false);
+		double[] Barr = B.getArray(false);
 		double[] Qarr = new double[N*N];
 		double[] Zarr = new double[N*N];
 		double[] work = new double[8*N+16];
@@ -157,10 +157,10 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 				null, 
 				info);
 		
-		T.setArray(Aarr);
-		S.setArray(Barr);
-		Q.setArray(Qarr);
-		Z.setArray(Zarr);
+		T.setArray(Aarr, false);
+		S.setArray(Barr, false);
+		Q.setArray(Qarr, true); // this effectively transposes the Q matrix, for some weird reason it comes out transposed, even tough VSR/Z should be the transposed one ... and idk why ...
+		Z.setArray(Zarr, false);
 		
 		if (info.val != 0)
 			throw new NetworkSolverException("qz transformation of matrices failed: LAPACK INFO = " + info.val);
@@ -170,8 +170,10 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 	private void sv(MatrixNd A, MatrixNd x, MatrixNd B) throws NetworkSolverException {
 		
 		int N = A.height();
-		double[] Aarr = A.getArray();
-		double[] Barr = B.getArray();
+		double[] Aarr = new double[A.height() * A.width()];
+		double[] Barr = new double[B.height()];
+		System.arraycopy(A.getArray(false), 0, Aarr, 0, Aarr.length);
+		System.arraycopy(B.getArray(false), 0, Barr, 0, Barr.length);
 		int[] pivot = new int[N];
 		
 		intW info = new intW(0);
@@ -185,7 +187,7 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 				N,
 				info);
 		
-		x.setArray(Barr);
+		x.setArray(Barr, false);
 		
 		if (info.val != 0)
 			throw new NetworkSolverException("sv linear solver failed: LAPACK INFO = " + info.val + (info.val > 0 ? " system singular" : ""));
@@ -199,8 +201,8 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 	 * @return true if the conditions for convergence are satisfied
 	 */
 	private boolean checkConvergence(MatrixNd x1, MatrixNd x2) {
-		double[] a = x1.getArray();
-		double[] b = x2.getArray();
+		double[] a = x1.getArray(false);
+		double[] b = x2.getArray(false);
 		for (int i = 0; i < a.length; i++) {
 			double diff = Math.abs(a[i] - b[i]);
 			if (i < this.network.nodeCount()) {
@@ -327,6 +329,8 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 						var ctx = this.network.stampMatrices(StampingMode.TIME_INVARIANT, this.simtime, iter);
 						
 						sv(this.network.getSystemMatrix_A(), this.network.getSystemMatrix_x(), this.network.getSystemMatrix_z());
+						
+						System.out.println(this.network.getSystemMatrix_z() + " -> \n" + this.network.getSystemMatrix_x());
 						
 						this.network.updateElementParameters(ctx);
 						
