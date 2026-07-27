@@ -1,7 +1,7 @@
-UT source p_A=VDD p_B=GND U=5.0
+UT source p_A=VDD p_B=GND U=5.0 U2=10 T=5
 R res p_A=VDD p_B=GND R=20.0
 
-UT source1 p_A=VDD1 p_B=GND U=10.0
+UT source1 p_A=VDD1 p_B=GND U=10.0 U2=5 T=6
 R res1 p_A=VDD1 p_B=GND R=20.0
 
 NZERO GND

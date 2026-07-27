@@ -9,6 +9,11 @@ import tvnlnna.NodalMatrixStampException;
 import tvnlnna.nodal.NodalNetwork;
 import tvnlnna.nodal.NodalNetwork.StampingContext.StampingMode;
 
+/**
+ * An implementation of the {@link NodalNetworkSolver} using the {@link LAPACK} interface from the netlib project.
+ * This implementation uses backwards/implicit euler integration and QZ factorization for the DAE systems.
+ * Non linearity is approximated using iterative methods.
+ */
 public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 	
 	public static final double DEFAULT_LIMUDREL = 0.001;
@@ -33,11 +38,20 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 	private double limIdAbs = DEFAULT_LIMIDABS;
 	private double limUdRel = DEFAULT_LIMUDREL;
 	private double limUdAbs = DEFAULT_LIMUDABS;
-
+	
+	/**
+	 * Constructs a new solver using the supplied LAPACK instance.
+	 * @param lapack the LAPACK instance to utilize in the solver
+	 */
 	public NodalNetworkSolver_LAPACK(LAPACK lapack) {
 		this.lapack = lapack;
 	}
 	
+	/**
+	 * Constructs a new solver using the default LAPACK instance.
+	 * Which one the default is, depends on the environment variables which dictate what instance netlib is loading, which is decided upon class-loading of the {@link LAPACK} class.
+	 * @return the new solver instance
+	 */
 	public static NodalNetworkSolver_LAPACK standard() {
 		return new NodalNetworkSolver_LAPACK(LAPACK.getInstance());
 	}
@@ -65,12 +79,6 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 		this.limIdRel = lim;
 		return this;
 	}
-
-//	@Override
-//	public NodalNetworkSolver_LAPACK limSingular(double lim) {
-//		this.limSingular = lim;
-//		return this;
-//	}
 
 	@Override
 	public NodalNetworkSolver_LAPACK iterLim(int lim) {
@@ -132,6 +140,16 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 			this.debugOut.accept(String.format(msg, args));
 	}
 	
+	/**
+	 * Utilizes the LAPACK instance to perform the QZ factorization: [T,S,Q,Z]=qz(A,B) where QTZ=A and QSZ=B
+	 * @param A The A matrix to factorize (stays unchanged)
+	 * @param B The B matrix to factorize (stays unchanged)
+	 * @param T The T matrix to be written
+	 * @param S The S matrix to be written
+	 * @param Q The Q matrix to be written
+	 * @param Z The Z matrix to be written
+	 * @throws NetworkSolverException if LAPACK signals an error during factorization
+	 */
 	private void qz(MatrixNd A, MatrixNd B, MatrixNd T, MatrixNd S, MatrixNd Q, MatrixNd Z) throws NetworkSolverException {
 		
 		T.setI(A);
@@ -173,7 +191,7 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 		
 		T.setArray(Aarr, false);
 		S.setArray(Barr, false);
-		Q.setArray(Qarr, true); // this effectively transposes the Q matrix, for some weird reason it comes out transposed, even tough VSR/Z should be the transposed one ... and idk why ...
+		Q.setArray(Qarr, true); // this effectively transposes the Q matrix, for some weird reason it comes out transposed ... and idk why ...
 		Z.setArray(Zarr, false);
 		
 		if (info.val != 0)
@@ -181,6 +199,13 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 		
 	}
 	
+	/**
+	 * Utilizes the LAPACK instance to solve the linear system of equations: Ax=B
+	 * @param A The A matrix of the equation system
+	 * @param x The solution vector so solve for
+	 * @param B The constant vector of the equation system
+	 * @throws NetworkSolverException if LAPACK signals an error in the solver
+	 */
 	private void sv(MatrixNd A, MatrixNd x, MatrixNd B) throws NetworkSolverException {
 		
 		int N = A.height();
@@ -228,6 +253,11 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 		return true;
 	}
 	
+	/**
+	 * Perform a time variant solver step on the network
+	 * @param timestep the time increment from the last step
+	 * @throws NetworkSolverException if an error occurred during solving for the solution vector
+	 */
 	private void solveTimeVariant(double timestep) throws NetworkSolverException {
 		
 		if (this.network.isNonLinear()) {
@@ -246,10 +276,9 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 			
 			// prepare next solution vector
 			MatrixNd xn_t = new MatrixNd(1, N);
-			this.network.setSystemMatrix_x(x);
 			
 			// run iterative non linear approximation for next step
-			MatrixNd xl = null;
+			MatrixNd xnl = null;
 			for (int iter = 0; iter < this.limIter; iter++) {
 				
 				try {
@@ -269,22 +298,22 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 					MatrixNd M = S.scalarDiv(timestep).addI(T);
 					MatrixNd v = S.scalarDiv(timestep).mul(x_t).addI(Q.mul(this.network.getSystemMatrix_z()));
 					sv(M, xn_t, v);
-					x.setI(Z.mul(xn_t));
+					this.network.setSystemMatrix_x(Z.mul(xn_t));
 
 					this.network.updateElementParameters(ctx);
 					
-					if (xl != null && checkConvergence(xl, x)) {
+					log("-> Z @ T: %f\n%s", this.simtime, this.network.getSystemMatrix_z());
+					log("-> X @ T: %f\n%s", this.simtime, this.network.getSystemMatrix_x());
+					
+					if (xnl != null && checkConvergence(xnl, this.network.getSystemMatrix_x())) {
 						log("solve time variant / convergence detected, solution found");
-						this.network.setSystemMatrix_x(x);
 						return;
 					}
 					
-					if (xl != null)
+					if (xnl != null)
 						log("solve time variant / no convergence, continue ...");
-					if (xl == null)
-						xl = x.copy();
-					else
-						xl.setI(x);
+					
+					xnl = this.network.getSystemMatrix_x();
 					
 				} catch (NodalMatrixStampException | NetworkSolverException e) {
 					log("error: non linear time variant solver failed at itteration %d", iter + 1);
@@ -338,7 +367,11 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 		}
 		
 	}
-	
+
+	/**
+	 * Perform a time invariant solver step on the network
+	 * @throws NetworkSolverException if an error occurred during solving for the solution vector
+	 */
 	private void solveTimeInvariant() throws NetworkSolverException {
 		
 		if (this.network.isNonLinear()) {
@@ -348,7 +381,7 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 				log("solve time invariant / start non linear itterative solver ...");
 				
 				// run iterative non linear approximation for next step
-				MatrixNd xl = null;
+				MatrixNd xnl = null;
 				for (int iter = 0; iter < this.limIter; iter++) {
 					
 					try {
@@ -358,21 +391,20 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 						
 						sv(this.network.getSystemMatrix_A(), this.network.getSystemMatrix_x(), this.network.getSystemMatrix_z());
 						
-						System.out.println(this.network.getSystemMatrix_z() + " -> \n" + this.network.getSystemMatrix_x());
-						
 						this.network.updateElementParameters(ctx);
 						
-						if (xl != null && checkConvergence(xl, this.network.getSystemMatrix_x())) {
+						if (xnl != null && checkConvergence(xnl, this.network.getSystemMatrix_x())) {
 							log("solve time invariant / convergence detected, solution found");
 							return;
 						}
 
-						if (xl != null)
+						if (xnl != null)
 							log("solve time invariant / no convergence, continue ...");
-						if (xl == null)
-							xl = this.network.getSystemMatrix_x().copy();
+						
+						if (xnl == null)
+							xnl = this.network.getSystemMatrix_x().copy();
 						else
-							xl.setI(this.network.getSystemMatrix_x());
+							xnl.setI(this.network.getSystemMatrix_x());
 						
 					} catch (NodalMatrixStampException | NetworkSolverException e) {
 						log("solve time invariant / error: non linear solver failed at itteration %d", iter + 1);

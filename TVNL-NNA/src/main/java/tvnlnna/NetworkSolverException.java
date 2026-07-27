@@ -1,5 +1,8 @@
 package tvnlnna;
 
+/**
+ * Signals that a problem occurred during solving for the solution vector of an nodal network.
+ */
 public class NetworkSolverException extends Exception {
 	
 	private static final long serialVersionUID = -3915155568621626485L;

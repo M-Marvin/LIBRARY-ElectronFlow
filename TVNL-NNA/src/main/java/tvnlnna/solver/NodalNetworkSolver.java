@@ -5,6 +5,10 @@ import java.util.function.Consumer;
 import tvnlnna.NetworkSolverException;
 import tvnlnna.nodal.NodalNetwork;
 
+/**
+ * The network solver implements the algorithm which implements the non linear and the differential algebraic equation solver to run the simulation.
+ * There are different implementations possible, tough currently only {@link NodalNetworkSolver_LAPACK} is supplied by default.
+ */
 public abstract class NodalNetworkSolver {
 	
 	/**
@@ -38,14 +42,6 @@ public abstract class NodalNetworkSolver {
 	 * @param lim The tolerance limit (highest value accepted for convergence)
 	 */
 	public abstract NodalNetworkSolver relItol(double lim);
-
-//	/**
-//	 * Configures the singularity limit.
-//	 * The singularity value determines how close the network system of equation matrix is to singularity, the smaller the value, the close it is to singularity.
-//	 * If the network is singular, this indicates a malformed network, and a solution may not be computed reliably.
-//	 * @param lim The singularity limit, values below this will be counted as singular and the simulation may abort the simulation
-//	 */
-//	public abstract NodalNetworkSolver limSingular(double lim);
 
 	/**
 	 * Iteration limit for iterative non linear solver.
@@ -102,7 +98,7 @@ public abstract class NodalNetworkSolver {
 	 * Updates the simulation of the network by stepping forward in time and computing the next solution vector.
 	 * If the network is time invariant, the function will indicate a steady state by returning true, further calls will not have any effect.
 	 * If the network is time variant, the function will always return false and continue to update the simulation.
-	 * @param timestep The timestep increment between the last step and the next one
+	 * @param timestep The time step increment between the last step and the next one
 	 * @throws NetworkSolverException
 	 */
 	public abstract void step(double timestep) throws NetworkSolverException;

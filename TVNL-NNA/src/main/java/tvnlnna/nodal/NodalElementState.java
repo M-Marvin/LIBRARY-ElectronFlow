@@ -23,7 +23,7 @@ public class NodalElementState {
 	/** The unique name of this element instance in the network **/
 	private final String name;
 	/** The element definition of this instance **/
-	private final NodalElement element;
+	private final INodalElement element;
 	/** The names of the nodes this element is connected to **/
 	private final String[] nodes;
 	/** The parameters of the element **/
@@ -40,7 +40,7 @@ public class NodalElementState {
 	
 	private static final Pattern NAME_FILTER = Pattern.compile("^\\S+");
 	
-	public NodalElementState(String name, NodalElement element) {
+	public NodalElementState(String name, INodalElement element) {
 		if (name.isBlank() || !NAME_FILTER.matcher(name).matches())
 			throw new IllegalArgumentException("element name is blank or contains and/or starts with an white space character");
 		this.name = name;
@@ -66,7 +66,7 @@ public class NodalElementState {
 		this.network = network;
 	}
 	
-	public NodalElement type() {
+	public INodalElement type() {
 		return element;
 	}
 	

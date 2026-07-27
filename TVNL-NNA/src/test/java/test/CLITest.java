@@ -27,6 +27,9 @@ import tvnlnna.parser.NodalNetlistParser;
 import tvnlnna.solver.NodalNetworkSolver;
 import tvnlnna.solver.NodalNetworkSolver_LAPACK;
 
+/**
+ * A command line tool implementation for testing the simulation system.
+ */
 public class CLITest {
 	
 	public static void simulationTest(File netlist, NodalNetworkSolver solver, NodalNetlistParser parser, double t0, double t1, double ts, LogMode output, boolean showGraph) {
@@ -135,7 +138,6 @@ public class CLITest {
 				}
 				
 				System.out.println("[--- End of Internal State Dump ---]");
-				System.exit(0);
 			}
 			
 			if (showGraph) {

@@ -1,4 +1,4 @@
-U source p_A=VDD p_B=GND U=20.0
-R res p_A=VDD p_B=OUT R=20.0
+UT source p_A=VDD p_B=GND U=20.0 U2=10 T=5
+R res p_A=VDD p_B=OUT R=0.1
 C cap p_A=OUT p_B=GND C=10
 NZERO GND

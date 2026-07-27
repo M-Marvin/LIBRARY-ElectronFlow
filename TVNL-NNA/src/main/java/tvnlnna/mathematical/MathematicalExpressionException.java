@@ -1,5 +1,8 @@
 package tvnlnna.mathematical;
 
+/**
+ * Signals that a problem occurred during construction of an mathematical object (term/expression/function), usually by parsing an string.
+ */
 public class MathematicalExpressionException extends RuntimeException {
 	
 	private static final long serialVersionUID = -4872070979540013337L;

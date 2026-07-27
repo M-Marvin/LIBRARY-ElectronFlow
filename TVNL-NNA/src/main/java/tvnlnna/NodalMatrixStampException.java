@@ -1,5 +1,8 @@
 package tvnlnna;
 
+/**
+ * Signals that a problem occurred during creation of the system matrices from a nodal network.
+ */
 public class NodalMatrixStampException extends Exception {
 	
 	private static final long serialVersionUID = -251565502372152589L;

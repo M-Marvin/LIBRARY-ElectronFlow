@@ -24,20 +24,12 @@ import tvnlnna.mathematical.term.MathParsingContext;
 import tvnlnna.nodal.NodalElement.StampPattern.StampPatternAdapter;
 
 /**
- * The definition of an element type.
- * Each element used in a network will need an element definition assigned, which can be parsed from an model XML file.
- * The element defined properties of the element required for simulation, such as what variables it adds to the system of equations.<br>
- * There are three types of variables:<br>
- * - node variables: Will be shared with other elements with's nodes are connected with this elements nodes<br>
- * - local variables: Will be local to each instance of the element, such as currents trough an voltage source<br>
- * - element variables: Will be constant during simulation, and can only be configured before starting the simulation, such as conductivity of an resistor.<br>
- * <br>
- * Additonaly, node and local variables will consist of a pair of two variables, one will be the actual variable, the other the corresponding constant which is used to form the equation of the system of equations.
- * In electrical simulations the node variable will have the unit volt, and correspond to the potential of the node, the constant will have the unit ampere, and will be the sum of current in that node.
+ * This is an {@link INodalElement} instance parsed from an XML file.
+ * @see INodalElement
  */
 @XMLRootType("nodalElement")
 @XMLType
-public class NodalElement {
+public class NodalElement implements INodalElement {
 	
 	/* XML - general element attributes */
 	
@@ -165,18 +157,32 @@ public class NodalElement {
 		
 	}
 	
-//	@XMLType
-//	public class StampDerivation extends StampComputation {
-//		
-//		@XMLField(value = FieldType.ATTRIBUTE, name = "var")
-//		public String variable;
-//
-//		@Override
-//		public String toString() {
-//			return "StampDerivation{ variable = " + this.variable + ", " + this.computations + "}";
-//		}
-//		
-//	}
+	@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "compute", type = StampComputation.class)
+	public List<StampComputation> computations = new ArrayList<NodalElement.StampComputation>();
+
+	public void updateParameters(NodalElementState state) throws NodalMatrixStampException {
+		for (var compute : this.computations) {
+			if (compute.derive != null) {
+				for (var entry : compute.computations.entrySet()) {
+					try {
+						ValueAndDerivative result = entry.getValue().evaluateAndDerive(state.parameters(), compute.derive);
+						state.setParameter(entry.getKey(), result.value());
+						state.setParameter(entry.getKey() + "d", result.derivative());
+					} catch (MathematicalEvaluationException e) {
+						throw new NodalMatrixStampException("unable to evalueate stamp derivation: " + entry.getKey() + " := " + entry.getValue().str(), e);
+					}
+				}
+			} else {
+				for (var entry : compute.computations.entrySet()) {
+					try {
+						state.setParameter(entry.getKey(), entry.getValue().evaluate(state.parameters()));
+					} catch (MathematicalEvaluationException e) {
+						throw new NodalMatrixStampException("unable to evalueate stamp computation: " + entry.getKey() + " := " + entry.getValue().str(), e);
+					}
+				}
+			}
+		}
+	}
 	
 	@XMLType
 	public class StampPattern {
@@ -317,9 +323,6 @@ public class NodalElement {
 		@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "compute", type = StampComputation.class)
 		public List<StampComputation> computations = new ArrayList<NodalElement.StampComputation>();
 		
-//		@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "derive", type = StampDerivation.class)
-//		public List<StampDerivation> derivatives = new ArrayList<NodalElement.StampDerivation>();
-		
 		@XMLField(FieldType.TEXT)
 		@XMLTypeAdapter(StampPatternAdapter.class)
 		public StampPattern pattern;
@@ -346,14 +349,6 @@ public class NodalElement {
 					}
 				}
 			}
-//			for (var derive : this.derivatives)
-//				for (var entry : derive.computations.entrySet()) {
-//					try {
-//						state.setParameter(entry.getKey(), entry.getValue().evaluateAndDerive(state.parameters(), derive.variable).derivative());
-//					} catch (MathematicalEvaluationException e) {
-//						throw new NodalMatrixStampException("unable to evalueate stamp computation: " + entry.getKey() + "' := d/d" + derive.variable + "[ " + entry.getValue().str() + " ]", e);
-//					}
-//				}
 		}
 		
 		public double evaluateStampEntry(int i, int j, NodalElementState state) throws NodalMatrixStampException {
@@ -394,54 +389,32 @@ public class NodalElement {
 		return this.name.hashCode();
 	}
 	
-	/**
-	 * Identifier for this type of element.
-	 * @return the identifier string of this element type
-	 */
+	@Override
 	public String name() {
 		return this.name;
 	}
 
-	/**
-	 * Checks if this element is marked as non linear.
-	 * @return true if and only if it was marked as modified
-	 */
+	@Override
 	public boolean isNonLinear() {
 		return this.nonLinear;
 	}
-	
-	/** 
-	 * Checks if this element is marked as time variant.
-	 * @return true if and only if it was marked as time variant
-	 */
+
+	@Override
 	public boolean isTimeVariant() {
 		return this.timeVariant;
 	}
-	
-	/**
-	 * The context used to parse math expressions for this element.
-	 * The context is defined trough the function-block of the XML file and provides mathematical functions that can be used in other expressions.
-	 * @return the math parsing context that can be used to parse math expressions for this element
-	 */
+
+	@Override
 	public MathParsingContext mathContext() {
 		return this.functions != null ? this.functions.context : MathParsingContext.standard();
 	}
-	
-	/**
-	 * The list of node variable pairs (unknown and constant) defined for this element type.
-	 * Each entry consists of the pair of the solution vector variable name, and the forcing vector constant name.
-	 * @return the list of node variable names in pairs
-	 */
+
+	@Override
 	public List<SystemVariablePair> nodes() {
 		return this.nodes;
 	}
-	
-	/**
-	 * Gets the index of the node variable name in this element type.
-	 * @param name The name of the node variable defined for this element type
-	 * @return the index of the node in this element
-	 * @throws IllegalArgumentException if the string does not match any node variable name
-	 */
+
+	@Override
 	public int getNodeVariableIndex(String name) {
 		for (int i = 0; i < this.nodes.size(); i++) {
 			if (this.nodes.get(i).name.equals(name) || this.nodes.get(i).constant.equals(name))
@@ -449,36 +422,21 @@ public class NodalElement {
 		}
 		throw new IllegalArgumentException("node not defined for element type: " + name() + "/" +  name);
 	}
-	
-	/**
-	 * Checks weather this element defines the node variable (either the unknown or the constant)
-	 * @param name The name of the variable to check for
-	 * @param constant If true, checks weather its defined as a constant, if false it checks for an unknown
-	 * @return true if and only if a variable is defined with the name and it is the type (constant/unknown) that was requested
-	 */
+
+	@Override
 	public boolean hasNodeVariable(String name, boolean constant) {
 		for (var pair : this.nodes)
 			if (constant ? pair.constant.equals(name) : pair.name.equals(name))
 				return true;
 		return false;
 	}
-	
-	/**
-	 * The list of local variable pairs (unknown and constant) defined for this element type.
-	 * These are computed for the system just like node variables, but are local to each instance of this element and not shared like connected nodes between elements.
-	 * Each entry consists of the pair of the solution vector variable name, and the forcing vector constant name.
-	 * @return the list of local variable names in pairs
-	 */
+
+	@Override
 	public List<SystemVariablePair> locals() {
 		return this.locals;
 	}
-	
-	/**
-	 * Gets the index of the local variable name in this element type.
-	 * @param name The name of the local variable defined for this element type
-	 * @return the index of the local in this element
-	 * @throws IllegalArgumentException if the string does not match any local variable name
-	 */
+
+	@Override
 	public int getLocalVariableIndex(String name) {
 		for (int i = 0; i < this.locals.size(); i++) {
 			if (this.locals.get(i).name.equals(name) || this.locals.get(i).constant.equals(name))
@@ -487,38 +445,20 @@ public class NodalElement {
 		throw new IllegalArgumentException("local not defined for element type: " + name() + "/" +  name);
 	}
 
-	/**
-	 * Checks weather this element defines the local variable (either the unknown or the constant)
-	 * @param name The name of the variable to check for
-	 * @param constant If true, checks weather its defined as a constant, if false it checks for an unknown
-	 * @return true if and only if a variable is defined with the name and it is the type (constant/unknown) that was requested
-	 */
+	@Override
 	public boolean hasLocalVariable(String name, boolean constant) {
 		for (var pair : this.locals)
 			if (constant ? pair.constant.equals(name) : pair.name.equals(name))
 				return true;
 		return false;
 	}
-	
-	/**
-	 * The list of element variables, properties which are configured for each instance of this element during creation of the network.
-	 * These are constant during the simulation. 
-	 * @return the list of element variable names
-	 */
+
+	@Override
 	public List<ElementVariable> variables() {
 		return this.variables;
 	}
-	
-	/**
-	 * Invoking this function will apply the elements matrix stamp to the system matrices provided.
-	 * If required, it will also compute the linearization of the element on the current operation point, which will be taken from the parameters in the element state (usually the results of the previous iteration, or zero if this is the first iteration).
-	 * @param ctx The stamping context, providing additional information for this step
-	 * @param A The system A matrix (time invariant part)
-	 * @param E The system E matrix (time variant part)
-	 * @param z The forcing vector (constants)
-	 * @param state The element instance/state
-	 * @throws NodalMatrixStampException 
-	 */
+
+	@Override
 	public void stampMatricies(NodalNetwork.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, MatrixNd x, NodalElementState state) throws NodalMatrixStampException {
 		
 		try {
@@ -526,6 +466,7 @@ public class NodalElement {
 			// update SIMTIME variable
 			state.setParameter("SIMTIME", ctx.simtime());
 			// execute stamp computations and update parameters with results
+			updateParameters(state);
 			if (ctx.stampsA() && this.stampA != null)
 				this.stampA.updateParameters(state);
 			if (ctx.stampsE() && this.stampE != null)
@@ -572,13 +513,6 @@ public class NodalElement {
 			throw new NodalMatrixStampException("failed to stamp element matrix: " + state.name(), e);
 		}
 		
-	}
-	
-	public NodalElementState newInstance(String name) {
-		NodalElementState state = new NodalElementState(name, this);
-		for (var variable : this.variables)
-			state.setParameter(variable.name, variable.defaultValue);
-		return state;
 	}
 	
 }

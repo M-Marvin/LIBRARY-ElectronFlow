@@ -17,6 +17,10 @@ import tvnlnna.mathematical.expression.MathTerm;
 import tvnlnna.mathematical.expression.MathExpression.ValueAndDerivative;
 import tvnlnna.mathematical.term.MathParsingContext;
 
+/**
+ * A function is composed of an parameter list and an mathematical expression.
+ * A function can become part of an another expression as an term, or being invoked standalone by suppling a list of parameters.
+ */
 public class MathFunction implements MathTerm {
 	
 	private final String name;
