@@ -43,7 +43,7 @@ public class Buildfile extends JavaBuildScript {
 		dependencies.implementation("de.m_marvin.basicxml:basicxml:1.1.7");
 
 		// UniVec
-		dependencies.implementation("de.m_marvin.univec:univec:1.9.0-SNAPSHOT");
+		dependencies.implementation("de.m_marvin.univec:univec:1.9.0");
 		
 		// NetLib
 		dependencies.implementation("net.sourceforge.f2j:arpack_combined_all:0.1");
@@ -54,6 +54,9 @@ public class Buildfile extends JavaBuildScript {
 		
 		// JFreeChart (testing only)
 		dependencies.test("org.jfree:jfreechart:1.5.6");
+		
+		// CommandLineUtility (testing only)
+		dependencies.test("de.m_marvin.commandlineparser:commandlineutility:2.2.2");
 		
 	}
 	

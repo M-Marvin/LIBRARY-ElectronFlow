@@ -82,7 +82,15 @@ public abstract class NodalNetworkSolver {
 	 * @param time The time value to set, the unit is defined by the application, but should usually be in seconds
 	 */
 	public abstract NodalNetworkSolver setSimulationTime(double time);
-
+	
+	/**
+	 * Configures a ramp up period, in which the forcing vector parameters are ramped up from zero to nominal linearly.
+	 * This ramp up does account for change over time in the variables, thus the final result might not be linear if the target value changed during ramp up.
+	 * @param start the starting time of the ramp
+	 * @param end the end time of the ramp
+	 */
+	public abstract NodalNetworkSolver setRampup(double start, double end);
+	
 	/**
 	 * Returns the current simulation time.
 	 * The simulation time is incremented with the timestep every step, and passed to the element models.

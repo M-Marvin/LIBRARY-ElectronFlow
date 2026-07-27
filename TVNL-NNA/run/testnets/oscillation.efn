@@ -1,5 +1,5 @@
-U source p_A=VDD p_B=GND U=20
+U source p_A=VDD p_B=GND U=20 U2=5 T=5
 R res p_A=VDD p_B=OUT R=20
 C cap p_A=OUT p_B=GND C=0.1
-L coil p_A=OUT p_B=GND L=10
+L coil p_A=OUT p_B=GND L=0.1
 NZERO GND

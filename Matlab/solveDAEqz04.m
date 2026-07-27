@@ -27,8 +27,8 @@ function [tv,x] = solveDAEqz(E,A,z,t0,t1,h,x0)
         
         % Get current simtime and transform last solution vector for QZ
         t = tv(n);
-       % x_t = Z' * x(:,n-1); % optimization of Z \ x because Z is orthogonal and thus A^T = A^-1
-        x_t = Z \ x(:,n-1);
+        x_t = Z' * x(:,n-1); % optimization of Z \ x because Z is orthogonal and thus A^T = A^-1
+        %x_t = Z \ x(:,n-1);
 
         % Solve DAE using QZ matrices
         M = (1/h)*EE+AA;

@@ -10,22 +10,29 @@ import tvnlnna.nodal.NodalNetwork;
 import tvnlnna.nodal.NodalNetwork.StampingContext.StampingMode;
 
 public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
-
+	
+	public static final double DEFAULT_LIMUDREL = 0.001;
+	public static final double DEFAULT_LIMUDABS = 0.0001;
+	public static final double DEFAULT_LIMIDREL = 0.001;
+	public static final double DEFAULT_LIMIDABS = 0.0001;
+	public static final int DEFAULT_LIMITER = 100;
+	
 	private final LAPACK lapack;
 	
 	private Consumer<String> debugOut;
 	
 	private NodalNetwork network;
 	private double simtime = 0.0;
+	private double rampstart = 0.0;
+	private double rampend = 0.0;
 	private boolean initflag = false;
 	private int nethash;
 	
-	private int limIter = 100;
-	//private double limSingular = 1E-8;
-	private double limIdRel = 0.001;
-	private double limIdAbs = 0.0001;
-	private double limUdRel = 0.001;
-	private double limUdAbs = 0.0001;
+	private int limIter = DEFAULT_LIMITER;
+	private double limIdRel = DEFAULT_LIMIDREL;
+	private double limIdAbs = DEFAULT_LIMIDABS;
+	private double limUdRel = DEFAULT_LIMUDREL;
+	private double limUdAbs = DEFAULT_LIMUDABS;
 
 	public NodalNetworkSolver_LAPACK(LAPACK lapack) {
 		this.lapack = lapack;
@@ -108,6 +115,13 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 		return this;
 	}
 
+	@Override
+	public NodalNetworkSolver setRampup(double start, double end) {
+		this.rampstart = start;
+		this.rampend = end;
+		return this;
+	}
+	
 	@Override
 	public double getSimulationTime() {
 		return this.simtime;
@@ -228,10 +242,10 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 			MatrixNd Z = new MatrixNd(N, N);
 			
 			// load last result as starting point for non linear approximation
-			MatrixNd x0 = this.network.getSystemMatrix_x();
+			MatrixNd x = this.network.getSystemMatrix_x();
 			
 			// prepare next solution vector
-			MatrixNd x = new MatrixNd(1, N);
+			MatrixNd xn_t = new MatrixNd(1, N);
 			this.network.setSystemMatrix_x(x);
 			
 			// run iterative non linear approximation for next step
@@ -243,11 +257,19 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 					log("solve time variant / iteration: %d / %d", iter + 1, this.limIter);
 					var ctx = this.network.stampMatrices(StampingMode.FULL_MATRICES, this.simtime, iter);
 					
+					if (this.simtime < this.rampend) {
+						if (this.simtime < this.simtime)
+							this.network.getSystemMatrix_z().scalarMulI(0.0);
+						else
+							this.network.getSystemMatrix_z().scalarMulI((this.simtime - this.rampstart) / (this.rampend - this.rampstart));
+					}
+					
 					qz(this.network.getSystemMatrix_A(), this.network.getSystemMatrix_E(), T, S, Q, Z);
+					MatrixNd x_t = Z.transpose().mul(x);
 					MatrixNd M = S.scalarDiv(timestep).addI(T);
-					MatrixNd v = S.scalarDiv(timestep).mul(x0).addI(Q.mul(this.network.getSystemMatrix_z()));
-					sv(M, x, v);
-					x.setI(Z.mul(x));
+					MatrixNd v = S.scalarDiv(timestep).mul(x_t).addI(Q.mul(this.network.getSystemMatrix_z()));
+					sv(M, xn_t, v);
+					x.setI(Z.mul(xn_t));
 
 					this.network.updateElementParameters(ctx);
 					
@@ -286,17 +308,23 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 				MatrixNd S = new MatrixNd(N, N);
 				MatrixNd Q = new MatrixNd(N, N);
 				MatrixNd Z = new MatrixNd(N, N);
-
-				// load last result as starting point for non linear approximation
-				MatrixNd x0 = this.network.getSystemMatrix_x();
 				
 				var ctx = this.network.stampMatrices(StampingMode.FULL_MATRICES, this.simtime, 0);
+
+				if (this.simtime < this.rampend) {
+					if (this.simtime < this.rampstart)
+						this.network.getSystemMatrix_z().scalarMulI(0.0);
+					else
+						this.network.getSystemMatrix_z().scalarMulI((this.simtime - this.rampstart) / (this.rampend - this.rampstart));
+				}
 				
 				qz(this.network.getSystemMatrix_A(), this.network.getSystemMatrix_E(), T, S, Q, Z);
+				MatrixNd x_t = Z.transpose().mul(this.network.getSystemMatrix_x());
+				MatrixNd xn_t = new MatrixNd(1, N);
 				MatrixNd M = S.scalarDiv(timestep).addI(T);
-				MatrixNd v = S.scalarDiv(timestep).mul(x0).addI(Q.mul(this.network.getSystemMatrix_z()));
-				sv(M, this.network.getSystemMatrix_x(), v);
-				this.network.getSystemMatrix_x().setI(Z.mul(this.network.getSystemMatrix_x()));
+				MatrixNd v = S.scalarDiv(timestep).mul(x_t).addI(Q.mul(this.network.getSystemMatrix_z()));
+				sv(M, xn_t, v);
+				this.network.getSystemMatrix_x().setI(Z.mul(xn_t));
 				
 				this.network.updateElementParameters(ctx);
 				
