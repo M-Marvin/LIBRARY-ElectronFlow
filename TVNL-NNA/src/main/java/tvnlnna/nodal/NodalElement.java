@@ -196,7 +196,7 @@ public class NodalElement implements INodalElement {
 				// split string in rows and columns to form string table
 				String[][] table = str.lines().map(s -> Stream.of(s.split("\\t")).filter(s1 -> !s1.isBlank()).map(String::strip).toArray(String[]::new)).toArray(String[][]::new);
 				// check if its a single column table by testing the last column for length 2 (label + value)
-				boolean singleColumn = table[table.length - 1].length == 2;
+				boolean singleColumn = table[table.length - 1].length == 2 && table[0].length == 2;
 				// compute expected element stamp size (node + local count)
 				int s = parentObject.nodes().size() + parentObject.locals().size();
 				

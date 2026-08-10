@@ -30,7 +30,7 @@ import tvnlnna.solver.NodalNetworkSolver_LAPACK;
 /**
  * A command line tool implementation for testing the simulation system.
  */
-public class CLITest {
+public class TestCLI {
 	
 	public static void simulationTest(File netlist, NodalNetworkSolver solver, NodalNetlistParser parser, double t0, double t1, double ts, LogMode output, boolean showGraph) {
 		
@@ -67,7 +67,8 @@ public class CLITest {
 			if (output.id() >= 2) {
 				System.out.println("[--- Simulation Start ---]");
 			}
-			
+
+			long tstart = System.nanoTime();
 			XYSeries[] plotdata = new XYSeries[network.nodeCount() + network.localCount()];
 			if (showGraph) {
 				for (var element : network.getElements()) {
@@ -75,8 +76,9 @@ public class CLITest {
 						plotdata[element.localIds()[i] + network.nodeCount()] = new XYSeries(element.name() + "/" + element.type().locals().get(i).name);
 					}
 				}
-				for (int i = 1; i < network.getNodeNames().size(); i++) {
-					plotdata[i - 1] = new XYSeries(network.getNodeNames().get(i));
+				int o = network.getZeroNode() == null ? 0 : 1;
+				for (int i = o; i < network.getNodeNames().size(); i++) {
+					plotdata[i - o] = new XYSeries(network.getNodeNames().get(i));
 				}
 			}
 			
@@ -107,6 +109,7 @@ public class CLITest {
 				}
 				
 			}
+			long tend = System.nanoTime();
 			
 			if (i != n) {
 				if (output.id() >= 1)
@@ -114,8 +117,10 @@ public class CLITest {
 				System.exit(1);
 			}
 
-			if (output.id() >= 1)
+			if (output.id() >= 1) {
 				System.out.println("[--- Simulation Completed ---]");
+				System.out.println("completed in " + ((tend - tstart) / 1000000.0) + " ms");
+			}
 			
 			if (output.id() >= 3) {
 				System.out.println("[--- Internal State Dump ---]");

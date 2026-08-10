@@ -110,7 +110,7 @@ public class NodalNetwork {
 	 * Notifies the network that some elements have been changed externally, this will cause the necessary variables to be recomputed during the next iteration.
 	 */
 	public void markElementChange() {
-		this.nLocal = this.nNodes = 0;
+		this.nLocal = this.nNodes = -1;
 	}
 	
 	/**
@@ -424,7 +424,7 @@ public class NodalNetwork {
 		
 		StampingContext ctx = new StampingContext(mode, time, iter);
 		
-		if (nLocal == 0 || nNodes == 0) {
+		if (nLocal == -1 || nNodes == -1) {
 			this.nodes.clear();
 			this.elements.values().forEach(c -> c.index(ctx));
 			this.nLocal = this.elements.values().stream()
