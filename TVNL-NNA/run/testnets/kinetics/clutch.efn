@@ -1,0 +1,3 @@
+N motor N_A=IN N=2
+C clutch N_A=IN N_B=OUT D=1
+F mass N_A=OUT J=1

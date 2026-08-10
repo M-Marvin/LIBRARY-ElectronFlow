@@ -1,0 +1,2 @@
+M motor N_A=OUT M=1.0
+F mass N_A=OUT J=10.0

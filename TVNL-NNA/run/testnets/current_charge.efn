@@ -1,0 +1,3 @@
+I source p_A=OUT p_B=GND I=2
+C cap p_A=OUT p_B=GND C=1
+NZERO GND

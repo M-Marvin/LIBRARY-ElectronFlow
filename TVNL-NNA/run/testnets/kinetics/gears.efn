@@ -1,0 +1,3 @@
+N motor N_A=IN N=2
+G gears N_A=IN N_B=OUT K1=2 K2=4
+M brake N_A=OUT M=-4

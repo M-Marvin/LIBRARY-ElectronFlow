@@ -2,6 +2,6 @@ R wire_0_conduit_npos_22_-60_-45_0_npos_26_-60_-44_0 p_A=N_npos_22_-60_-45_0_lnm
 R wire_1_conduit_npos_22_-60_-45_0_npos_26_-60_-44_0 p_A=N_npos_22_-60_-45_0_lnm_N p_B=N_npos_26_-60_-44_0_lnm_N R=0.5
 R wire_0_conduit_npos_26_-60_-46_0_npos_22_-60_-45_0 p_A=N_npos_26_-60_-46_0_lnm_L p_B=N_npos_22_-60_-45_0_lnm_L R=0.5
 R wire_1_conduit_npos_26_-60_-46_0_npos_22_-60_-45_0 p_A=N_npos_26_-60_-46_0_lnm_N p_B=N_npos_22_-60_-45_0_lnm_N R=0.5
-U source_block_26_-60_-44 p_A=N_npos_26_-60_-44_0_lnm_L p_B=N_npos_26_-60_-44_0_lnm_N U=230.0
-U source_block_26_-60_-46 p_A=N_npos_26_-60_-46_0_lnm_L p_B=N_npos_26_-60_-46_0_lnm_N U=200.0
-NZERO N_npos_26_-60_-46_0_lnm_N
+UP source_block_26_-60_-44 p_A=N_npos_26_-60_-44_0_lnm_L p_B=N_npos_26_-60_-44_0_lnm_N U=230.0 P=400.0 eps=0.01
+U source_block_26_-60_-46 p_A=N_npos_26_-60_-46_0_lnm_L p_B=N_npos_26_-60_-46_0_lnm_N U=210.0 P=400.0 eps=0.01
+NZERO N_npos_26_-60_-44_0_lnm_N

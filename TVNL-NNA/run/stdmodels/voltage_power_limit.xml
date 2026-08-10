@@ -5,7 +5,6 @@
 	<local name="i_src" constant="u_src"/>
 	<variable name="U" default="1.0"/>
 	<variable name="P" default="1.0"/>
-	<variable name="eps" default="0.01"/>
 	<functions><![CDATA[
 		U_src(U,P,i_src):=0-i_src>P/U?0-P/i_src:U;
 	]]></functions>
