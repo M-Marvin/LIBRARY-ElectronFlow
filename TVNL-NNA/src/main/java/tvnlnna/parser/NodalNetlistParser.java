@@ -118,7 +118,7 @@ public class NodalNetlistParser {
 	 * @return a new netlist instance
 	 * @throws IOException if an IO error occurs during reading from the file
 	 */
-	public NodalNetwork parseNetlist(File file) throws IOException {
+	public NodalNetwork<String, String> parseNetlist(File file) throws IOException {
 		return parseNetlist(new FileInputStream(file));
 	}
 	
@@ -128,10 +128,10 @@ public class NodalNetlistParser {
 	 * @return a new netlist instance
 	 * @throws IOException if an IO error occurs during reading from the stream
 	 */
-	public NodalNetwork parseNetlist(InputStream stream) throws IOException {
+	public NodalNetwork<String, String> parseNetlist(InputStream stream) throws IOException {
 		try {
 			BufferedReader bin = new BufferedReader(new InputStreamReader(stream));
-			NodalNetwork network = new NodalNetwork();
+			NodalNetwork<String, String> network = new NodalNetwork<String, String>();
 			String line;
 			while ((line = bin.readLine()) != null) {
 				try {
@@ -153,7 +153,7 @@ public class NodalNetlistParser {
 	 * @return a new netlist instance
 	 * @throws IllegalArgumentException if any invalid lines in the netlist are encountered
 	 */
-	public NodalNetwork parseNetlist(String netlist) throws IllegalArgumentException {
+	public NodalNetwork<String, String> parseNetlist(String netlist) throws IllegalArgumentException {
 		return parseNetlist(netlist.lines().toArray(String[]::new));
 	}
 
@@ -163,8 +163,8 @@ public class NodalNetlistParser {
 	 * @return a new netlist instance
 	 * @throws IllegalArgumentException if any invalid lines in the netlist are encountered
 	 */
-	public NodalNetwork parseNetlist(String... lines) throws IllegalArgumentException {
-		NodalNetwork network = new NodalNetwork();
+	public NodalNetwork<String, String> parseNetlist(String... lines) throws IllegalArgumentException {
+		NodalNetwork<String, String> network = new NodalNetwork<String, String>();
 		int lnr = 1;
 		for (String line : lines) {
 			try {
@@ -184,7 +184,7 @@ public class NodalNetlistParser {
 	 * @return the parser instance without any changes
 	 * @throws IllegalArgumentException if the line is invalid because of an syntax error or an invalid element or parameter identifier
 	 */
-	public NodalNetlistParser parseNetlistLine(NodalNetwork network, String line) throws IllegalArgumentException {
+	public NodalNetlistParser parseNetlistLine(NodalNetwork<String, String> network, String line) throws IllegalArgumentException {
 		if (line.isBlank() || line.startsWith("\\") || line.startsWith("//") || line.startsWith("*"))
 			return this;
 		
@@ -202,7 +202,7 @@ public class NodalNetlistParser {
 		if (element == null)
 			throw new IllegalArgumentException("line names an unknown element type: " + line);
 		
-		NodalElementState state = element.newInstance(segments[1]);
+		NodalElementState<String, String> state = element.newInstance(segments[1]);
 		
 		for (int i = 2; i < segments.length; i++) {
 			String[] s = segments[i].split("=");

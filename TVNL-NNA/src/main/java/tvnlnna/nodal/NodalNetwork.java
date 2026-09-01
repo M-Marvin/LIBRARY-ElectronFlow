@@ -18,11 +18,11 @@ import tvnlnna.nodal.NodalNetwork.StampingContext.StampingMode;
  * The {@link NodalNetwork} will generate the system matrices which can be solved by the DAE solver.
  * The resulting x vector will be passed back to the network and results can be retrieved trough the element instances. 
  */
-public class NodalNetwork {
+public class NodalNetwork<N, E> {
 	
-	private final Map<String, NodalElementState> elements = new LinkedHashMap<>();
-	private final Map<String, Integer> nodes = new HashMap<String, Integer>();
-	private String zeroNode;
+	private final Map<E, NodalElementState<N, E>> elements = new LinkedHashMap<>();
+	private final Map<N, Integer> nodes = new HashMap<N, Integer>();
+	private N zeroNode;
 	private int nNodes;
 	private int nLocal;
 	private int nNonLinear;
@@ -39,7 +39,7 @@ public class NodalNetwork {
 	 * @param elements The list of elements to add to this network
 	 * @param zeroNode The name of the zero node, or null if it should be disabled
 	 */
-	public NodalNetwork(Collection<NodalElementState> elements, String zeroNode) {
+	public NodalNetwork(Collection<NodalElementState<N, E>> elements, N zeroNode) {
 		elements.forEach(this::addElement);
 		this.zeroNode = zeroNode;
 	}
@@ -54,10 +54,10 @@ public class NodalNetwork {
 	 * @param element The element instance to add to the network
 	 * @return true if the element was not in the network before, otherwise false
 	 */
-	public NodalElementState addElement(NodalElementState element) {
+	public NodalElementState<N, E> addElement(NodalElementState<N, E> element) {
 		markElementChange();
 		element.setNetwork(this);
-		NodalElementState replaced = this.elements.put(element.name(), element);
+		NodalElementState<N, E> replaced = this.elements.put(element.name(), element);
 		if ((replaced != null && replaced.isNonLinear()) != element.isNonLinear())
 			this.nNonLinear += element.isNonLinear() ? +1 : -1;
 		if ((replaced != null && replaced.isTimeVariant()) != element.isTimeVariant())
@@ -70,9 +70,9 @@ public class NodalNetwork {
 	 * @param name The name of the element to remove
 	 * @return true if the element was in the network before, false otherwise
 	 */
-	public NodalElementState removeElement(String name) {
+	public NodalElementState<N, E> removeElement(String name) {
 		markElementChange();
-		NodalElementState removed = this.elements.remove(name);
+		NodalElementState<N, E> removed = this.elements.remove(name);
 		if ((removed != null && removed.isNonLinear()))
 			this.nNonLinear -= 1;
 		if ((removed != null && removed.isTimeVariant()))
@@ -85,7 +85,7 @@ public class NodalNetwork {
 	 * @param element The element instance to remove
 	 * @return true if the element was in the network before, false otherwise
 	 */
-	public boolean removeElement(NodalElementState element) {
+	public boolean removeElement(NodalElementState<N, E> element) {
 		markElementChange();
 		boolean removed = this.elements.remove(element.name(), element);
 		if ((removed && element.isNonLinear()))
@@ -100,7 +100,7 @@ public class NodalNetwork {
 	 * @param nodeName The name of the node
 	 * @return the potential of the node, or 0.0 if the node does not exist
 	 */
-	public double getNodePotential(String nodeName) {
+	public double getNodePotential(N nodeName) {
 		int nid = this.nodes.getOrDefault(nodeName, 0);
 		if (nid <= 0) return 0.0;
 		return this.systemMatrix_x.m(0, nid - 1);
@@ -117,7 +117,7 @@ public class NodalNetwork {
 	 * Returns a collection of all elements defined in the network.
 	 * @return a collection of all element instances.
 	 */
-	public Collection<NodalElementState> getElements() {
+	public Collection<NodalElementState<N, E>> getElements() {
 		return this.elements.values();
 	}
 	
@@ -126,7 +126,7 @@ public class NodalNetwork {
 	 * @param name the name of the element instance to return
 	 * @return the element instance with the supplied name, or null if it does not exist
 	 */
-	public NodalElementState getElement(String name) {
+	public NodalElementState<N, E> getElement(String name) {
 		return this.elements.get(name);
 	}
 	
@@ -134,7 +134,7 @@ public class NodalNetwork {
 	 * Returns a list of all node names defined in the network.
 	 * @return a list of all node names
 	 */
-	public List<String> getNodeNames() {
+	public List<N> getNodeNames() {
 		return nodes.entrySet().stream().sorted((a, b) -> Integer.compare(a.getValue(), b.getValue())).map(Entry::getKey).toList();
 	}
 
@@ -228,7 +228,7 @@ public class NodalNetwork {
 	 * Sets the name of the zero node, can be set to null to disable the zero node.
 	 * @param zeroNode The name of the zero node or null to disable it
 	 */
-	public void setZeroNode(String zeroNode) {
+	public void setZeroNode(N zeroNode) {
 		this.zeroNode = zeroNode;
 	}
 	
@@ -236,7 +236,7 @@ public class NodalNetwork {
 	 * Returns the name of the zero node.
 	 * @return the name of the zero node, or null if no zero node is configured
 	 */
-	public String getZeroNode() {
+	public N getZeroNode() {
 		return zeroNode;
 	}
 	
@@ -245,7 +245,7 @@ public class NodalNetwork {
 	 * @param node The node name to check
 	 * @return true if and only if the node is the zero node
 	 */
-	public boolean isZeroNode(String node) {
+	public boolean isZeroNode(N node) {
 		if (this.zeroNode == null)
 			return false;
 		return this.zeroNode.equals(node);
@@ -402,7 +402,7 @@ public class NodalNetwork {
 		 * @param node The node name to get the id for
 		 * @return the id of the node
 		 */
-		public int nodeId(String node) {
+		public int nodeId(N node) {
 			if (!NodalNetwork.this.nodes.containsKey(node))
 				NodalNetwork.this.nodes.put(node, NodalNetwork.this.isZeroNode(node) ? 0 : ++nextNodeId);
 			return NodalNetwork.this.nodes.get(node);
@@ -467,7 +467,7 @@ public class NodalNetwork {
 	 * Lets the elements copy the results of the last step for the next iteration.
 	 * @param ctx The stamping context of the last iteration.
 	 */
-	public void updateElementParameters(StampingContext ctx) {
+	public void updateElementParameters(NodalNetwork<N, E>.StampingContext ctx) {
 		for (var comp : this.elements.values())
 			comp.updateParameters(ctx, this.systemMatrix_x);
 	}

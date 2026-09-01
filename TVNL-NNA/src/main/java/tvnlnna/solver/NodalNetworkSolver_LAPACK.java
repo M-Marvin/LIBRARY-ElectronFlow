@@ -14,7 +14,7 @@ import tvnlnna.nodal.NodalNetwork.StampingContext.StampingMode;
  * This implementation uses backwards/implicit euler integration and QZ factorization for the DAE systems.
  * Non linearity is approximated using iterative methods.
  */
-public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
+public class NodalNetworkSolver_LAPACK<N, E> extends NodalNetworkSolver<N, E> {
 	
 	public static final double DEFAULT_LIMUDREL = 0.001;
 	public static final double DEFAULT_LIMUDABS = 0.0001;
@@ -26,7 +26,7 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 	
 	private Consumer<String> debugOut;
 	
-	private NodalNetwork network;
+	private NodalNetwork<N, E> network;
 	private double simtime = 0.0;
 	private double rampstart = 0.0;
 	private double rampend = 0.0;
@@ -52,48 +52,48 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 	 * Which one the default is, depends on the environment variables which dictate what instance netlib is loading, which is decided upon class-loading of the {@link LAPACK} class.
 	 * @return the new solver instance
 	 */
-	public static NodalNetworkSolver_LAPACK standard() {
-		return new NodalNetworkSolver_LAPACK(LAPACK.getInstance());
+	public static <N, E> NodalNetworkSolver_LAPACK<N, E> standard() {
+		return new NodalNetworkSolver_LAPACK<N, E>(LAPACK.getInstance());
 	}
 	
 	@Override
-	public NodalNetworkSolver_LAPACK absUtol(double lim) {
+	public NodalNetworkSolver_LAPACK<N, E> absUtol(double lim) {
 		this.limUdAbs = lim;
 		return this;
 	}
 
 	@Override
-	public NodalNetworkSolver_LAPACK absItol(double lim) {
+	public NodalNetworkSolver_LAPACK<N, E> absItol(double lim) {
 		this.limIdAbs = lim;
 		return this;
 	}
 
 	@Override
-	public NodalNetworkSolver_LAPACK relUtol(double lim) {
+	public NodalNetworkSolver_LAPACK<N, E> relUtol(double lim) {
 		this.limUdRel = lim;
 		return this;
 	}
 
 	@Override
-	public NodalNetworkSolver_LAPACK relItol(double lim) {
+	public NodalNetworkSolver_LAPACK<N, E> relItol(double lim) {
 		this.limIdRel = lim;
 		return this;
 	}
 
 	@Override
-	public NodalNetworkSolver_LAPACK iterLim(int lim) {
+	public NodalNetworkSolver_LAPACK<N, E> iterLim(int lim) {
 		this.limIter = lim;
 		return this;
 	}
 
 	@Override
-	public NodalNetworkSolver_LAPACK debug(Consumer<String> logOut) {
+	public NodalNetworkSolver_LAPACK<N, E> debug(Consumer<String> logOut) {
 		this.debugOut = logOut;
 		return this;
 	}
 
 	@Override
-	public NodalNetworkSolver_LAPACK setNetwork(NodalNetwork network) {
+	public NodalNetworkSolver_LAPACK<N, E> setNetwork(NodalNetwork<N, E> network) {
 		this.network = network;
 		return this;
 	}
@@ -104,27 +104,27 @@ public class NodalNetworkSolver_LAPACK extends NodalNetworkSolver {
 	}
 	
 	@Override
-	public NodalNetworkSolver_LAPACK resetAndClearSimulation() {
+	public NodalNetworkSolver_LAPACK<N, E> resetAndClearSimulation() {
 		this.network.setSystemMatrix_x(null);
 		this.initflag = false;
 		return this;
 	}
 
 	@Override
-	public NodalNetworkSolver_LAPACK resetAndInitSimulation() {
+	public NodalNetworkSolver_LAPACK<N, E> resetAndInitSimulation() {
 		this.network.setSystemMatrix_x(null);
 		this.initflag = true;
 		return this;
 	}
 
 	@Override
-	public NodalNetworkSolver_LAPACK setSimulationTime(double time) {
+	public NodalNetworkSolver_LAPACK<N, E> setSimulationTime(double time) {
 		this.simtime = time;
 		return this;
 	}
 
 	@Override
-	public NodalNetworkSolver setRampup(double start, double end) {
+	public NodalNetworkSolver<N, E> setRampup(double start, double end) {
 		this.rampstart = start;
 		this.rampend = end;
 		return this;

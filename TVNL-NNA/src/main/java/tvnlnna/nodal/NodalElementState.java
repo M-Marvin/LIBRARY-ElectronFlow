@@ -4,13 +4,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import de.m_marvin.unimat.impl.MatrixNd;
 import tvnlnna.NodalMatrixStampException;
 import tvnlnna.nodal.NodalElement.ElementVariable;
 import tvnlnna.nodal.NodalElement.SystemVariablePair;
-import tvnlnna.nodal.NodalNetwork.StampingContext;
 
 /**
  * Represents an single instance of an element in the network.
@@ -18,33 +16,30 @@ import tvnlnna.nodal.NodalNetwork.StampingContext;
  * The parameters are the collection of values for element variables, node variables, and local variables.
  * Except element variables, all of them may change between simulation steps.
  */
-public class NodalElementState {
+public class NodalElementState<N, E> {
 	
 	/** The unique name of this element instance in the network **/
-	private final String name;
+	private final E name;
 	/** The element definition of this instance **/
 	private final INodalElement element;
 	/** The names of the nodes this element is connected to **/
-	private final String[] nodes;
+	private final N[] nodes;
 	/** The parameters of the element **/
 	private final Map<String, Double> parameters = new HashMap<String, Double>();
 	/** If this element is disabled and should not contribute to the stamp of the circuit **/
 	private boolean disabled = false;
 	/** The network instance this element belongs to **/
-	private NodalNetwork network;
+	private NodalNetwork<N, E> network;
 	
 	/** The ids of the locals of this element, they refer to their location in the system matrices **/
 	private final int[] localIds;
 	/** The ids of the nodes the element is connected to, they refer to their location in the system matrices **/
 	private final int[] nodeIds;
 	
-	private static final Pattern NAME_FILTER = Pattern.compile("^\\S+");
-	
-	public NodalElementState(String name, INodalElement element) {
-		if (name.isBlank() || !NAME_FILTER.matcher(name).matches())
-			throw new IllegalArgumentException("element name is blank or contains and/or starts with an white space character");
+	@SuppressWarnings("unchecked")
+	public NodalElementState(E name, INodalElement element) {
 		this.name = name;
-		this.nodes = new String[element.nodes().size()];
+		this.nodes = (N[]) new Object[element.nodes().size()];
 		this.nodeIds = new int[element.nodes().size()];
 		this.localIds = new int[element.locals().size()];
 		this.element = element;
@@ -62,7 +57,7 @@ public class NodalElementState {
 			setParameter(e.name, 0.0);
 	}
 	
-	public void setNetwork(NodalNetwork network) {
+	public void setNetwork(NodalNetwork<N, E> network) {
 		this.network = network;
 	}
 	
@@ -74,8 +69,8 @@ public class NodalElementState {
 	 * The network unique name of this element with the element type prefix.
 	 * @return the unique name of this element with the element type prefix
 	 */
-	public String name() {
-		return this.element.name() + this.name;
+	public E name() {
+		return this.name;
 	}
 
 	/**
@@ -147,10 +142,10 @@ public class NodalElementState {
 	 * @throws IndexOutOfBoundsException If the index is invalid
 	 * 
 	 */
-	public void setNodeName(int indx, String nodeName) {
+	public void setNodeName(int indx, N nodeName) {
 		Objects.requireNonNull(nodeName);
-		if (nodeName.isBlank() || !NAME_FILTER.matcher(nodeName).matches())
-			throw new IllegalArgumentException("node name is blank or contains and/or starts with an white space character");
+//		if (nodeName.isBlank() || !NAME_FILTER.matcher(nodeName).matches())
+//			throw new IllegalArgumentException("node name is blank or contains and/or starts with an white space character");
 		this.nodes[indx] = nodeName;
 		if (this.network != null)
 			this.network.markElementChange();
@@ -161,7 +156,7 @@ public class NodalElementState {
 	 * @param nodeVariable The node variable name to assign a node name to
 	 * @param nodeName The node name to assign
 	 */
-	public void setNodeName(String nodeVariable, String nodeName) {
+	public void setNodeName(String nodeVariable, N nodeName) {
 		Objects.requireNonNull(nodeVariable);
 		Objects.requireNonNull(nodeName);
 		setNodeName(this.element.getNodeVariableIndex(nodeVariable), nodeName);
@@ -172,7 +167,7 @@ public class NodalElementState {
 	 * @param nodeVariable The name of the node variable
 	 * @return the name of the node assigned to the node variable or null if none is assigned
 	 */
-	public String getNodeName(String nodeVariable) {
+	public N getNodeName(String nodeVariable) {
 		Objects.requireNonNull(nodeVariable);
 		return getNodeName(this.element.getNodeVariableIndex(nodeVariable));
 	}
@@ -183,7 +178,7 @@ public class NodalElementState {
 	 * @return the name of the node assigned to the node variable or null if none is assigned
 	 * @throws IndexOutOfBoundsException If the index is invalid
 	 */
-	public String getNodeName(int indx) {
+	public N getNodeName(int indx) {
 		if (indx < 0 || indx >= this.nodes.length)
 			throw new IndexOutOfBoundsException("node index " + indx + " is out of bounds for this element: " + this.name);
 		return this.nodes[indx];
@@ -194,15 +189,13 @@ public class NodalElementState {
 	 * @param nodeNames The node names to assign
 	 * @Throws {@link IllegalArgumentException} if the node name list does not match the node variable count or contains invalid node names
 	 */
-	public void setNodeNames(String... nodeNames) {
+	public void setNodeNames(@SuppressWarnings("unchecked") N... nodeNames) {
 		Objects.requireNonNull(nodeNames);
 		if (nodeNames.length != this.nodes.length)
 			throw new IllegalArgumentException("number of node names does not match number of nodes for this element");
 		if (this.network != null)
 			this.network.markElementChange();
 		for (int i = 0; i < this.nodes.length; i++) {
-			if (nodeNames[i].isBlank() || !NAME_FILTER.matcher(nodeNames[i]).matches())
-				throw new IllegalArgumentException("node name is blank or contains and/or starts with an white space character");
 			this.nodes[i] = nodeNames[i];
 		}
 	}
@@ -211,7 +204,7 @@ public class NodalElementState {
 	 * The list of currently assigned nodes for each node variable.
 	 * @return the list of node names
 	 */
-	public String[] getNodeNames() {
+	public N[] getNodeNames() {
 		return this.nodes;
 	}
 
@@ -236,7 +229,7 @@ public class NodalElementState {
 	 * This will invalidate all parameters of this element, including element variables.
 	 * @param ctx The stamp context to use for indexing
 	 */
-	public void index(StampingContext ctx) {
+	public void index(NodalNetwork<N, E>.StampingContext ctx) {
 		for (int i = 0; i < this.nodes.length; i++)
 			this.nodeIds[i] = ctx.nodeId(this.nodes[i]);
 		for (int i = 0; i < this.localIds.length; i++)
@@ -255,7 +248,7 @@ public class NodalElementState {
 	 * @param x The solution vector (node and local variable values) from the previous simulation step
 	 * @throws NodalMatrixStampException 
 	 */
-	public void stampMatricies(NodalNetwork.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, MatrixNd x) throws NodalMatrixStampException {
+	public void stampMatricies(NodalNetwork<N, E>.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, MatrixNd x) throws NodalMatrixStampException {
 		if (this.disabled) return;
 		this.element.stampMatricies(ctx, A, E, z, x, this);
 	}
@@ -265,7 +258,7 @@ public class NodalElementState {
 	 * @param ctx The stamping context, providing additional information for this step
 	 * @param x The solution vector (node and local variable values) from the previous simulation step
 	 */
-	public void updateParameters(NodalNetwork.StampingContext ctx, MatrixNd x) {
+	public void updateParameters(NodalNetwork<N, E>.StampingContext ctx, MatrixNd x) {
 		
 		// copy solution vector results from previous step into parameters for node potentials ...
 		for (var e : this.element.locals())
@@ -302,7 +295,7 @@ public class NodalElementState {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof NodalElementState other) {
+		if (obj instanceof NodalElementState<?, ?> other) {
 			double[] param1 = this.element.variables().stream().map(v -> v.name).mapToDouble(this.parameters::get).toArray();
 			double[] param2 = other.element.variables().stream().map(v -> v.name).mapToDouble(other.parameters::get).toArray();
 			return	Objects.equals(this.element, other.element) &&

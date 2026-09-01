@@ -111,15 +111,15 @@ public interface INodalElement {
 	 * @param state The element instance/state
 	 * @throws NodalMatrixStampException 
 	 */
-	public void stampMatricies(NodalNetwork.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, MatrixNd x, NodalElementState state) throws NodalMatrixStampException;
+	public <N, E> void stampMatricies(NodalNetwork<N, E>.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, MatrixNd x, NodalElementState<N, E> state) throws NodalMatrixStampException;
 
 	/**
 	 * Create a new state/instance of this element which can be added to an network.
 	 * @param name The name of the new instance of this element
 	 * @return the state instance for the new element
 	 */
-	public default NodalElementState newInstance(String name) {
-		NodalElementState state = new NodalElementState(name, this);
+	public default <N, E> NodalElementState<N, E> newInstance(E name) {
+		NodalElementState<N, E> state = new NodalElementState<N, E>(name, this);
 		for (var variable : this.variables())
 			state.setParameter(variable.name, variable.defaultValue);
 		return state;

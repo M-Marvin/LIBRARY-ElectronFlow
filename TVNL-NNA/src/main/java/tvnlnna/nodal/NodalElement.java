@@ -160,7 +160,7 @@ public class NodalElement implements INodalElement {
 	@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "compute", type = StampComputation.class)
 	public List<StampComputation> computations = new ArrayList<NodalElement.StampComputation>();
 
-	public void updateParameters(NodalElementState state) throws NodalMatrixStampException {
+	public <N, E> void updateParameters(NodalElementState<N, E> state) throws NodalMatrixStampException {
 		for (var compute : this.computations) {
 			if (compute.derive != null) {
 				for (var entry : compute.computations.entrySet()) {
@@ -327,7 +327,7 @@ public class NodalElement implements INodalElement {
 		@XMLTypeAdapter(StampPatternAdapter.class)
 		public StampPattern pattern;
 		
-		public void updateParameters(NodalElementState state) throws NodalMatrixStampException {
+		public <N, E> void updateParameters(NodalElementState<N, E> state) throws NodalMatrixStampException {
 			for (var compute : this.computations) {
 				if (compute.derive != null) {
 					for (var entry : compute.computations.entrySet()) {
@@ -351,7 +351,7 @@ public class NodalElement implements INodalElement {
 			}
 		}
 		
-		public double evaluateStampEntry(int i, int j, NodalElementState state) throws NodalMatrixStampException {
+		public <N, E> double evaluateStampEntry(int i, int j, NodalElementState<N, E> state) throws NodalMatrixStampException {
 			return this.pattern.evaluateStampEntry(i, j, state.parameters());
 		}
 		
@@ -459,7 +459,7 @@ public class NodalElement implements INodalElement {
 	}
 
 	@Override
-	public void stampMatricies(NodalNetwork.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, MatrixNd x, NodalElementState state) throws NodalMatrixStampException {
+	public <N, E> void stampMatricies(NodalNetwork<N, E>.StampingContext ctx, MatrixNd A, MatrixNd E, MatrixNd z, MatrixNd x, NodalElementState<N, E> state) throws NodalMatrixStampException {
 		
 		try {
 			

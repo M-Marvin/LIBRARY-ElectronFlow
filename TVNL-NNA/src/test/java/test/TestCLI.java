@@ -32,11 +32,11 @@ import tvnlnna.solver.NodalNetworkSolver_LAPACK;
  */
 public class TestCLI {
 	
-	public static void simulationTest(File netlist, NodalNetworkSolver solver, NodalNetlistParser parser, double t0, double t1, double ts, LogMode output, boolean showGraph) {
+	public static void simulationTest(File netlist, NodalNetworkSolver<String, String> solver, NodalNetlistParser parser, double t0, double t1, double ts, LogMode output, boolean showGraph) {
 		
 		try {
 			
-			NodalNetwork network = parser.parseNetlist(netlist);
+			NodalNetwork<String, String> network = parser.parseNetlist(netlist);
 
 			if (output.id() >= 1) {
 				System.out.println("[--- Simulation Netlist ---]");
@@ -251,7 +251,7 @@ public class TestCLI {
 			boolean noGraph = cmdargs.get("nograph");
 			
 			// parse solver parameters
-			NodalNetworkSolver solver = NodalNetworkSolver_LAPACK.standard()
+			NodalNetworkSolver<String, String> solver = NodalNetworkSolver_LAPACK.<String, String>standard()
 					.relItol(cmdargs.get("relitol"))
 					.absItol(cmdargs.get("absitol"))
 					.relUtol(cmdargs.get("relutol"))
