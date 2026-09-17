@@ -19,13 +19,13 @@ import de.m_marvin.basicxml.XMLException;
 import de.m_marvin.basicxml.marshaling.XMLMarshalingException;
 import de.m_marvin.cliutil.arguments.Arguments;
 import de.m_marvin.cliutil.arguments.CommandArgumentParser;
-import tvnlnna.NetworkSolverException;
-import tvnlnna.NodalMatrixStampException;
-import tvnlnna.nodal.NodalNetwork;
-import tvnlnna.nodal.NodalNetwork.StampingContext.StampingMode;
-import tvnlnna.parser.NodalNetlistParser;
-import tvnlnna.solver.NodalNetworkSolver;
-import tvnlnna.solver.NodalNetworkSolver_LAPACK;
+import de.m_marvin.tvnlnna.NetworkSolverException;
+import de.m_marvin.tvnlnna.NodalMatrixStampException;
+import de.m_marvin.tvnlnna.nodal.NodalNetwork;
+import de.m_marvin.tvnlnna.nodal.NodalNetwork.StampingContext.StampingMode;
+import de.m_marvin.tvnlnna.parser.NodalNetlistParser;
+import de.m_marvin.tvnlnna.solver.NodalNetworkSolver;
+import de.m_marvin.tvnlnna.solver.NodalNetworkSolver_LAPACK;
 
 /**
  * A command line tool implementation for testing the simulation system.
@@ -205,7 +205,7 @@ public class TestCLI {
 		cmdparser.addOption("relitol", NodalNetworkSolver_LAPACK.DEFAULT_LIMIDREL, "the relative additonal variable tolerance of the elements");
 		cmdparser.addOption("iterlim", NodalNetworkSolver_LAPACK.DEFAULT_LIMITER, "the non linear solver iteration limit");
 		cmdparser.addOption("output", LogMode.SILENT, LogMode::valueOf, LogMode::name, "log output level <SILENT|MINIMAL|VERBOSE|DEBUG>");
-		cmdparser.addOption("nograph", false, "if set, prevents the graphical graph to open");
+		cmdparser.addOption("nograph", false, "if set, prevents the graph window to open");
 		
 		try {
 
