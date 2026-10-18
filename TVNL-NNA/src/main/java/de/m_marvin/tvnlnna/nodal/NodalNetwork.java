@@ -96,6 +96,23 @@ public class NodalNetwork<N, E> {
 	}
 	
 	/**
+	 * Resets the networks state by removing all elements and nodes.
+	 */
+	public void reset() {
+		this.elements.clear();
+		this.nNodes = 0;
+		this.nLocal = 0;
+		this.nNonLinear = 0;
+		this.nTimeVariant = 0;
+		this.nodes.clear();
+		
+		this.systemMatrix_A = null;
+		this.systemMatrix_E = null;
+		this.systemMatrix_z = null;
+		this.systemMatrix_x = null;
+	}
+	
+	/**
 	 * Return the potential of the node with the name.
 	 * @param nodeName The name of the node
 	 * @return the potential of the node, or 0.0 if the node does not exist
