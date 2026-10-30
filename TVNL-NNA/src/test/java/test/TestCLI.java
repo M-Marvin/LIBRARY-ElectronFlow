@@ -76,7 +76,7 @@ public class TestCLI {
 						plotdata[element.localIds()[i] + network.nodeCount()] = new XYSeries(element.name() + "/" + element.type().locals().get(i).name);
 					}
 				}
-				int o = network.getZeroNode() == null ? 0 : 1;
+				int o = network.getZeroNodes().isEmpty() ? 0 : 1;
 				for (int i = o; i < network.getNodeNames().size(); i++) {
 					plotdata[i - o] = new XYSeries(network.getNodeNames().get(i));
 				}

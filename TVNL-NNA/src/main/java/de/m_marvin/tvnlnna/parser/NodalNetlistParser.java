@@ -194,7 +194,7 @@ public class NodalNetlistParser {
 			throw new IllegalArgumentException("line has not enough arguments: " + line);
 		
 		if (segments[0].equals("NZERO")) {
-			network.setZeroNode(segments[1]);
+			network.addZeroNode(segments[1]);
 			return this;
 		}
 		

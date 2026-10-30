@@ -2,11 +2,13 @@ package de.m_marvin.tvnlnna.nodal;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import de.m_marvin.tvnlnna.NodalMatrixStampException;
@@ -22,7 +24,7 @@ public class NodalNetwork<N, E> {
 	
 	private final Map<E, NodalElementState<N, E>> elements = new LinkedHashMap<>();
 	private final Map<N, Integer> nodes = new HashMap<N, Integer>();
-	private N zeroNode;
+	private final Set<N> zeroNode = new HashSet<N>();
 	private int nNodes;
 	private int nLocal;
 	private int nNonLinear;
@@ -41,7 +43,18 @@ public class NodalNetwork<N, E> {
 	 */
 	public NodalNetwork(Collection<NodalElementState<N, E>> elements, N zeroNode) {
 		elements.forEach(this::addElement);
-		this.zeroNode = zeroNode;
+		if (zeroNode != null)
+			this.zeroNode.add(zeroNode);
+	}
+	
+	/**
+	 * Creates a new network with the supplied elements and zero variable.
+	 * @param elements The collection of elements to add to this network
+	 * @param zeroNode The collection of names of the zero nodes
+	 */
+	public NodalNetwork(Collection<NodalElementState<N, E>> elements, Collection<N> zeroNode) {
+		elements.forEach(this::addElement);
+		this.zeroNode.addAll(zeroNode);
 	}
 	
 	/**
@@ -241,20 +254,25 @@ public class NodalNetwork<N, E> {
 		return this.systemMatrix_x.height() == this.systemMatrix_A.height() && this.systemMatrix_x.width() == 1;
 	}
 	
-	/**
-	 * Sets the name of the zero node, can be set to null to disable the zero node.
-	 * @param zeroNode The name of the zero node or null to disable it
-	 */
 	public void setZeroNode(N zeroNode) {
-		this.zeroNode = zeroNode;
+		this.zeroNode.clear();
+		this.zeroNode.add(zeroNode);
 	}
 	
-	/**
-	 * Returns the name of the zero node.
-	 * @return the name of the zero node, or null if no zero node is configured
-	 */
-	public N getZeroNode() {
-		return zeroNode;
+	public void addZeroNode(N zeroNode) {
+		this.zeroNode.add(zeroNode);
+	}
+	
+	public void removeZeroNode(N zeroNode) {
+		this.zeroNode.remove(zeroNode);
+	}
+	
+	public void disableZeroNodes() {
+		this.zeroNode.clear();
+	}
+	
+	public Set<N> getZeroNodes() {
+		return this.zeroNode;
 	}
 	
 	/**
