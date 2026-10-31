@@ -15,8 +15,8 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import de.m_marvin.basicxml.XMLException;
-import de.m_marvin.basicxml.marshaling.XMLMarshalingException;
+import de.m_marvin.basicxml.XmlException;
+import de.m_marvin.basicxml.marshaling.XmlMarshalingException;
 import de.m_marvin.cliutil.arguments.Arguments;
 import de.m_marvin.cliutil.arguments.CommandArgumentParser;
 import de.m_marvin.tvnlnna.NetworkSolverException;
@@ -191,7 +191,7 @@ public class TestCLI {
 		}
 	}
 	
-	public static void main(String[] args) throws URISyntaxException, XMLMarshalingException, IOException, XMLException, NodalMatrixStampException {
+	public static void main(String[] args) throws URISyntaxException, XmlMarshalingException, IOException, XmlException, NodalMatrixStampException {
 		
 		CommandArgumentParser cmdparser = new CommandArgumentParser();
 		cmdparser.addOption("help", false, "display this help info");

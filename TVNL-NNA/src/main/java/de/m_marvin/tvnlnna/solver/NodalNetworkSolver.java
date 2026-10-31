@@ -62,6 +62,8 @@ public abstract class NodalNetworkSolver<N, E> {
 	 */
 	public abstract NodalNetworkSolver<N, E> setNetwork(NodalNetwork<N, E> network);
 	
+	public abstract NodalNetwork<N, E> getNetwork();
+	
 	/**
 	 * Resets the simulation by clearing the current solution vector of the last simulation step.
 	 */

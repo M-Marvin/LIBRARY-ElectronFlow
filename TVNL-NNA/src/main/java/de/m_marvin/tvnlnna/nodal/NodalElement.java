@@ -6,10 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import de.m_marvin.basicxml.XMLException;
-import de.m_marvin.basicxml.marshaling.adapter.XMLClassFieldAdapter;
-import de.m_marvin.basicxml.marshaling.annotations.XMLField;
-import de.m_marvin.basicxml.marshaling.annotations.XMLField.FieldType;
+import de.m_marvin.basicxml.XmlException;
+import de.m_marvin.basicxml.marshaling.adapter.XmlClassFieldAdapter;
+import de.m_marvin.basicxml.marshaling.annotations.XmlField;
+import de.m_marvin.basicxml.marshaling.annotations.XmlField.FieldType;
+import de.m_marvin.basicxml.marshaling.annotations.XmlRootType;
+import de.m_marvin.basicxml.marshaling.annotations.XmlType;
+import de.m_marvin.basicxml.marshaling.annotations.XmlTypeAdapter;
 import de.m_marvin.tvnlnna.NodalMatrixStampException;
 import de.m_marvin.tvnlnna.mathematical.MathematicalEvaluationException;
 import de.m_marvin.tvnlnna.mathematical.MathematicalExpressionException;
@@ -18,37 +21,34 @@ import de.m_marvin.tvnlnna.mathematical.expression.MathExpression.ValueAndDeriva
 import de.m_marvin.tvnlnna.mathematical.function.MathFunction;
 import de.m_marvin.tvnlnna.mathematical.term.MathParsingContext;
 import de.m_marvin.tvnlnna.nodal.NodalElement.StampPattern.StampPatternAdapter;
-import de.m_marvin.basicxml.marshaling.annotations.XMLRootType;
-import de.m_marvin.basicxml.marshaling.annotations.XMLType;
-import de.m_marvin.basicxml.marshaling.annotations.XMLTypeAdapter;
 import de.m_marvin.unimat.impl.MatrixNd;
 
 /**
- * This is an {@link INodalElement} instance parsed from an XML file.
+ * This is an {@link INodalElement} instance parsed from an Xml file.
  * @see INodalElement
  */
-@XMLRootType("nodalElement")
-@XMLType
+@XmlRootType("nodalElement")
+@XmlType
 public class NodalElement implements INodalElement {
 	
-	/* XML - general element attributes */
+	/* Xml - general element attributes */
 	
-	@XMLField(FieldType.ATTRIBUTE)
+	@XmlField(FieldType.ATTRIBUTE)
 	private String name;
-	@XMLField(FieldType.ATTRIBUTE)
+	@XmlField(FieldType.ATTRIBUTE)
 	private boolean nonLinear;
-	@XMLField(FieldType.ATTRIBUTE)
+	@XmlField(FieldType.ATTRIBUTE)
 	private boolean timeVariant;
 
-	/* XML - element variables, nodes, localss */
+	/* Xml - element variables, nodes, localss */
 	
-	@XMLType
+	@XmlType
 	public class SystemVariablePair {
 		
-		@XMLField(FieldType.ATTRIBUTE)
+		@XmlField(FieldType.ATTRIBUTE)
 		public String name;
 		
-		@XMLField(FieldType.ATTRIBUTE)
+		@XmlField(FieldType.ATTRIBUTE)
 		public String constant;
 		
 		@Override
@@ -58,17 +58,17 @@ public class NodalElement implements INodalElement {
 		
 	}
 	
-	@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "node", type = SystemVariablePair.class)
+	@XmlField(value = FieldType.ELEMENT_COLLECTION, name = "node", type = SystemVariablePair.class)
 	private List<SystemVariablePair> nodes = new ArrayList<NodalElement.SystemVariablePair>();
-	@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "local", type = SystemVariablePair.class)
+	@XmlField(value = FieldType.ELEMENT_COLLECTION, name = "local", type = SystemVariablePair.class)
 	private List<SystemVariablePair> locals = new ArrayList<NodalElement.SystemVariablePair>();
 	
-	@XMLType
+	@XmlType
 	public class ElementVariable {
 		
-		@XMLField(FieldType.ATTRIBUTE)
+		@XmlField(FieldType.ATTRIBUTE)
 		public String name;
-		@XMLField(value = FieldType.ATTRIBUTE, name = "default")
+		@XmlField(value = FieldType.ATTRIBUTE, name = "default")
 		public double defaultValue;
 		
 		@Override
@@ -78,24 +78,24 @@ public class NodalElement implements INodalElement {
 		
 	}
 	
-	@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "variable", type = ElementVariable.class)
+	@XmlField(value = FieldType.ELEMENT_COLLECTION, name = "variable", type = ElementVariable.class)
 	private List<ElementVariable> variables = new ArrayList<NodalElement.ElementVariable>();
 	
-	/* XML - element function set */
+	/* Xml - element function set */
 	
-	@XMLType
+	@XmlType
 	public class ElementFunctionSet {
 		
-		public static class ElementFunctionSetAdapter implements XMLClassFieldAdapter<MathParsingContext, NodalElement> {
+		public static class ElementFunctionSetAdapter implements XmlClassFieldAdapter<MathParsingContext, NodalElement> {
 
 			@Override
-			public MathParsingContext adaptType(String str, NodalElement parentObject) throws XMLException {
+			public MathParsingContext adaptType(String str, NodalElement parentObject) throws XmlException {
 				try {
 					MathParsingContext ctx = MathParsingContext.standard();
 					MathFunction.parseInfixList(str, ctx);
 					return ctx;
 				} catch (MathematicalExpressionException e) {
-					throw new XMLException("unable to parse element function: " + str, e);
+					throw new XmlException("unable to parse element function: " + str, e);
 				}
 			}
 
@@ -106,8 +106,8 @@ public class NodalElement implements INodalElement {
 			
 		}
 		
-		@XMLField(FieldType.TEXT)
-		@XMLTypeAdapter(value = ElementFunctionSetAdapter.class, parent = NodalElement.class)
+		@XmlField(FieldType.TEXT)
+		@XmlTypeAdapter(value = ElementFunctionSetAdapter.class, parent = NodalElement.class)
 		public MathParsingContext context;
 		
 		@Override
@@ -117,22 +117,22 @@ public class NodalElement implements INodalElement {
 		
 	}
 
-	@XMLField(value = FieldType.ELEMENT)
+	@XmlField(value = FieldType.ELEMENT)
 	private ElementFunctionSet functions;
 	
-	/* XML - element matrix stamps */
+	/* Xml - element matrix stamps */
 	
-	@XMLType
+	@XmlType
 	public class StampComputation {
 
-		public static class StampFunctionAdapter implements XMLClassFieldAdapter<MathExpression, NodalElement> {
+		public static class StampFunctionAdapter implements XmlClassFieldAdapter<MathExpression, NodalElement> {
 
 			@Override
-			public MathExpression adaptType(String str, NodalElement parentObject) throws XMLException {
+			public MathExpression adaptType(String str, NodalElement parentObject) throws XmlException {
 				try {
 					return MathExpression.parseInfix(str, parentObject.mathContext());
 				} catch (MathematicalExpressionException e) {
-					throw new XMLException("unable to parse stamp computation: " + str, e);
+					throw new XmlException("unable to parse stamp computation: " + str, e);
 				}
 			}
 
@@ -143,11 +143,11 @@ public class NodalElement implements INodalElement {
 			
 		}
 		
-		@XMLField(value = FieldType.REMAINING_ATTRIBUTE_MAP, type = MathExpression.class)
-		@XMLTypeAdapter(value = StampFunctionAdapter.class, parent = NodalElement.class)
+		@XmlField(value = FieldType.REMAINING_ATTRIBUTE_MAP, type = MathExpression.class)
+		@XmlTypeAdapter(value = StampFunctionAdapter.class, parent = NodalElement.class)
 		public Map<String, MathExpression> computations = new HashMap<String, MathExpression>();
 
-		@XMLField(value = FieldType.ATTRIBUTE, name = "derive")
+		@XmlField(value = FieldType.ATTRIBUTE, name = "derive")
 		public String derive;
 		
 		@Override
@@ -157,7 +157,7 @@ public class NodalElement implements INodalElement {
 		
 	}
 	
-	@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "compute", type = StampComputation.class)
+	@XmlField(value = FieldType.ELEMENT_COLLECTION, name = "compute", type = StampComputation.class)
 	public List<StampComputation> computations = new ArrayList<NodalElement.StampComputation>();
 
 	public <N, E> void updateParameters(NodalElementState<N, E> state) throws NodalMatrixStampException {
@@ -184,13 +184,13 @@ public class NodalElement implements INodalElement {
 		}
 	}
 	
-	@XMLType
+	@XmlType
 	public class StampPattern {
 		
-		public static class StampPatternAdapter implements XMLClassFieldAdapter<StampPattern, NodalElement> {
+		public static class StampPatternAdapter implements XmlClassFieldAdapter<StampPattern, NodalElement> {
 
 			@Override
-			public StampPattern adaptType(String str, NodalElement parentObject) throws XMLException {
+			public StampPattern adaptType(String str, NodalElement parentObject) throws XmlException {
 				MathParsingContext ctx = parentObject.mathContext();
 				
 				// split string in rows and columns to form string table
@@ -204,11 +204,11 @@ public class NodalElement implements INodalElement {
 				if (singleColumn) {
 					// check if table length matches element stamp size
 					if (table.length != s)
-						throw new XMLException("unable to parse stamp table, row count does not match node + local count");
+						throw new XmlException("unable to parse stamp table, row count does not match node + local count");
 					// check if all rows have the same correct size
 					for (int i = 0; i < table.length; i++)
 						if (table[i].length != 2)
-							throw new XMLException("unable to parse stamp table, row has more than one entry");
+							throw new XmlException("unable to parse stamp table, row has more than one entry");
 					
 					// initialize stamp expression table
 					pattern.stamp = new MathExpression[][] { new MathExpression[table.length] };
@@ -223,26 +223,26 @@ public class NodalElement implements INodalElement {
 						else if (parentObject.hasLocalVariable(label, true))
 							indx = parentObject.getLocalVariableIndex(label) + parentObject.nodes().size();
 						else
-							throw new XMLException("unable to parse stamp table, row has undefined constant name: " + label);
+							throw new XmlException("unable to parse stamp table, row has undefined constant name: " + label);
 						
 						// parse and place expression in table, use context defined in function block
 						try {
 							pattern.stamp[0][indx] = MathExpression.parseInfix(exprstr, ctx);
 						} catch (MathematicalExpressionException e) {
-							throw new XMLException("unable to parse stamp table expressioin: " + exprstr, e);
+							throw new XmlException("unable to parse stamp table expressioin: " + exprstr, e);
 						}
 					}
 				} else {
 					// check if table length matches element stamp size
 					if (table.length - 1 != s)
-						throw new XMLException("unable to parse stamp table, row count does not match node + local count");
+						throw new XmlException("unable to parse stamp table, row count does not match node + local count");
 					// check if first table row width matches element stamp size (first row will be 1 shorter because it only contains labels for columns)
 					if (table[0].length != s)
-						throw new XMLException("unable to parse stamp table, first column labels dont match node + local count");
+						throw new XmlException("unable to parse stamp table, first column labels dont match node + local count");
 					// check if all following rows have the same correct size
 					for (int i = 1; i < table.length; i++)
 						if (table[i].length - 1 != s)
-							throw new XMLException("unable to parse stamp table, row length does not match node + local count");
+							throw new XmlException("unable to parse stamp table, row length does not match node + local count");
 					
 					// initialize stamp expression table
 					pattern.stamp = new MathExpression[table.length - 1][table.length - 1];
@@ -261,7 +261,7 @@ public class NodalElement implements INodalElement {
 							else if (parentObject.hasLocalVariable(labelR, true))
 								indxR = parentObject.getLocalVariableIndex(labelR) + parentObject.nodes().size();
 							else
-								throw new XMLException("unable to parse stamp table, row has undefined constant name: " + labelR);
+								throw new XmlException("unable to parse stamp table, row has undefined constant name: " + labelR);
 							// check if the unknown is valid and determine its column location in the expression table
 							int indxC;
 							if (parentObject.hasNodeVariable(labelC, false))
@@ -269,13 +269,13 @@ public class NodalElement implements INodalElement {
 							else if (parentObject.hasLocalVariable(labelC, false))
 								indxC = parentObject.getLocalVariableIndex(labelC) + parentObject.nodes().size();
 							else
-								throw new XMLException("unable to parse stamp table, column has undefined variable name: " + labelC);
+								throw new XmlException("unable to parse stamp table, column has undefined variable name: " + labelC);
 							
 							// parse and place expression in table, use context defined in function block
 							try {
 								pattern.stamp[indxC][indxR] = MathExpression.parseInfix(exprstr, ctx);
 							} catch (MathematicalExpressionException e) {
-								throw new XMLException("unable to parse stamp table expressioin: " + exprstr, e);
+								throw new XmlException("unable to parse stamp table expressioin: " + exprstr, e);
 							}
 						}
 					}
@@ -317,14 +317,14 @@ public class NodalElement implements INodalElement {
 		
 	}
 	
-	@XMLType
+	@XmlType
 	public class ElementStamp {
 		
-		@XMLField(value = FieldType.ELEMENT_COLLECTION, name = "compute", type = StampComputation.class)
+		@XmlField(value = FieldType.ELEMENT_COLLECTION, name = "compute", type = StampComputation.class)
 		public List<StampComputation> computations = new ArrayList<NodalElement.StampComputation>();
 		
-		@XMLField(FieldType.TEXT)
-		@XMLTypeAdapter(StampPatternAdapter.class)
+		@XmlField(FieldType.TEXT)
+		@XmlTypeAdapter(StampPatternAdapter.class)
 		public StampPattern pattern;
 		
 		public <N, E> void updateParameters(NodalElementState<N, E> state) throws NodalMatrixStampException {
@@ -362,11 +362,11 @@ public class NodalElement implements INodalElement {
 		
 	}
 
-	@XMLField(FieldType.ELEMENT)
+	@XmlField(FieldType.ELEMENT)
 	private ElementStamp stampA;
-	@XMLField(FieldType.ELEMENT)
+	@XmlField(FieldType.ELEMENT)
 	private ElementStamp stampE;
-	@XMLField(FieldType.ELEMENT)
+	@XmlField(FieldType.ELEMENT)
 	private ElementStamp stampZ;
 	
 	/* XML - end of parsed data section */

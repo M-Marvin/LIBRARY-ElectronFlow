@@ -1,7 +1,9 @@
 package de.m_marvin.tvnlnna.solver;
 
 import java.util.function.Consumer;
+
 import org.netlib.util.intW;
+
 import com.github.fommil.netlib.LAPACK;
 
 import de.m_marvin.tvnlnna.NetworkSolverException;
@@ -97,6 +99,11 @@ public class NodalNetworkSolver_LAPACK<N, E> extends NodalNetworkSolver<N, E> {
 	public NodalNetworkSolver_LAPACK<N, E> setNetwork(NodalNetwork<N, E> network) {
 		this.network = network;
 		return this;
+	}
+	
+	@Override
+	public NodalNetwork<N, E> getNetwork() {
+		return this.network;
 	}
 
 	@Override

@@ -281,9 +281,7 @@ public class NodalNetwork<N, E> {
 	 * @return true if and only if the node is the zero node
 	 */
 	public boolean isZeroNode(N node) {
-		if (this.zeroNode == null)
-			return false;
-		return this.zeroNode.equals(node);
+		return this.zeroNode.contains(node);
 	}
 	
 	/**

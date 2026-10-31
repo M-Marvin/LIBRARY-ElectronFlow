@@ -13,8 +13,8 @@ import java.util.stream.Stream;
 import de.m_marvin.tvnlnna.mathematical.MathematicalEvaluationException;
 import de.m_marvin.tvnlnna.mathematical.MathematicalExpressionException;
 import de.m_marvin.tvnlnna.mathematical.expression.MathExpression;
-import de.m_marvin.tvnlnna.mathematical.expression.MathTerm;
 import de.m_marvin.tvnlnna.mathematical.expression.MathExpression.ValueAndDerivative;
+import de.m_marvin.tvnlnna.mathematical.expression.MathTerm;
 import de.m_marvin.tvnlnna.mathematical.term.MathParsingContext;
 
 /**

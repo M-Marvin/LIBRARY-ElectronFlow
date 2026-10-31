@@ -11,10 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import de.m_marvin.basicxml.XMLException;
-import de.m_marvin.basicxml.XMLInputStream;
-import de.m_marvin.basicxml.marshaling.XMLMarshalingException;
-import de.m_marvin.basicxml.marshaling.XMLUnmarshaler;
+import de.m_marvin.basicxml.XmlException;
+import de.m_marvin.basicxml.XmlReader;
+import de.m_marvin.basicxml.marshaling.XmlMarshalingException;
+import de.m_marvin.basicxml.marshaling.XmlUnmarshaler;
 import de.m_marvin.tvnlnna.nodal.INodalElement;
 import de.m_marvin.tvnlnna.nodal.NodalElement;
 import de.m_marvin.tvnlnna.nodal.NodalElementState;
@@ -26,7 +26,7 @@ import de.m_marvin.tvnlnna.nodal.NodalNetwork;
  */
 public class NodalNetlistParser {
 	
-	public static final XMLUnmarshaler ELEMENT_XML_PARSER = new XMLUnmarshaler(true, NodalElement.class);
+	public static final XmlUnmarshaler ELEMENT_XML_PARSER = new XmlUnmarshaler(true, NodalElement.class);
 	
 	private final Map<String, INodalElement> elements = new HashMap<>();
 	
@@ -61,7 +61,7 @@ public class NodalNetlistParser {
 	 * @throws XMLException if an XML file in the folder contains an invalid XML syntax
 	 * @throws IOException if an file in the folder could not be parsed because of an IO error
 	 */
-	public NodalNetlistParser loadElements(File folder) throws XMLException, IOException {
+	public NodalNetlistParser loadElements(File folder) throws XmlException, IOException {
 		return loadElements(Stream.of(folder.listFiles()).filter(f -> f.isFile()).toList());
 	}
 
@@ -72,17 +72,17 @@ public class NodalNetlistParser {
 	 * @throws XMLException if an XML file in the list contains an invalid XML syntax
 	 * @throws IOException if an file in the list could not be parsed because of an IO error
 	 */
-	public NodalNetlistParser loadElements(Collection<File> files) throws XMLException, IOException {
+	public NodalNetlistParser loadElements(Collection<File> files) throws XmlException, IOException {
 		for (File f : files) {
 			try {
 				FileInputStream fin = new FileInputStream(f);
-				XMLInputStream xin = new XMLInputStream(fin);
+				XmlReader xin = new XmlReader(fin);
 				NodalElement element = ELEMENT_XML_PARSER.unmarshall(xin, NodalElement.class);
 				if (element == null)
 					continue;
 				this.elements.put(element.name(), element);
-			} catch (XMLException | XMLMarshalingException e) {
-				throw new XMLException("xml exception while loading: " + f.getName(), e);
+			} catch (XmlException | XmlMarshalingException e) {
+				throw new XmlException("xml exception while loading: " + f.getName(), e);
 			} catch (IOException e) {
 				throw new IOException("io exception while loading model file: " + f.getName(), e);
 			}
@@ -97,14 +97,14 @@ public class NodalNetlistParser {
 	 * @throws XMLException if an XML stream in the list contains an invalid XML syntax
 	 * @throws IOException if an stream in the list could not be parsed because of an IO error
 	 */
-	public NodalNetlistParser loadElementStreams(Collection<InputStream> streams) throws XMLException, IOException {
+	public NodalNetlistParser loadElementStreams(Collection<InputStream> streams) throws XmlException, IOException {
 		for (InputStream sin : streams) {
 			try {
-				XMLInputStream xin = new XMLInputStream(sin);
+				XmlReader xin = new XmlReader(sin);
 				NodalElement element = ELEMENT_XML_PARSER.unmarshall(xin, NodalElement.class);
 				this.elements.put(element.name(), element);
-			} catch (XMLException | XMLMarshalingException e) {
-				throw new XMLException("xml exception while loading stream", e);
+			} catch (XmlException | XmlMarshalingException e) {
+				throw new XmlException("xml exception while loading stream", e);
 			} catch (IOException e) {
 				throw new IOException("io exception while loading stream", e);
 			}
