@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import de.m_marvin.tvnlnna.NetworkSolverException;
 import de.m_marvin.tvnlnna.NodalMatrixStampException;
 import de.m_marvin.tvnlnna.nodal.NodalElement.ElementVariable;
 import de.m_marvin.tvnlnna.nodal.NodalElement.SystemVariablePair;
@@ -270,6 +271,14 @@ public class NodalElementState<N, E> {
 				setParameter(e.name, x.m(0, i));
 		}
 		
+	}
+	
+	public void afterStep() throws NetworkSolverException {
+		try {
+			this.element.afterStep(this);
+		} catch (Throwable e) {
+			throw new NetworkSolverException("element model implementation error: " + e.getMessage(), e);
+		}
 	}
 	
 	public String shortString() {

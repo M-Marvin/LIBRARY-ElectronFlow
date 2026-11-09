@@ -125,4 +125,6 @@ public interface INodalElement {
 		return state;
 	}
 	
+	public default <N, E> void afterStep(NodalElementState<N, E> state) {}
+	
 }

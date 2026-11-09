@@ -489,6 +489,9 @@ public class NodalNetworkSolver_LAPACK<N, E> extends NodalNetworkSolver<N, E> {
 			// advance simulation time
 			this.simtime += timestep;
 			
+			for (var element : this.network.getElements())
+				element.afterStep();
+			
 		} else {
 			
 			// only recompute if the solution is not already known

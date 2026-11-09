@@ -12,11 +12,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import de.m_marvin.basicxml.XmlException;
-import de.m_marvin.basicxml.XmlReader;
-import de.m_marvin.basicxml.marshaling.XmlMarshalingException;
-import de.m_marvin.basicxml.marshaling.XmlUnmarshaler;
+import de.m_marvin.tvnlnna.NodalModelLoadException;
 import de.m_marvin.tvnlnna.nodal.INodalElement;
-import de.m_marvin.tvnlnna.nodal.NodalElement;
 import de.m_marvin.tvnlnna.nodal.NodalElementState;
 import de.m_marvin.tvnlnna.nodal.NodalNetwork;
 
@@ -25,8 +22,6 @@ import de.m_marvin.tvnlnna.nodal.NodalNetwork;
  * The required {@link INodalElement} can be provided during construction of the parser either as a XML files or custom implementations.
  */
 public class NodalNetlistParser {
-	
-	public static final XmlUnmarshaler ELEMENT_XML_PARSER = new XmlUnmarshaler(true, NodalElement.class);
 	
 	private final Map<String, INodalElement> elements = new HashMap<>();
 	
@@ -58,10 +53,10 @@ public class NodalNetlistParser {
 	 * The parser will abort on the first invalid file and throw an exception.
 	 * @param folder the folder to load the files from
 	 * @return the same parser instance, with the new element definitions registered
-	 * @throws XMLException if an XML file in the folder contains an invalid XML syntax
+	 * @throws NodalModelLoadException if an exception caused by loading model files occurs
 	 * @throws IOException if an file in the folder could not be parsed because of an IO error
 	 */
-	public NodalNetlistParser loadElements(File folder) throws XmlException, IOException {
+	public NodalNetlistParser loadElements(File folder) throws NodalModelLoadException, IOException {
 		return loadElements(Stream.of(folder.listFiles()).filter(f -> f.isFile()).toList());
 	}
 
@@ -69,27 +64,23 @@ public class NodalNetlistParser {
 	 * Loads element definitions from the supplied XML files
 	 * @param files the files to load
 	 * @return the same parser instance, with the new element definitions registered
-	 * @throws XMLException if an XML file in the list contains an invalid XML syntax
+	 * @throws NodalModelLoadException if an exception caused by loading model files occurs
 	 * @throws IOException if an file in the list could not be parsed because of an IO error
 	 */
-	public NodalNetlistParser loadElements(Collection<File> files) throws XmlException, IOException {
+	public NodalNetlistParser loadElements(Collection<File> files) throws NodalModelLoadException, IOException {
 		for (File f : files) {
 			try {
-				FileInputStream fin = new FileInputStream(f);
-				XmlReader xin = new XmlReader(fin);
-				NodalElement element = ELEMENT_XML_PARSER.unmarshall(xin, NodalElement.class);
-				if (element == null)
-					continue;
+				INodalElement element = NodalModelLoader.loadModel(new FileInputStream(f));
 				this.elements.put(element.name(), element);
-			} catch (XmlException | XmlMarshalingException e) {
-				throw new XmlException("xml exception while loading: " + f.getName(), e);
+			} catch (NodalModelLoadException e) {
+				throw new NodalModelLoadException("exception while loading model file: " + f.getName(), e);
 			} catch (IOException e) {
 				throw new IOException("io exception while loading model file: " + f.getName(), e);
 			}
 		}
 		return this;
 	}
-
+	
 	/**
 	 * Loads element definitions from the supplied XML streams
 	 * @param streams the streams to load
@@ -100,13 +91,10 @@ public class NodalNetlistParser {
 	public NodalNetlistParser loadElementStreams(Collection<InputStream> streams) throws XmlException, IOException {
 		for (InputStream sin : streams) {
 			try {
-				XmlReader xin = new XmlReader(sin);
-				NodalElement element = ELEMENT_XML_PARSER.unmarshall(xin, NodalElement.class);
+				INodalElement element = NodalModelLoader.loadModel(sin);
 				this.elements.put(element.name(), element);
-			} catch (XmlException | XmlMarshalingException e) {
-				throw new XmlException("xml exception while loading stream", e);
-			} catch (IOException e) {
-				throw new IOException("io exception while loading stream", e);
+			} catch (NodalModelLoadException e) {
+				throw new XmlException("exception while loading model stream", e);
 			}
 		}
 		return this;

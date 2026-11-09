@@ -195,17 +195,17 @@ public class TestCLI {
 		
 		CommandArgumentParser cmdparser = new CommandArgumentParser();
 		cmdparser.addOption("help", false, "display this help info");
-		cmdparser.addOption("models", new File("."), "the folder containing the model definition xml files");
-		cmdparser.addOption("netlist", new File("."), "the netlist file to load and simulate");
-		cmdparser.addOption("tsim", "0.0:10.0:0.01", "the simulation time span and step size, <start:stop:step>");
-		cmdparser.addOption("tramp", "0.0:0.0", "the ramp up time span in which sources are remped up from zero, <start:end>");
-		cmdparser.addOption("absutol", NodalNetworkSolver_LAPACK.DEFAULT_LIMUDABS, "the absolute potential tolerance of the nodes");
-		cmdparser.addOption("relutol", NodalNetworkSolver_LAPACK.DEFAULT_LIMUDREL, "the relative potential tolerance of the nodes");
-		cmdparser.addOption("absitol", NodalNetworkSolver_LAPACK.DEFAULT_LIMIDABS, "the absolute additonal variable tolerance of the elements");
-		cmdparser.addOption("relitol", NodalNetworkSolver_LAPACK.DEFAULT_LIMIDREL, "the relative additonal variable tolerance of the elements");
-		cmdparser.addOption("iterlim", NodalNetworkSolver_LAPACK.DEFAULT_LIMITER, "the non linear solver iteration limit");
+		cmdparser.addOption("models", new File("."), "folder containing the model definition xml files");
+		cmdparser.addOption("netlist", new File("."), "netlist file to load and simulate");
+		cmdparser.addOption("tsim", "0.0:10.0:0.01", "simulation time span and step size, <start:stop:step>");
+		cmdparser.addOption("tramp", "0.0:0.0", "ramp up time span in which sources are remped up from zero, <start:end>");
+		cmdparser.addOption("absutol", NodalNetworkSolver_LAPACK.DEFAULT_LIMUDABS, "absolute potential tolerance of the nodes");
+		cmdparser.addOption("relutol", NodalNetworkSolver_LAPACK.DEFAULT_LIMUDREL, "relative potential tolerance of the nodes");
+		cmdparser.addOption("absitol", NodalNetworkSolver_LAPACK.DEFAULT_LIMIDABS, "absolute additonal variable tolerance of the elements");
+		cmdparser.addOption("relitol", NodalNetworkSolver_LAPACK.DEFAULT_LIMIDREL, "relative additonal variable tolerance of the elements");
+		cmdparser.addOption("iterlim", NodalNetworkSolver_LAPACK.DEFAULT_LIMITER, "non linear solver iteration limit");
 		cmdparser.addOption("output", LogMode.SILENT, LogMode::valueOf, LogMode::name, "log output level <SILENT|MINIMAL|VERBOSE|DEBUG>");
-		cmdparser.addOption("nograph", false, "if set, prevents the graph window to open");
+		cmdparser.addOption("nograph", false, "if set, prevents the graph window from opening");
 		
 		try {
 
