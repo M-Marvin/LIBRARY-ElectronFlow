@@ -207,6 +207,8 @@ public class TestCLI {
 		cmdparser.addOption("output", LogMode.SILENT, LogMode::valueOf, LogMode::name, "log output level <SILENT|MINIMAL|VERBOSE|DEBUG>");
 		cmdparser.addOption("nograph", false, "if set, prevents the graph window from opening");
 		
+		cmdparser.addOption("compile", new File(""), "pass a java file to compile to a base64 <class> string");
+		
 		try {
 
 			Arguments cmdargs = cmdparser.parse(args);
@@ -215,6 +217,11 @@ public class TestCLI {
 			if (args.length == 0 || cmdargs.flag("help")) {
 				System.out.println(cmdparser.printHelp());
 				System.exit(1);
+			}
+			
+			if (!cmdargs.get("compile").toString().isEmpty()) {
+				ModelClassCompiler.compileFile(cmdargs.get("compile"));
+				System.exit(0);
 			}
 			
 			// parse input files
