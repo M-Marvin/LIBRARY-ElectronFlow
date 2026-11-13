@@ -196,7 +196,7 @@ public class TestCLI {
 		CommandArgumentParser cmdparser = new CommandArgumentParser();
 		cmdparser.addOption("help", false, "display this help info");
 		cmdparser.addOption("models", new File("."), "folder containing the model definition xml files");
-		cmdparser.addOption("netlist", new File("."), "netlist file to load and simulate");
+		cmdparser.addOption("netlist", new File(""), "netlist file to load and simulate");
 		cmdparser.addOption("tsim", "0.0:10.0:0.01", "simulation time span and step size, <start:stop:step>");
 		cmdparser.addOption("tramp", "0.0:0.0", "ramp up time span in which sources are remped up from zero, <start:end>");
 		cmdparser.addOption("absutol", NodalNetworkSolver_LAPACK.DEFAULT_LIMUDABS, "absolute potential tolerance of the nodes");

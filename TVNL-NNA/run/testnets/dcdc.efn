@@ -1,0 +1,8 @@
+
+U src p_A=Vin p_B=GND U=12
+
+R temp p_A=Vin p_B=Vout R=1
+
+R load p_A=Vout p_B=GND R=20
+
+NZERO GND
