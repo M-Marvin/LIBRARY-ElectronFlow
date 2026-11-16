@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodeElement name="D" nonLinear="true" timeVariant="false">
+	<node name="p_A" constant="i_A"/>
+	<node name="p_K" constant="i_K"/>
+	<variable name="U_fwd" default="0.6"/>
+	<variable name="U_brk" default="-60"/>
+	<variable name="R_on" default="0.1"/>
+	<variable name="R_off" default="1E9"/>
+	<variable name="R_brk" default="0.1"/>
+	<variable name="eps" default="0.5"/>>
+	<functions><![CDATA[ 
+		GD(u,U_fwd,U_brk,R_on,R_off,R_brk,eps):=
+			u>U_fwd+eps/2 ? 1/R_on : 
+			u>U_fwd-eps/2 ? 1/(R_off+(R_on-R_off)*((u+U_fwd)/(2*eps)))) : 
+			u>U_brk+eps/2 ? 1/R_off : 
+			u>U_brk-eps/2 ? 1/(R_brk+(R_brk-R_off)*(R_on-R_off)*((u+U_brk)/(2*eps))) : 
+			1/R_brk;
+		ID(u,g,U_fwd,U_brk,R_on,R_off,R_brk,eps):=
+			u>U_fwd+eps/2 ? U_fwd*(0-g) : 
+			u>U_fwd-eps/2 ? U_fwd*(0-g)*(R_on-R_off)*((u+U_fwd)/(2*eps)) : 
+			u>U_brk+eps/2 ? 0 : 
+			u>U_brk-eps/2 ? U_brk*(0-g)*((u+U_brk)/(2*eps)) : 
+			U_brk*(0-g);
+	]]></functions>
+	<compute G_D="GD(p_A-p_K,U_fwd,U_brk,R_on,R_off,R_brk,eps)"/>
+	<compute I_D="ID(p_A-p_K,U_fwd,G_D,U_brk,R_on,R_off,R_brk,eps)"/>>
+	<stampA>
+				p_A		p_K
+		i_A		G_D		0-G_D
+		i_K		0-G_D	G_D
+	</stampA>
+	<stampZ>
+		i_A		I_D
+		i_K		0-I_D
+	</stampZ>
+</nodeElement>

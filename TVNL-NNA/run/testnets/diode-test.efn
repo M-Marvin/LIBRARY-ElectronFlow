@@ -1,0 +1,7 @@
+U src p_A=V1 p_B=GND U=10
+R chrg p_A=V1 p_B=CAP R=1
+C cap p_A=CAP p_B=GND C=1
+
+D diode p_A=V2 p_K=V1
+
+U ref p_A=V2 p_B=GND U=5
