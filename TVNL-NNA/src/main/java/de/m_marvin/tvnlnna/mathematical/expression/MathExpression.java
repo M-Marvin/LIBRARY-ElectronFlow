@@ -101,7 +101,7 @@ public class MathExpression implements MathTerm {
 				if (type == null)
 					break;
 				
-				String str = s.substring(i0, i1);
+				String str = s.substring(i0, i1).strip();
 				switch (type) {
 				
 				case NUMERIC:

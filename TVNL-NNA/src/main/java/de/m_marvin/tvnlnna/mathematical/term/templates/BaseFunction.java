@@ -12,7 +12,7 @@ public abstract class BaseFunction implements MathTerm {
 	
 	@Override
 	public String str() {
-		return name;
+		return name + "()";
 	}
 
 	@Override

@@ -262,7 +262,7 @@ public class MathParsingContext {
 	 * @return The term representing the function or null if the function is not found within this context
 	 */
 	public MathTerm function(String str) {
-		return this.mathFunction.get(str);
+		return this.mathFunction.get(str + "()");
 	}
 	
 	/**

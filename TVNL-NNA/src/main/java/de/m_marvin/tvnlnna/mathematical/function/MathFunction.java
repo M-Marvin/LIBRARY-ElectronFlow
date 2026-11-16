@@ -33,7 +33,7 @@ public class MathFunction implements MathTerm {
 		this.expression = expression;
 	}
 	
-	private static final Pattern FUNCTION_PATTERN = Pattern.compile("(\\w+)\\s*\\(\\s*(\\w+(?:\\s*,\\s*\\w+)*)\\s*\\)\\s*:=\\s*(.*)");
+	private static final Pattern FUNCTION_PATTERN = Pattern.compile("(\\w+)\\s*\\(\\s*(\\w+(?:\\s*,\\s*\\w+)*)\\s*\\)\\s*:=\\s*(.*)", Pattern.DOTALL);
 	
 	/**
 	 * Parses an single function defined as infix notation with the supplied context and constructs a new function object which can be evaluated.
@@ -59,7 +59,7 @@ public class MathFunction implements MathTerm {
 			MathExpression expression = MathExpression.parseInfix(m.group(3), ctx);
 			
 			if (!variables.containsAll(ctx.listVariables()))
-				throw new MathematicalExpressionException("function expression contains undefined variables (defined/contained): " + ctx.listVariables() + "/" + variables);
+				throw new MathematicalExpressionException("function expression uses undefined variables (used/defined): " + ctx.listVariables() + "/" + variables);
 			
 			MathFunction f = new MathFunction(name, expression, variables);
 			ctx.addFunction(f);
@@ -228,7 +228,7 @@ public class MathFunction implements MathTerm {
 
 	@Override
 	public String str() {
-		return this.name;
+		return this.name + "()";
 	}
 
 	@Override
