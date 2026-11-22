@@ -24,6 +24,7 @@ public class Buildfile extends JavaBuildScript {
 	
 	@Override
 	public void repositories() {
+		
 		dependencies.repository(new Repository(
 				"[GHP] BasicXML", 
 				"https://maven.pkg.github.com/m-marvin/library-basicxml", 
@@ -32,8 +33,12 @@ public class Buildfile extends JavaBuildScript {
 						() -> System.getenv("GITHUB_TOKEN")
 				)
 		));
+		
 		dependencies.repository(Maven.mavenCentral());
+		
 		dependencies.repository(Maven.mavenLocal());
+		dependencies.repository(new Repository("In-Dev", "http://fileserver.lan:1080"));
+		
 	}
 	
 	@Override
@@ -52,11 +57,15 @@ public class Buildfile extends JavaBuildScript {
 		// NetLib natives (testing only)
 		//dependencies.test("com.github.fommil.netlib:all:1.1.2::pom");
 		
+		// MathEngine
+		dependencies.implementation("de.m_marvin.mathengine:mathengine:1.0-SNAPSHOT");
+		
 		// JFreeChart (testing only)
 		dependencies.test("org.jfree:jfreechart:1.5.6");
 		
 		// CommandLineUtility (testing only)
 		dependencies.test("de.m_marvin.commandlineparser:commandlineutility:2.2.3");
+		
 		
 	}
 	

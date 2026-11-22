@@ -13,6 +13,7 @@ import de.m_marvin.basicxml.marshaling.annotations.XmlField.FieldType;
 import de.m_marvin.basicxml.marshaling.annotations.XmlRootType;
 import de.m_marvin.basicxml.marshaling.annotations.XmlType;
 import de.m_marvin.basicxml.marshaling.annotations.XmlTypeAdapter;
+import de.m_marvin.mathengine.MathContext;
 import de.m_marvin.tvnlnna.NodalMatrixStampException;
 import de.m_marvin.tvnlnna.mathematical.MathematicalEvaluationException;
 import de.m_marvin.tvnlnna.mathematical.MathematicalExpressionException;
@@ -86,7 +87,7 @@ public class NodalElement implements INodalElement {
 	@XmlType
 	public class ElementFunctionSet {
 		
-		public static class ElementFunctionSetAdapter implements XmlClassFieldAdapter<MathParsingContext, NodalElement> {
+		public static class ElementFunctionSetAdapter implements XmlClassFieldAdapter<MathContext, NodalElement> {
 
 			@Override
 			public MathParsingContext adaptType(String str, NodalElement parentObject) throws XmlException {

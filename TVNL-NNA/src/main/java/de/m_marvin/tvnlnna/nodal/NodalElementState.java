@@ -145,6 +145,7 @@ public class NodalElementState<N, E> {
 	 */
 	public void setNodeName(int indx, N nodeName) {
 		Objects.requireNonNull(nodeName);
+		// TODO
 //		if (nodeName.isBlank() || !NAME_FILTER.matcher(nodeName).matches())
 //			throw new IllegalArgumentException("node name is blank or contains and/or starts with an white space character");
 		this.nodes[indx] = nodeName;
