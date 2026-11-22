@@ -8,13 +8,23 @@
 	<variable name="R_off" default="1E9"/>
 	<variable name="R_brk" default="0.1"/>
 	<variable name="eps" default="0.5"/>>
-	<functions><![CDATA[ 
+	<functions><![CDATA[
+		
+		ct(p_A,p_B,r,x):=
+			sign(p_A-p_B) * r * ( sin((p_A+p_B)/2)/cos((p_A-p_B)/2) - sqrt( 1 - ( x/r + sign(p_A-p_B) * cos((p_A+p_B)/2)/cos((p_A-p_B)/2) )^2 ) );
+		
+		ct0(p_A.p_B,r):=
+			-sign(p_A-p_B)*sin(p_A)*r*tan((p_B-p_A)/2);
+		ct1(p_A,p_B,r):=
+			sign(p_A-p_B)*sin(p_B)*r*tan((p_B-p_A)/2);
+		
+		id(u,U_fwd,R_on,R_off,r):=
+			u>ct1()
+		
 		GD(u,U_fwd,U_brk,R_on,R_off,R_brk,eps):=
 			u>U_fwd+eps/2 ? 1/R_on : 
 			u>U_fwd-eps/2 ? 1/(R_off+(R_on-R_off)*((u+U_fwd)/(2*eps)))) : 
-			u>U_brk+eps/2 ? 1/R_off : 
-			u>U_brk-eps/2 ? 1/(R_brk+(R_brk-R_off)*(R_on-R_off)*((u+U_brk)/(2*eps))) : 
-			1/R_brk;
+			1/R_off;
 		ID(u,g,U_fwd,U_brk,R_on,R_off,R_brk,eps):=
 			u>U_fwd+eps/2 ? U_fwd*(0-g) : 
 			u>U_fwd-eps/2 ? U_fwd*(0-g)*(R_on-R_off)*((u+U_fwd)/(2*eps)) : 
